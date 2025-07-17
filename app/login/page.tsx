@@ -1,7 +1,6 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import Image from "next/image";
 
 export default function LoginPage() {
   return (
@@ -19,7 +18,7 @@ export default function LoginPage() {
       <h1 className="text-3xl font-bold mb-4 text-gray-800">Git Leaderboard</h1>
 
       <button
-        onClick={() => signIn("github")}
+        onClick={() => signIn("github", { callbackUrl: "/" })}
         className="flex items-center gap-2 px-4 py-2 rounded-md bg-black text-white hover:bg-gray-800 transition"
       >
         <svg
@@ -38,4 +37,7 @@ export default function LoginPage() {
       </button>
     </main>
   );
+  
 }
+
+
