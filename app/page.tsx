@@ -1,10 +1,6 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth";
 import Image from "next/image";
 
-export default async function Home() {
-  const session = await getServerSession(authOptions);
-
+export default function Home() {
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -16,13 +12,6 @@ export default async function Home() {
           height={38}
           priority
         />
-        <div className="text-center sm:text-left text-gray-800 text-base">
-          {session?.user ? (
-            <p>Logado como <strong>{session.user.name || session.user.email}</strong></p>
-          ) : (
-            <p>Você não está logado.</p>
-          )}
-        </div>
         <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
