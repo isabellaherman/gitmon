@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx prisma init:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(source .env)",
+      "Bash(npm run dev:*)",
+      "Bash(npx prisma studio:*)",
+      "Bash(vercel login:*)",
+      "Bash(vercel)",
+      "Bash(vercel:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

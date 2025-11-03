@@ -1,103 +1,349 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+const monsters = [
+  { id: 0, src: "/monsters/monster-000.png", name: "Shadrix" },
+  { id: 1, src: "/monsters/monster-001-png.png", name: "Blazewyrm" },
+  { id: 2, src: "/monsters/monster-002-png.png", name: "Crystalix" },
+  { id: 3, src: "/monsters/monster-003-png.png", name: "Thornspike" },
+  { id: 4, src: "/monsters/monster-004-png.png", name: "Volterra" },
+  { id: 5, src: "/monsters/monster-005-png.png", name: "Aquarus" },
+  { id: 6, src: "/monsters/monster-006-png.png", name: "Infernus" },
+  { id: 7, src: "/monsters/monster-007.png", name: "Lumenis" },
+  { id: 8, src: "/monsters/monster-008.png", name: "Spectra" },
+];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+// Leaderboard will be fetched from API
+
+interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  selectedMonsterId: number;
+  level: number;
+  xp: number;
+  rank_title: string;
+  stats: {
+    commits: number;
+    prs: number;
+    stars: number;
+    streak: number;
+  };
+}
+
+export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
+  const [canSyncXp, setCanSyncXp] = useState(false);
+
+  // Fetch leaderboard data
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch('/api/leaderboard?limit=10');
+        const data = await response.json();
+
+        if (data.success) {
+          setLeaderboard(data.leaderboard);
+        }
+      } catch (error) {
+        console.error('Failed to fetch leaderboard:', error);
+      } finally {
+        setIsLoadingLeaderboard(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
+  // Check if user can sync XP (logged in and completed onboarding)
+  useEffect(() => {
+    if (session?.user) {
+      // @ts-ignore
+      setCanSyncXp(session.user.onboardingCompleted);
+    }
+  }, [session]);
+
+  const handleSignIn = () => {
+    signIn("github");
+  };
+
+  const handleSyncXp = async () => {
+    if (!canSyncXp) return;
+
+    try {
+      const response = await fetch('/api/sync-xp', { method: 'POST' });
+      const data = await response.json();
+
+      if (data.success) {
+        // Refresh the page to show updated data
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Failed to sync XP:', error);
+    }
+  };
+
+  // @ts-ignore
+  const selectedMonsterId = session?.user?.selectedMonsterId;
+  const selectedMonster = selectedMonsterId !== null && selectedMonsterId !== undefined ? monsters[selectedMonsterId] : null;
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            GitMon Leaderboard
+          </h1>
+          <p className="text-muted-foreground">
+            Compete with developers worldwide and level up your coding game
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Main Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Leaderboard - 2/3 width */}
+          <div className="lg:col-span-2">
+            <div className="bg-card rounded-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 p-6 border-b">
+                <h2 className="text-2xl font-bold">🏆 Top Developers</h2>
+                <p className="text-muted-foreground">This week's coding champions</p>
+              </div>
+
+              <div className="p-6">
+                {isLoadingLeaderboard ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Loading leaderboard...</p>
+                  </div>
+                ) : leaderboard.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No players yet. Be the first to join!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {leaderboard.map((user) => (
+                    <div
+                      key={user.rank}
+                      className={`flex items-center gap-4 p-4 rounded-lg transition-colors ${
+                        user.rank <= 3
+                          ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
+                          : 'bg-muted/50 hover:bg-muted'
+                      }`}
+                    >
+                      {/* Rank */}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                        user.rank === 1 ? 'bg-yellow-500 text-black' :
+                        user.rank === 2 ? 'bg-gray-400 text-black' :
+                        user.rank === 3 ? 'bg-amber-600 text-white' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {user.rank}
+                      </div>
+
+                      {/* GitMon */}
+                      <div className="w-12 h-12 rounded-full bg-background overflow-hidden relative border-2">
+                        <Image
+                          src={monsters[user.selectedMonsterId]?.src || monsters[0].src}
+                          alt={monsters[user.selectedMonsterId]?.name || 'GitMon'}
+                          fill
+                          className="object-contain"
+                          sizes="48px"
+                        />
+                      </div>
+
+                      {/* User Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{user.name}</h3>
+                          {user.rank <= 3 && (
+                            <span className="text-xs">
+                              {user.rank === 1 ? '👑' : user.rank === 2 ? '🥈' : '🥉'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {monsters[user.selectedMonsterId]?.name || 'Unknown'} • Level {user.level}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.rank_title}
+                        </p>
+                      </div>
+
+                      {/* XP */}
+                      <div className="text-right">
+                        <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.stats.commits} commits • {user.stats.prs} PRs
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar - 1/3 width */}
+          <div className="lg:col-span-1">
+            {!session ? (
+              /* Not logged in */
+              <div className="bg-card rounded-xl p-6 text-center">
+                <div className="w-32 h-32 mx-auto mb-6 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
+                  <Image
+                    src={monsters[Math.floor(Math.random() * monsters.length)].src}
+                    alt="GitMon"
+                    fill
+                    className="object-contain"
+                    sizes="128px"
+                  />
+                </div>
+
+                <h3 className="text-xl font-bold mb-2">Start Your Journey!</h3>
+                <p className="text-muted-foreground mb-6">
+                  Choose your GitMon and start earning XP for every commit, pull request, and contribution.
+                </p>
+
+                <Button onClick={handleSignIn} size="lg" className="w-full">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5 mr-2"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12 0C5.373 0 0 5.373 0 12a12 12 0 008.207 11.385c.6.111.82-.261.82-.58 0-.287-.01-1.046-.016-2.054-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.73.083-.73 1.205.085 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.996.108-.775.42-1.304.763-1.604-2.665-.305-5.466-1.332-5.466-5.932 0-1.31.469-2.38 1.236-3.22-.124-.303-.535-1.527.117-3.182 0 0 1.008-.323 3.3 1.23A11.48 11.48 0 0112 5.8c1.022.005 2.05.138 3.012.403 2.29-1.553 3.296-1.23 3.296-1.23.654 1.655.243 2.879.12 3.182.77.84 1.235 1.91 1.235 3.22 0 4.61-2.804 5.624-5.476 5.921.431.37.816 1.102.816 2.222 0 1.604-.014 2.896-.014 3.293 0 .321.216.696.825.578A12.003 12.003 0 0024 12c0-6.627-5.373-12-12-12z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Login with GitHub
+                </Button>
+
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="font-semibold mb-3">How it works:</h4>
+                  <div className="space-y-2 text-sm text-muted-foreground text-left">
+                    <div className="flex items-center gap-2">
+                      <span>🔹</span>
+                      <span>Connect your GitHub account</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>🔹</span>
+                      <span>Choose your GitMon companion</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>🔹</span>
+                      <span>Earn XP for coding activities</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>🔹</span>
+                      <span>Climb the leaderboard!</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Logged in */
+              <div className="bg-card rounded-xl p-6 text-center">
+                {selectedMonster ? (
+                  <>
+                    <div className="w-32 h-32 mx-auto mb-4 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
+                      <Image
+                        src={selectedMonster.src}
+                        alt={selectedMonster.name}
+                        fill
+                        className="object-contain"
+                        sizes="128px"
+                      />
+                    </div>
+
+                    <h3 className="text-xl font-bold mb-1">{selectedMonster.name}</h3>
+                    <p className="text-muted-foreground mb-4">Your GitMon Companion</p>
+
+                    <div className="space-y-3 mb-6">
+                      <div className="bg-muted rounded-lg p-3">
+                        <p className="text-2xl font-bold text-primary">Level 1</p>
+                        <p className="text-sm text-muted-foreground">Beginner</p>
+                      </div>
+
+                      <div className="bg-muted rounded-lg p-3">
+                        <p className="text-2xl font-bold text-primary">0 XP</p>
+                        <p className="text-sm text-muted-foreground">Ready to start!</p>
+                      </div>
+
+                      <div className="bg-muted rounded-lg p-3">
+                        <p className="text-2xl font-bold text-primary">#???</p>
+                        <p className="text-sm text-muted-foreground">Your rank</p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Welcome {session.user?.name}! Start coding to earn XP and climb the leaderboard.
+                    </p>
+
+                    <div className="space-y-2">
+                      <Button
+                        onClick={handleSyncXp}
+                        size="sm"
+                        className="w-full"
+                        disabled={!canSyncXp}
+                      >
+                        🔄 Sync GitHub XP
+                      </Button>
+
+                      <Button
+                        onClick={() => signOut()}
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <p className="mb-4 text-muted-foreground">
+                      You're logged in as {session.user?.name}! But you need to choose your GitMon first.
+                    </p>
+                    <p className="mb-4">This should redirect automatically...</p>
+                    <Button
+                      onClick={() => router.push("/onboarding")}
+                      size="lg"
+                      className="w-full mb-4"
+                    >
+                      Choose Your GitMon →
+                    </Button>
+                    <Button
+                      onClick={() => signOut()}
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }
