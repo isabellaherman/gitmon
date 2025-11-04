@@ -6,14 +6,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
-    const period = searchParams.get('period') || 'week'; // 'week' or 'all'
+    const period = searchParams.get('period') || 'week';
 
-    // Choose ordering based on period
     const orderBy = period === 'week'
       ? [{ weeklyXp: 'desc' }, { level: 'desc' }, { lastXpUpdate: 'desc' }]
       : [{ xp: 'desc' }, { level: 'desc' }, { lastXpUpdate: 'desc' }];
 
-    // Get users ordered by XP
     const users = await prisma.user.findMany({
       where: {
         onboardingCompleted: true,
@@ -38,7 +36,6 @@ export async function GET(request: Request) {
       }
     });
 
-    // Transform data for leaderboard
     const leaderboard = users.map((user, index) => ({
       rank: index + 1,
       id: user.id,
@@ -46,17 +43,15 @@ export async function GET(request: Request) {
       githubUsername: user.githubUsername,
       selectedMonsterId: user.selectedMonsterId,
       level: user.level,
-      xp: period === 'week' ? user.weeklyXp : user.xp, // Show weekly or total XP
+      xp: period === 'week' ? user.weeklyXp : user.xp,
       dailyXp: user.dailyXp,
       weeklyXp: user.weeklyXp,
-      totalXp: user.xp, // Always include total for reference
+      totalXp: user.xp,
       rank_title: getUserRank(user.level),
       stats: {
-        // For weekly view, estimate commits/PRs based on weekly XP
-        // For all-time view, show totals
         commits: period === 'week' ? Math.floor(user.weeklyXp / 5) : user.totalCommits,
         prs: period === 'week' ? Math.floor(user.weeklyXp / 40) : user.totalPRs,
-        stars: user.totalStars, // Always show total stars
+        stars: user.totalStars,
         streak: user.currentStreak
       },
       lastActive: user.lastXpUpdate

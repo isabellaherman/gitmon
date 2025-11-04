@@ -19,7 +19,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid monster ID" }, { status: 400 });
     }
 
-    // Update user's onboarding status and selected monster
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
       data: {

@@ -6,19 +6,16 @@ interface ContributionGraphProps {
 }
 
 export default function ContributionGraph({ totalCommits, className = "" }: ContributionGraphProps) {
-  // Generate 52 weeks of data (GitHub style)
   const weeks = 52;
   const daysPerWeek = 7;
 
-  // Create a simple pattern based on commit count
   const generateContributions = () => {
     const contributions = [];
-    const maxDaily = Math.min(Math.floor(totalCommits / 200), 4); // Scale to 0-4 intensity
+    const maxDaily = Math.min(Math.floor(totalCommits / 200), 4);
 
     for (let week = 0; week < weeks; week++) {
       const weekData = [];
       for (let day = 0; day < daysPerWeek; day++) {
-        // Create some realistic patterns
         const isWeekend = day === 0 || day === 6;
         const intensity = isWeekend
           ? Math.random() < 0.3 ? Math.floor(Math.random() * (maxDaily + 1)) : 0

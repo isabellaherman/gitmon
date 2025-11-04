@@ -4,11 +4,9 @@ import GitHubService from "@/lib/github-service";
 
 export async function GET(request: Request) {
   try {
-    // Get email from query parameter or use default
     const { searchParams } = new URL(request.url);
     const email = searchParams.get('email') || 'isabella@mage.games';
 
-    // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
@@ -25,7 +23,6 @@ export async function GET(request: Request) {
     console.log(`[Debug Sync] Found user: ${user.email}`);
     console.log(`[Debug Sync] Current XP: ${user.xp}, Weekly XP: ${user.weeklyXp}`);
 
-    // Get GitHub username
     let githubUsername = user.githubUsername;
     if (!githubUsername && user.accounts.length > 0) {
       const githubAccount = user.accounts.find(acc => acc.provider === 'github');
@@ -45,15 +42,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "GitHub username not found" }, { status: 400 });
     }
 
-    // Test GraphQL with no auth (public data only)
-    const githubService = new GitHubService(); // No token
+    const githubService = new GitHubService();
 
     try {
-      // Test getting weekly XP
       const weeklyXp = await githubService.getWeeklyXp(githubUsername, true);
       console.log(`[Debug Sync] Calculated weekly XP: ${weeklyXp}`);
 
-      // Test getting user stats
       const githubStats = await githubService.getUserStats(githubUsername);
       console.log(`[Debug Sync] GitHub stats:`, {
         totalCommits: githubStats.totalCommits,
@@ -64,14 +58,13 @@ export async function GET(request: Request) {
         followers: githubStats.followers
       });
 
-      // Calculate what the All-Time XP should be
       const calculatedAllTimeXp =
-        (githubStats.followers * 1) +           // Followers: 1 XP each
-        (githubStats.totalStars * 10) +         // Stars: 10 XP each
-        (githubStats.totalForks * 5) +          // Forks: 5 XP each
-        (githubStats.totalRepos * 50) +         // Repos: 50 XP each
-        (githubStats.totalCommits * 5) +        // Commits: 5 XP each
-        (githubStats.totalPRs * 40);            // PRs: 40 XP each
+        (githubStats.followers * 1) +
+        (githubStats.totalStars * 10) +
+        (githubStats.totalForks * 5) +
+        (githubStats.totalRepos * 50) +
+        (githubStats.totalCommits * 5) +
+        (githubStats.totalPRs * 40);
 
       const breakdown = {
         followers: `${githubStats.followers} × 1 = ${githubStats.followers * 1}`,

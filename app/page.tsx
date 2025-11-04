@@ -19,7 +19,6 @@ const monsters = [
   { id: 8, src: "/monsters/monster-008.png", name: "Spectra", type: "psychic" },
 ];
 
-// Leaderboard will be fetched from API
 
 interface LeaderboardEntry {
   rank: number;
@@ -47,14 +46,12 @@ export default function Home() {
   const [showUsernameInput, setShowUsernameInput] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
 
-  // Auto-sync XP when user logs in (once per session)
   useEffect(() => {
     if (session?.user?.email && status === 'authenticated') {
       const now = Date.now();
       const sessionKey = `sync_${session.user.email}`;
       const lastSync = localStorage.getItem(sessionKey);
 
-      // Only sync once per 10 minutes to avoid rate limits
       if (!lastSync || (now - parseInt(lastSync)) > 10 * 60 * 1000) {
         console.log('[Auto Sync] Performing automatic XP sync...');
 
@@ -64,7 +61,6 @@ export default function Home() {
             if (data.success) {
               console.log('[Auto Sync] XP updated successfully');
               localStorage.setItem(sessionKey, now.toString());
-              // Refresh leaderboard after sync
               window.location.reload();
             }
           })
@@ -75,7 +71,6 @@ export default function Home() {
     }
   }, [session, status]);
 
-  // Fetch leaderboard data
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
@@ -95,11 +90,9 @@ export default function Home() {
     fetchLeaderboard();
   }, [leaderboardPeriod]);
 
-  // Check if user can sync XP (logged in and completed onboarding)
   useEffect(() => {
     if (session?.user) {
-      // @ts-ignore
-      setCanSyncXp(session.user.onboardingCompleted);
+          setCanSyncXp(session.user.onboardingCompleted);
     }
   }, [session]);
 
@@ -115,7 +108,6 @@ export default function Home() {
       const data = await response.json();
 
       if (data.success) {
-        // Refresh the page to show updated data
         window.location.reload();
       }
     } catch (error) {
@@ -123,11 +115,9 @@ export default function Home() {
     }
   };
 
-  // @ts-ignore
   const selectedMonsterId = session?.user?.selectedMonsterId;
   const selectedMonster = selectedMonsterId !== null && selectedMonsterId !== undefined ? monsters[selectedMonsterId] : null;
 
-  // @ts-ignore
   const gitmonSelectedAt = session?.user?.gitmonSelectedAt;
 
   const getTypeColor = (type: string) => {
@@ -154,7 +144,6 @@ export default function Home() {
     });
   };
 
-  // Find current user in leaderboard to get their stats
   const currentUserInLeaderboard = leaderboard.find(user =>
     user.name === session?.user?.name ||
     user.githubUsername === session?.user?.email?.split('@')[0]
@@ -186,7 +175,6 @@ export default function Home() {
           {/* Sidebar - 1/3 width */}
           <div className="lg:col-span-1">
             {!session ? (
-              /* Not logged in */
               <div className="bg-card rounded-xl p-6 text-center">
                 <div className="w-32 h-32 mx-auto mb-6 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
                   <Image
@@ -251,9 +239,7 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              /* Logged in */
               <div className="bg-card rounded-xl p-6">
-                {/* Trainer Info - Always shown */}
                 <div className="text-center mb-6">
                   <h3 className="text-lg font-bold mb-3">Trainer Profile</h3>
                   <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
@@ -275,7 +261,6 @@ export default function Home() {
                 </div>
 
                 {selectedMonster ? (
-                  /* GitMon Info - When selected */
                   <>
                     <div className="text-center mb-6">
                       <div className="w-48 h-48 mx-auto mb-4 relative">
@@ -330,15 +315,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Contribution Graph - Commented out for now */}
-                    {/* {currentUserInLeaderboard && (
-                      <div className="mb-6">
-                        <ContributionGraph
-                          totalCommits={currentUserInLeaderboard.stats.commits}
-                          className="w-full"
-                        />
-                      </div>
-                    )} */}
 
                     <div className="space-y-2">
                       <Button
@@ -361,7 +337,6 @@ export default function Home() {
                     </div>
                   </>
                 ) : (
-                  /* No GitMon - Show onboarding CTA */
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-6">
                       Choose your GitMon companion to start your coding adventure!
@@ -398,7 +373,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Leaderboard - 2/3 width */}
           <div className="lg:col-span-2">
             <div className="bg-card rounded-xl overflow-hidden">
               <div className="p-6 border-b">
@@ -435,7 +409,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="px-6 py-3 border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex gap-3">
@@ -490,12 +463,10 @@ export default function Home() {
                           : 'bg-muted/50 hover:bg-muted'
                       }`}
                     >
-                      {/* Rank */}
                       <div className="min-w-8 flex items-center justify-center font-bold text-sm text-muted-foreground">
                         #{user.rank}
                       </div>
 
-                      {/* User Info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">{user.name}</h3>
@@ -508,7 +479,6 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* XP and GitMon */}
                       <div className="flex items-center gap-3">
                         <div className="text-right">
                           <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
@@ -517,7 +487,6 @@ export default function Home() {
                           </p>
                         </div>
 
-                        {/* GitMon */}
                         <div className="w-16 h-16 relative">
                           <Image
                             src={monsters[user.selectedMonsterId]?.src || monsters[0].src}

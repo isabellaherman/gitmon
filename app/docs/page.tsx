@@ -36,22 +36,18 @@ export default function DocsPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    // Fetch the markdown content
     fetch(docs[currentDoc].file)
       .then((res) => res.text())
       .then((text) => setContent(text))
       .catch((err) => console.error("Failed to load docs:", err));
   }, [currentDoc]);
 
-  // Simple markdown to HTML converter for basic formatting
   const parseMarkdown = (markdown: string) => {
     return markdown
-      // Headers
       .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3 text-gray-800">$1</h3>')
       .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">$1</h2>')
       .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-6 mb-6 text-gray-900">$1</h1>')
 
-      // Process warning blocks first (specific pattern)
       .replace(/> ⚠️ \*\*(.*?)\*\*:\n((?:> .*\n?)*)/gm, (match, title, content) => {
         const items = content.split('\n').filter((line: string) => line.trim().startsWith('>')).map((line: string) => {
           const cleanLine = line.replace(/^> /, '').trim();
@@ -60,39 +56,30 @@ export default function DocsPage() {
         return `<div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 my-4"><p class="font-bold text-yellow-800">⚠️ ${title}:</p>${items}</div>`;
       })
 
-      // Regular blockquotes
       .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4">$1</blockquote>')
 
-      // Bold text
       .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-gray-900">$1</strong>')
 
-      // Code blocks
       .replace(/```(\w+)?\n([\s\S]*?)```/gim, '<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4"><code class="text-sm">$2</code></pre>')
       .replace(/`(.*?)`/gim, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">$1</code>')
 
-      // Tables
       .replace(/\|(.+)\|/g, (match, content) => {
         const cells = content.split('|').map((cell: string) => cell.trim());
         return '<tr>' + cells.map((cell: string) => `<td class="border px-4 py-2">${cell}</td>`).join('') + '</tr>';
       })
 
-      // Lists
       .replace(/^- (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
       .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
 
-      // Links
       .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">$1</a>')
 
-      // Emojis and special formatting
       .replace(/🔴/g, '<span class="text-red-500">🔴</span>')
       .replace(/🟡/g, '<span class="text-yellow-500">🟡</span>')
       .replace(/✅/g, '<span class="text-green-500">✅</span>')
       .replace(/⚠️/g, '<span class="text-yellow-600">⚠️</span>')
 
-      // Horizontal rules
       .replace(/^---$/gim, '<hr class="my-8 border-gray-300">')
 
-      // Paragraphs
       .replace(/\n\n/g, '</p><p class="mb-4">')
       .replace(/^(?!<[h|d|l|p|u])(.+)$/gim, '<p class="mb-4">$1</p>');
   };
@@ -100,7 +87,6 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-4xl mx-auto px-6 py-8 docs-page">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button
@@ -127,7 +113,6 @@ export default function DocsPage() {
           </Button>
         </div>
 
-        {/* Navigation */}
         <div className="flex gap-4 mb-8">
           {Object.entries(docs).map(([key, doc]) => (
             <Button
@@ -142,7 +127,6 @@ export default function DocsPage() {
           ))}
         </div>
 
-        {/* Content */}
         <div className="bg-white rounded-xl shadow-sm border p-8">
           {content ? (
             <div
@@ -161,7 +145,6 @@ export default function DocsPage() {
           )}
         </div>
 
-        {/* Footer */}
         <div className="text-center mt-8 text-gray-500 text-sm space-y-2">
           <p>GitMon • Open source coding gamification platform</p>
           <p>designed by{" "}

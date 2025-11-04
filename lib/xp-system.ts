@@ -1,5 +1,3 @@
-// GitMon XP System Implementation
-// Based on XP_SYSTEM_DESIGN.md
 
 export interface GitHubStats {
   commits: number;
@@ -19,9 +17,7 @@ export interface XpGain {
   metadata?: Record<string, any>;
 }
 
-// Level calculation based on Pokemon formula
 export function calculateLevel(totalXp: number): number {
-  // Binary search for efficient level calculation
   let level = 1;
   while (level <= 100) {
     const requiredXp = calculateXpForLevel(level);
@@ -30,13 +26,12 @@ export function calculateLevel(totalXp: number): number {
     }
     level++;
   }
-  return 100; // Max level cap
+  return 100;
 }
 
 export function calculateXpForLevel(level: number): number {
   if (level <= 1) return 0;
 
-  // Formula: XP = Level³ × 4 - 15 × Level² + 100 × Level - 140
   const xp = Math.floor(
     Math.pow(level, 3) * 4 -
     15 * Math.pow(level, 2) +
@@ -58,20 +53,19 @@ export function getProgressToNextLevel(currentXp: number): number {
   const currentLevelXp = calculateXpForLevel(currentLevel);
   const nextLevelXp = calculateXpForLevel(currentLevel + 1);
 
-  if (nextLevelXp === currentLevelXp) return 1; // Max level
+  if (nextLevelXp === currentLevelXp) return 1;
 
   const progress = (currentXp - currentLevelXp) / (nextLevelXp - currentLevelXp);
   return Math.min(1, Math.max(0, progress));
 }
 
-// XP calculation functions based on design document
 export function calculateCommitXp(linesChanged: number): number {
-  const maxDailyCommitXp = 50; // Anti-cheat cap
+  const maxDailyCommitXp = 50;
 
   if (linesChanged < 10) return 2;
   if (linesChanged < 100) return 5;
   if (linesChanged < 500) return 8;
-  return 10; // Mega commit cap
+  return 10;
 }
 
 export function calculatePullRequestXp(
@@ -85,14 +79,12 @@ export function calculatePullRequestXp(
   if (isOpened) baseXp += 15;
   if (isMerged) baseXp += 25;
 
-  // Repository popularity bonus
   if (targetRepoStars >= 10000) {
-    baseXp *= 2; // +100% for mega repos
+    baseXp *= 2;
   } else if (targetRepoStars >= 1000) {
-    baseXp *= 1.5; // +50% for popular repos
+    baseXp *= 1.5;
   }
 
-  // Own repo penalty
   if (isOwnRepo) {
     baseXp *= 0.5;
   }
@@ -107,14 +99,12 @@ export function calculateStarXp(
 ): number {
   let xp = isFirstStar ? 50 : 10;
 
-  // Repository popularity bonus
   if (repoStars >= 100) {
-    xp *= 1.5; // +50% bonus
+    xp *= 1.5;
   }
 
-  // Verified developer bonus
   if (isFromVerifiedDev) {
-    xp *= 1.2; // +20% bonus
+    xp *= 1.2;
   }
 
   return Math.floor(xp);
@@ -139,7 +129,7 @@ export function calculateReviewXp(leadsToChanges: boolean, targetRepoStars: numb
   let baseXp = leadsToChanges ? 25 : 15;
 
   if (targetRepoStars >= 1000) {
-    baseXp *= 1.3; // +30% bonus for popular repos
+    baseXp *= 1.3;
   }
 
   return Math.floor(baseXp);
@@ -160,19 +150,19 @@ export function calculateLanguageDiversityBonus(languagesUsed: string[]): number
   const uniqueLanguages = new Set(languagesUsed).size;
 
   if (uniqueLanguages >= 10) {
-    return 0.15; // +15% global XP bonus
+    return 0.15;
   }
 
   return 0;
 }
 
 export function calculateStreakMultiplier(currentStreak: number): number {
-  if (currentStreak >= 365) return 2.0; // +100% for year streak
-  if (currentStreak >= 100) return 1.5; // +50% for 100-day streak
-  if (currentStreak >= 30) return 1.25; // +25% for 30-day streak
-  if (currentStreak >= 7) return 1.1; // +10% for 7-day streak
+  if (currentStreak >= 365) return 2.0;
+  if (currentStreak >= 100) return 1.5;
+  if (currentStreak >= 30) return 1.25;
+  if (currentStreak >= 7) return 1.1;
 
-  return 1.0; // No bonus
+  return 1.0;
 }
 
 export function applyDailyCap(currentDailyXp: number, newXp: number): number {
@@ -182,7 +172,6 @@ export function applyDailyCap(currentDailyXp: number, newXp: number): number {
   return Math.min(newXp, Math.max(0, remainingCap));
 }
 
-// Helper function to get GitMon evolution stage
 export function getGitMonEvolution(level: number): 'basic' | 'evolved' | 'final' | 'legendary' {
   if (level >= 50) return 'legendary';
   if (level >= 26) return 'final';
@@ -190,7 +179,6 @@ export function getGitMonEvolution(level: number): 'basic' | 'evolved' | 'final'
   return 'basic';
 }
 
-// Get level-appropriate title/rank
 export function getUserRank(level: number): string {
   if (level >= 50) return 'Coding Deity';
   if (level >= 40) return 'GitHub Legend';

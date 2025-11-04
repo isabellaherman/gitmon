@@ -15,11 +15,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
-        // @ts-ignore
         session.user.onboardingCompleted = user.onboardingCompleted;
-        // @ts-ignore
         session.user.selectedMonsterId = user.selectedMonsterId;
-        // @ts-ignore
         session.user.gitmonSelectedAt = user.gitmonSelectedAt;
       }
       return session;

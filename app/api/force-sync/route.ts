@@ -8,7 +8,6 @@ import {
 
 export async function POST(request: Request) {
   try {
-    // Force sync for your account
     const user = await prisma.user.findUnique({
       where: { email: "isabella@mage.games" },
       include: {
@@ -24,7 +23,6 @@ export async function POST(request: Request) {
 
     console.log(`[Force Sync] Starting sync for ${user.email}`);
 
-    // Get GitHub username
     let githubUsername = user.githubUsername;
     if (!githubUsername && user.accounts.length > 0) {
       const githubAccount = user.accounts.find(acc => acc.provider === 'github');
@@ -44,7 +42,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "GitHub username not found" }, { status: 400 });
     }
 
-    // Get GitHub access token from account
     let accessToken = undefined;
     if (user.accounts.length > 0) {
       const githubAccount = user.accounts.find(acc => acc.provider === 'github');
@@ -53,11 +50,9 @@ export async function POST(request: Request) {
 
     console.log(`[Force Sync] Using access token:`, !!accessToken);
 
-    // Initialize GitHub service with token
     const githubService = new GitHubService(accessToken);
 
     try {
-      // Fetch GitHub stats with authentication
       const githubStats = await githubService.getUserStats(githubUsername);
       console.log(`[Force Sync] GitHub stats:`, {
         totalCommits: githubStats.totalCommits,
@@ -66,11 +61,9 @@ export async function POST(request: Request) {
         followers: githubStats.followers
       });
 
-      // Calculate weekly XP
       const weeklyXp = await githubService.getWeeklyXp(githubUsername, true);
       console.log(`[Force Sync] Weekly XP: ${weeklyXp}`);
 
-      // Calculate lifetime XP (always recalculate for testing)
       const lifetimeXp =
         (githubStats.followers * 1) +
         (githubStats.totalStars * 10) +
@@ -84,7 +77,6 @@ export async function POST(request: Request) {
       const newLevel = calculateLevel(lifetimeXp);
       const newRank = getUserRank(newLevel);
 
-      // Update user in database
       const updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: {

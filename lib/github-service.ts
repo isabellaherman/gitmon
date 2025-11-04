@@ -49,35 +49,29 @@ export class GitHubService {
 
   async getUserStats(username: string): Promise<GitHubUserStats> {
     try {
-      // Get comprehensive data using GraphQL
       const contributionData = await this.getAccurateContributionData(username);
 
-      // Get user basic info (still using REST for profile data)
       const { data: user } = await this.octokit.rest.users.getByUsername({
         username
       });
 
-      // Get user's repositories
       const { data: repos } = await this.octokit.rest.repos.listForUser({
         username,
         per_page: 100,
         sort: 'updated'
       });
 
-      // Calculate stats
       const totalRepos = user.public_repos;
       const totalStars = repos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
       const totalForks = repos.reduce((sum, repo) => sum + repo.forks_count, 0);
 
-      // Get languages (from repos)
       const languages = new Set<string>();
-      for (const repo of repos.slice(0, 20)) { // Limit to avoid rate limits
+      for (const repo of repos.slice(0, 20)) {
         if (repo.language) {
           languages.add(repo.language);
         }
       }
 
-      // Get recent activity (events) for recent activity feed
       const { data: events } = await this.octokit.rest.activity.listPublicEventsForUser({
         username,
         per_page: 100
@@ -85,12 +79,10 @@ export class GitHubService {
 
       const recentActivity = this.parseEvents(events);
 
-      // Use accurate contribution data from GraphQL
       const totalCommits = contributionData.totalCommits;
       const totalPRs = contributionData.totalPRs;
       const totalIssues = contributionData.totalIssues;
 
-      // Calculate average commits per week (last 12 weeks from events)
       const avgCommitsPerWeek = this.calculateAvgCommitsPerWeek(events);
 
       return {
@@ -121,7 +113,6 @@ export class GitHubService {
     }
   }
 
-  // Get accurate contribution data using GraphQL
   async getAccurateContributionData(username: string): Promise<{
     totalCommits: number;
     totalPRs: number;
@@ -140,7 +131,6 @@ export class GitHubService {
               totalPullRequestContributions
               totalPullRequestReviewContributions
             }
-            # Get contributions from all years
             contributionsCollection2021: contributionsCollection(from: "2021-01-01T00:00:00Z", to: "2021-12-31T23:59:59Z") {
               totalCommitContributions
               totalIssueContributions
@@ -176,7 +166,6 @@ export class GitHubService {
         throw new Error(`User ${username} not found`);
       }
 
-      // Sum up contributions from all available years
       const years = ['', '2021', '2022', '2023', '2024'];
       let totalCommits = 0;
       let totalPRs = 0;
@@ -210,7 +199,6 @@ export class GitHubService {
     } catch (error) {
       console.error('Error fetching GraphQL contribution data:', error);
 
-      // Fallback to old method if GraphQL fails
       console.log(`[GitHub GraphQL] Falling back to events-based estimation for ${username}`);
       const { data: events } = await this.octokit.rest.activity.listPublicEventsForUser({
         username,
@@ -358,7 +346,7 @@ export class GitHubService {
         stars: data.stargazers_count,
         forks: data.forks_count,
         language: data.language,
-        isOwner: false // This would need to be determined based on the user
+        isOwner: false
       };
     } catch (error) {
       console.error('Error fetching repository info:', error);
@@ -366,7 +354,6 @@ export class GitHubService {
     }
   }
 
-  // Calculate average commits per week from recent events
   private calculateAvgCommitsPerWeek(events: any[]): number {
     const now = new Date();
     const twelveWeeksAgo = new Date(now.getTime() - (12 * 7 * 24 * 60 * 60 * 1000));
@@ -381,29 +368,26 @@ export class GitHubService {
       return sum + (event.payload?.commits?.length || 1);
     }, 0);
 
-    return Math.round((totalCommits / 12) * 10) / 10; // Round to 1 decimal
+    return Math.round((totalCommits / 12) * 10) / 10;
   }
 
-  // Get start of current week (Monday) or last 7 days for first sync
   private getStartOfWeek(useLastSevenDays: boolean = false): Date {
     const now = new Date();
 
     if (useLastSevenDays) {
-      // Use last 7 days instead of week boundary
       const sevenDaysAgo = new Date(now);
       sevenDaysAgo.setDate(now.getDate() - 7);
       return sevenDaysAgo;
     }
 
-    const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Adjust so Monday = 0
+    const dayOfWeek = now.getDay();
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - daysFromMonday);
     startOfWeek.setHours(0, 0, 0, 0);
     return startOfWeek;
   }
 
-  // Filter events for current week
   private filterCurrentWeekEvents(events: any[], useLastSevenDays: boolean = false): any[] {
     const startOfWeek = this.getStartOfWeek(useLastSevenDays);
     return events.filter(event => {
@@ -412,15 +396,13 @@ export class GitHubService {
     });
   }
 
-  // Calculate XP for current week's activity using GraphQL
   async getWeeklyXp(username: string, useLastSevenDays: boolean = false): Promise<number> {
     try {
       console.log(`[GitHub Service] Getting weekly XP for ${username} using GraphQL`);
 
-      // Get the start and end dates for the period
       const now = new Date();
       const startDate = new Date(now);
-      startDate.setDate(now.getDate() - 7); // Last 7 days
+      startDate.setDate(now.getDate() - 7);
 
       const fromDate = startDate.toISOString();
       const toDate = now.toISOString();
@@ -450,7 +432,6 @@ export class GitHubService {
         throw new Error('No contribution data found');
       }
 
-      // Calculate weekly XP using the same formula as all-time
       const commits = collection.totalCommitContributions || 0;
       const prs = collection.totalPullRequestContributions || 0;
       const issues = collection.totalIssueContributions || 0;
@@ -471,7 +452,6 @@ export class GitHubService {
       console.error('Error calculating weekly XP with GraphQL:', error);
       console.log('Falling back to events-based calculation...');
 
-      // Fallback to old events method
       const { data: events } = await this.octokit.rest.activity.listPublicEventsForUser({
         username,
         per_page: 100
@@ -501,7 +481,6 @@ export class GitHubService {
     }
   }
 
-  // Get rate limit status
   async getRateLimit() {
     try {
       const { data } = await this.octokit.rest.rateLimit.get();

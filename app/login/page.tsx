@@ -5,15 +5,6 @@ import { signIn } from "next-auth/react";
 export default function LoginPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-      {/* 
-      <div className="mb-8">
-        <Image
-          src="/logo-placeholder.png"
-          alt="GitMon Logo"
-          width={120}
-          height={120}
-        />
-      </div>*/}
 
       <h1 className="text-3xl font-bold mb-4 text-gray-800">Git Leaderboard</h1>
 
