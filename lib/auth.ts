@@ -14,9 +14,13 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, user }) {
       if (session.user) {
+        // @ts-expect-error - Adding custom properties to session
         session.user.id = user.id;
+        // @ts-expect-error - Adding custom properties to session
         session.user.onboardingCompleted = user.onboardingCompleted;
+        // @ts-expect-error - Adding custom properties to session
         session.user.selectedMonsterId = user.selectedMonsterId;
+        // @ts-expect-error - Adding custom properties to session
         session.user.gitmonSelectedAt = user.gitmonSelectedAt;
       }
       return session;

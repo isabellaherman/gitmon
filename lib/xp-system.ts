@@ -14,7 +14,7 @@ export interface XpGain {
   type: string;
   amount: number;
   source?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export function calculateLevel(totalXp: number): number {

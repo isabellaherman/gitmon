@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Zap } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type DocType = "how-xp-works" | "system-design";
 
-export default function DocsPage() {
+function DocsContent() {
   const [content, setContent] = useState("");
   const [currentDoc, setCurrentDoc] = useState<DocType>("how-xp-works");
   const router = useRouter();
@@ -160,5 +160,17 @@ export default function DocsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DocsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <DocsContent />
+    </Suspense>
   );
 }

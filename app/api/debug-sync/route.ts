@@ -103,7 +103,7 @@ export async function GET(request: Request) {
       console.error("GitHub API error:", githubError);
       return NextResponse.json({
         error: "GitHub API error",
-        details: githubError.message
+        details: githubError instanceof Error ? githubError.message : 'Unknown error'
       }, { status: 500 });
     }
 

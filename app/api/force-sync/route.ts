@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import GitHubService from "@/lib/github-service";
 import {
@@ -8,8 +10,15 @@ import {
 
 export async function POST(request: Request) {
   try {
+    // Get logged in user from session
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const user = await prisma.user.findUnique({
-      where: { email: "isabella@mage.games" },
+      where: { email: session.user.email },
       include: {
         accounts: {
           where: { provider: 'github' }
@@ -42,15 +51,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "GitHub username not found" }, { status: 400 });
     }
 
+    // Get GitHub access token from account
     let accessToken = undefined;
     if (user.accounts.length > 0) {
       const githubAccount = user.accounts.find(acc => acc.provider === 'github');
       accessToken = githubAccount?.access_token;
+      console.log(`[Force Sync] GitHub account found:`, !!githubAccount);
+      console.log(`[Force Sync] Access token available:`, !!accessToken);
+    } else {
+      console.log(`[Force Sync] No GitHub account linked for user ${user.email}`);
     }
 
-    console.log(`[Force Sync] Using access token:`, !!accessToken);
-
-    const githubService = new GitHubService(accessToken);
+    const githubService = new GitHubService(accessToken || undefined);
 
     try {
       const githubStats = await githubService.getUserStats(githubUsername);
@@ -126,7 +138,7 @@ export async function POST(request: Request) {
       console.error("GitHub API error in force sync:", githubError);
       return NextResponse.json({
         error: "GitHub API error",
-        details: githubError.message
+        details: githubError instanceof Error ? githubError.message : 'Unknown error'
       }, { status: 500 });
     }
 

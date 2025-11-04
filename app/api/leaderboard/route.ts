@@ -9,8 +9,8 @@ export async function GET(request: Request) {
     const period = searchParams.get('period') || 'week';
 
     const orderBy = period === 'week'
-      ? [{ weeklyXp: 'desc' }, { level: 'desc' }, { lastXpUpdate: 'desc' }]
-      : [{ xp: 'desc' }, { level: 'desc' }, { lastXpUpdate: 'desc' }];
+      ? [{ weeklyXp: 'desc' as const }, { level: 'desc' as const }, { lastXpUpdate: 'desc' as const }]
+      : [{ xp: 'desc' as const }, { level: 'desc' as const }, { lastXpUpdate: 'desc' as const }];
 
     const users = await prisma.user.findMany({
       where: {

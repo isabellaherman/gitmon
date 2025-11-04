@@ -23,6 +23,7 @@ const monsters = [
 interface LeaderboardEntry {
   rank: number;
   name: string;
+  githubUsername?: string;
   selectedMonsterId: number;
   level: number;
   xp: number;
@@ -92,7 +93,7 @@ export default function Home() {
 
   useEffect(() => {
     if (session?.user) {
-          setCanSyncXp(session.user.onboardingCompleted);
+          setCanSyncXp((session.user as Record<string, unknown>)?.onboardingCompleted as boolean || false);
     }
   }, [session]);
 
@@ -115,10 +116,10 @@ export default function Home() {
     }
   };
 
-  const selectedMonsterId = session?.user?.selectedMonsterId;
+  const selectedMonsterId = (session?.user as Record<string, unknown>)?.selectedMonsterId as number;
   const selectedMonster = selectedMonsterId !== null && selectedMonsterId !== undefined ? monsters[selectedMonsterId] : null;
 
-  const gitmonSelectedAt = session?.user?.gitmonSelectedAt;
+  const gitmonSelectedAt = (session?.user as Record<string, unknown>)?.gitmonSelectedAt as Date;
 
   const getTypeColor = (type: string) => {
     const colors = {
@@ -282,7 +283,7 @@ export default function Home() {
                       <div className="flex items-center justify-center gap-2 mb-3">
                         <h4 className="text-xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>{selectedMonster.name}</h4>
                         <span className="text-lg font-bold text-primary border border-primary/30 bg-primary/10 rounded-full px-2 py-1" style={{ fontFamily: 'Minecraftia, monospace' }}>
-                          Lv.{currentUserInLeaderboard?.level || session?.user?.level || 1}
+                          Lv.{currentUserInLeaderboard?.level || (session?.user as Record<string, unknown>)?.level as number || 1}
                         </span>
                       </div>
 
@@ -300,7 +301,7 @@ export default function Home() {
 
                       <div className="bg-muted rounded-lg p-3 text-center">
                         <p className="text-2xl font-bold text-primary">
-                          {currentUserInLeaderboard?.xp?.toLocaleString() || session?.user?.xp?.toLocaleString() || 0} XP
+                          {currentUserInLeaderboard?.xp?.toLocaleString() || ((session?.user as Record<string, unknown>)?.xp as number)?.toLocaleString() || 0} XP
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {leaderboardPeriod === 'week' ? 'This week' : 'All time'}

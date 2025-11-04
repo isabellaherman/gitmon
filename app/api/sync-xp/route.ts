@@ -81,7 +81,18 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    const githubService = new GitHubService();
+    // Get GitHub access token from account
+    let accessToken = undefined;
+    if (user.accounts.length > 0) {
+      const githubAccount = user.accounts.find(acc => acc.provider === 'github');
+      accessToken = githubAccount?.access_token;
+      console.log(`[Sync XP] GitHub account found:`, !!githubAccount);
+      console.log(`[Sync XP] Access token available:`, !!accessToken);
+    } else {
+      console.log(`[Sync XP] No GitHub account linked for user ${user.email}`);
+    }
+
+    const githubService = new GitHubService(accessToken || undefined);
 
     try {
       const githubStats = await githubService.getUserStats(githubUsername);
