@@ -5,16 +5,17 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import ContributionGraph from "@/components/ContributionGraph";
 
 const monsters = [
   { id: 0, src: "/monsters/monster-000.png", name: "Shadrix", type: "shadow" },
-  { id: 1, src: "/monsters/monster-001-png.png", name: "Blazewyrm", type: "fire" },
+  { id: 1, src: "/monsters/monster-001-png.png", name: "Fairy", type: "fire" },
   { id: 2, src: "/monsters/monster-002-png.png", name: "Crystalix", type: "ice" },
-  { id: 3, src: "/monsters/monster-003-png.png", name: "Thornspike", type: "grass" },
+  { id: 3, src: "/monsters/monster-003-png.png", name: "Guarana", type: "grass" },
   { id: 4, src: "/monsters/monster-004-png.png", name: "Volterra", type: "electric" },
   { id: 5, src: "/monsters/monster-005-png.png", name: "Aquarus", type: "water" },
   { id: 6, src: "/monsters/monster-006-png.png", name: "Infernus", type: "fire" },
-  { id: 7, src: "/monsters/monster-007.png", name: "Lumenis", type: "light" },
+  { id: 7, src: "/monsters/monster-007.png", name: "Lumenis", type: "grass" },
   { id: 8, src: "/monsters/monster-008.png", name: "Spectra", type: "psychic" },
 ];
 
@@ -153,6 +154,12 @@ export default function Home() {
     });
   };
 
+  // Find current user in leaderboard to get their stats
+  const currentUserInLeaderboard = leaderboard.find(user =>
+    user.name === session?.user?.name ||
+    user.githubUsername === session?.user?.email?.split('@')[0]
+  );
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -166,7 +173,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent" style={{ fontFamily: 'Minecraftia, monospace' }}>
             GitMon Leaderboard
           </h1>
           <p className="text-muted-foreground">
@@ -176,117 +183,6 @@ export default function Home() {
 
         {/* Main Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Leaderboard - 2/3 width */}
-          <div className="lg:col-span-2">
-            <div className="bg-card rounded-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 p-6 border-b">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-2xl font-bold">🏆 Top Developers</h2>
-                    <p className="text-muted-foreground">
-                      {leaderboardPeriod === 'week' ? "This week's coding champions" : "All-time coding legends"}
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setLeaderboardPeriod('week')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        leaderboardPeriod === 'week'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      This Week
-                    </button>
-                    <button
-                      onClick={() => setLeaderboardPeriod('all')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        leaderboardPeriod === 'all'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      All Time
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6">
-                {isLoadingLeaderboard ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Loading leaderboard...</p>
-                  </div>
-                ) : leaderboard.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No players yet. Be the first to join!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {leaderboard.map((user) => (
-                    <div
-                      key={user.rank}
-                      className={`flex items-center gap-4 p-4 rounded-lg transition-colors ${
-                        user.rank <= 3
-                          ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
-                          : 'bg-muted/50 hover:bg-muted'
-                      }`}
-                    >
-                      {/* Rank */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                        user.rank === 1 ? 'bg-yellow-500 text-black' :
-                        user.rank === 2 ? 'bg-gray-400 text-black' :
-                        user.rank === 3 ? 'bg-amber-600 text-white' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        {user.rank}
-                      </div>
-
-                      {/* GitMon */}
-                      <div className="w-12 h-12 rounded-full bg-background overflow-hidden relative border-2">
-                        <Image
-                          src={monsters[user.selectedMonsterId]?.src || monsters[0].src}
-                          alt={monsters[user.selectedMonsterId]?.name || 'GitMon'}
-                          fill
-                          className="object-contain"
-                          sizes="48px"
-                        />
-                      </div>
-
-                      {/* User Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{user.name}</h3>
-                          {user.rank <= 3 && (
-                            <span className="text-xs">
-                              {user.rank === 1 ? '👑' : user.rank === 2 ? '🥈' : '🥉'}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {monsters[user.selectedMonsterId]?.name || 'Unknown'} • Level {user.level}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {user.rank_title}
-                        </p>
-                      </div>
-
-                      {/* XP */}
-                      <div className="text-right">
-                        <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
-                        <p className="text-xs text-muted-foreground">
-                          {user.stats.commits} commits • {user.stats.prs} PRs
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Sidebar - 1/3 width */}
           <div className="lg:col-span-1">
             {!session ? (
@@ -372,7 +268,7 @@ export default function Home() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">GitMon:</span>
                       <span className={selectedMonster ? "text-green-500 font-medium" : "text-yellow-500 font-medium"}>
-                        {selectedMonster ? selectedMonster.name : "Not selected"}
+                        {selectedMonster ? selectedMonster.name.toUpperCase() : "Not selected"}
                       </span>
                     </div>
                   </div>
@@ -382,20 +278,31 @@ export default function Home() {
                   /* GitMon Info - When selected */
                   <>
                     <div className="text-center mb-6">
-                      <div className="w-32 h-32 mx-auto mb-4 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
+                      <div className="w-48 h-48 mx-auto mb-4 relative">
+                        <div className="absolute inset-4 rounded-full" style={{
+                          background: `radial-gradient(circle, #000 1px, transparent 1px)`,
+                          backgroundSize: '8px 8px',
+                          maskImage: 'radial-gradient(circle, black 40%, transparent 70%)',
+                          WebkitMaskImage: 'radial-gradient(circle, black 40%, transparent 70%)'
+                        }}></div>
                         <Image
                           src={selectedMonster.src}
                           alt={selectedMonster.name}
                           fill
-                          className="object-contain"
+                          className="object-contain relative z-10 scale-110"
                           sizes="128px"
                         />
                       </div>
 
-                      <h4 className="text-xl font-bold mb-3">{selectedMonster.name}</h4>
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <h4 className="text-xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>{selectedMonster.name}</h4>
+                        <span className="text-lg font-bold text-primary border border-primary/30 bg-primary/10 rounded-full px-2 py-1" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                          Lv.{currentUserInLeaderboard?.level || session?.user?.level || 1}
+                        </span>
+                      </div>
 
                       <div className="flex gap-2 justify-center mb-4">
-                        <span className={`px-3 py-1 rounded-full text-white text-xs font-medium ${getTypeColor(selectedMonster.type)}`}>
+                        <span className={`px-3 py-1 rounded-full text-white text-xs font-medium uppercase ${getTypeColor(selectedMonster.type)}`}>
                           {selectedMonster.type}
                         </span>
                         <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
@@ -405,21 +312,33 @@ export default function Home() {
                     </div>
 
                     <div className="space-y-3 mb-6">
+
                       <div className="bg-muted rounded-lg p-3 text-center">
-                        <p className="text-2xl font-bold text-primary">Level 1</p>
-                        <p className="text-sm text-muted-foreground">Beginner</p>
+                        <p className="text-2xl font-bold text-primary">
+                          {currentUserInLeaderboard?.xp?.toLocaleString() || session?.user?.xp?.toLocaleString() || 0} XP
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {leaderboardPeriod === 'week' ? 'This week' : 'All time'}
+                        </p>
                       </div>
 
                       <div className="bg-muted rounded-lg p-3 text-center">
-                        <p className="text-2xl font-bold text-primary">0 XP</p>
-                        <p className="text-sm text-muted-foreground">Ready to start!</p>
-                      </div>
-
-                      <div className="bg-muted rounded-lg p-3 text-center">
-                        <p className="text-2xl font-bold text-primary">#???</p>
+                        <p className="text-2xl font-bold text-primary">
+                          #{currentUserInLeaderboard?.rank || '???'}
+                        </p>
                         <p className="text-sm text-muted-foreground">Your rank</p>
                       </div>
                     </div>
+
+                    {/* Contribution Graph - Commented out for now */}
+                    {/* {currentUserInLeaderboard && (
+                      <div className="mb-6">
+                        <ContributionGraph
+                          totalCommits={currentUserInLeaderboard.stats.commits}
+                          className="w-full"
+                        />
+                      </div>
+                    )} */}
 
                     <div className="space-y-2">
                       <Button
@@ -477,6 +396,144 @@ export default function Home() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Leaderboard - 2/3 width */}
+          <div className="lg:col-span-2">
+            <div className="bg-card rounded-xl overflow-hidden">
+              <div className="p-6 border-b">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>Top Trainers</h2>
+                    <p className="text-muted-foreground">
+                      {leaderboardPeriod === 'week' ? "This week's coding champions" : "All-time coding legends"}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setLeaderboardPeriod('week')}
+                      className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                        leaderboardPeriod === 'week'
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background text-muted-foreground hover:bg-muted/80 border-muted'
+                      }`}
+                    >
+                      This Week
+                    </button>
+                    <button
+                      onClick={() => setLeaderboardPeriod('all')}
+                      className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                        leaderboardPeriod === 'all'
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background text-muted-foreground hover:bg-muted/80 border-muted'
+                      }`}
+                    >
+                      All Time
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="px-6 py-3 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push('/docs')}
+                      className="rounded-full text-xs"
+                    >
+                      📋 How it Works
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open('https://github.com/isabellaherman/gitmon', '_blank')}
+                      className="rounded-full text-xs"
+                    >
+                      ⭐ Star Project
+                    </Button>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    created by{" "}
+                    <a
+                      href="https://x.com/IsabellaHermn"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Isabella Herman
+                    </a>
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {isLoadingLeaderboard ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Loading leaderboard...</p>
+                  </div>
+                ) : leaderboard.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No players yet. Be the first to join!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {leaderboard.map((user) => (
+                    <div
+                      key={user.rank}
+                      className={`flex items-center gap-4 px-4 py-2 rounded-full transition-colors ${
+                        user.rank <= 3
+                          ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
+                          : 'bg-muted/50 hover:bg-muted'
+                      }`}
+                    >
+                      {/* Rank */}
+                      <div className="min-w-8 flex items-center justify-center font-bold text-sm text-muted-foreground">
+                        #{user.rank}
+                      </div>
+
+                      {/* User Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{user.name}</h3>
+                          <span className="text-sm text-muted-foreground">
+                            {monsters[user.selectedMonsterId]?.name || 'Unknown'}
+                          </span>
+                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                            Level {user.level}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* XP and GitMon */}
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.stats.commits} commits • {user.stats.prs} PRs
+                          </p>
+                        </div>
+
+                        {/* GitMon */}
+                        <div className="w-16 h-16 relative">
+                          <Image
+                            src={monsters[user.selectedMonsterId]?.src || monsters[0].src}
+                            alt={monsters[user.selectedMonsterId]?.name || 'GitMon'}
+                            fill
+                            className="object-contain"
+                            sizes="64px"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

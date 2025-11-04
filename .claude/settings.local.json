@@ -16,7 +16,9 @@
       "Bash(npx prisma generate:*)",
       "Bash(sqlite3:*)",
       "Bash(npx prisma db execute:*)",
-      "WebFetch(domain:www.olympicship.com)"
+      "WebFetch(domain:www.olympicship.com)",
+      "WebFetch(domain:retroui.io)",
+      "Bash(unzip:*)"
     ],
     "deny": [],
     "ask": []

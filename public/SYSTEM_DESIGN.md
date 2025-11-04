@@ -169,19 +169,6 @@
 
 ---
 
-## 🔬 **A/B Testing Plan**
-
-### **Phase 1**: Basic XP (commits, PRs, stars)
-### **Phase 2**: Add streaks and language diversity
-### **Phase 3**: Social features and team battles
-### **Phase 4**: Advanced achievements and seasonal events
-
-**Success Metrics:**
-- Daily Active Users (DAU)
-- Average session time
-- GitHub activity increase
-- User progression distribution
-
 ---
 
 *Want to understand how this works in practice? Check out [How XP Works →](/how-xp-works)*

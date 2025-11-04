@@ -77,7 +77,7 @@ export default function DocsPage() {
       })
 
       // Lists
-      .replace(/^- (.*$)/gim, '<li class="ml-4 mb-1">• $1</li>')
+      .replace(/^- (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
       .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
 
       // Links
@@ -99,22 +99,32 @@ export default function DocsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8 docs-page">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">GitMon Documentation</h1>
+              <p className="text-gray-600">{docs[currentDoc].description}</p>
+            </div>
+          </div>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
+            onClick={() => window.open('https://github.com/isabellaherman/gitmon', '_blank')}
+            className="text-xs"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back
+            ⭐ Star Project
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">GitMon Documentation</h1>
-            <p className="text-gray-600">{docs[currentDoc].description}</p>
-          </div>
         </div>
 
         {/* Navigation */}
@@ -152,8 +162,18 @@ export default function DocsPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-gray-500 text-sm">
+        <div className="text-center mt-8 text-gray-500 text-sm space-y-2">
           <p>GitMon • Open source coding gamification platform</p>
+          <p>designed by{" "}
+            <a
+              href="https://x.com/IsabellaHermn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              Isabella Herman
+            </a>
+          </p>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 ## What is XP?
 
-XP (Experience Points) is how GitMon measures your coding activity and progress. Think of it like levels in a video game - the more you code, the more XP you earn, and the higher your level becomes.
+XP (Experience Points) is how GitMon measures your coding activity and progress. Think of it like levels in a video game: the more you code, the more XP you earn, and the higher your level becomes.
 
 ## Two Types of XP
 
@@ -25,10 +25,7 @@ XP (Experience Points) is how GitMon measures your coding activity and progress.
 - 5 repos × 50 = 250 XP
 - **Total: 850 XP** (plus commits and PRs)
 
-> ⚠️ **All-Time XP Limitations**:
-> - ✅ **Accurate**: Uses your complete GitHub profile data
-> - ✅ **Reliable**: Always shows your true lifetime achievements
-> - ⚠️ **One-time only**: Calculated only on first sync
+⚠️ **All-Time XP Limitations**: One-time only (calculated only on first sync)
 
 ---
 
@@ -51,10 +48,7 @@ XP (Experience Points) is how GitMon measures your coding activity and progress.
 - 1 PR opened = 15 XP
 - **Weekly Total: 30 XP**
 
-> ⚠️ **Weekly XP Limitations**:
-> - ⚠️ **GitHub API Limits**: Only sees your last ~90 days of public activity
-> - ⚠️ **Missing Data**: Very active developers might have recent activity "pushed out"
-> - ⚠️ **Public Only**: Private repository activity doesn't count
+⚠️ **Weekly XP Limitations**: Public repositories only (private activity doesn't count)
 
 ---
 
@@ -89,4 +83,4 @@ Your **All-Time XP** determines your overall level and rank title:
 
 ---
 
-*Want to see the full technical details and economics design? Check out our [XP System Design Document →](/system-design)*
+*Want to see the full technical details and economics design? Check out our [XP System Design Document →](/docs?doc=system-design)*
