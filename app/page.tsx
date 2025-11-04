@@ -44,6 +44,35 @@ export default function Home() {
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
   const [githubUsername, setGithubUsername] = useState('');
   const [showUsernameInput, setShowUsernameInput] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
+
+  // Auto-sync XP when user logs in (once per session)
+  useEffect(() => {
+    if (session?.user?.email && status === 'authenticated') {
+      const now = Date.now();
+      const sessionKey = `sync_${session.user.email}`;
+      const lastSync = localStorage.getItem(sessionKey);
+
+      // Only sync once per 10 minutes to avoid rate limits
+      if (!lastSync || (now - parseInt(lastSync)) > 10 * 60 * 1000) {
+        console.log('[Auto Sync] Performing automatic XP sync...');
+
+        fetch('/api/force-sync', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              console.log('[Auto Sync] XP updated successfully');
+              localStorage.setItem(sessionKey, now.toString());
+              // Refresh leaderboard after sync
+              window.location.reload();
+            }
+          })
+          .catch(err => {
+            console.error('[Auto Sync] Failed:', err);
+          });
+      }
+    }
+  }, [session, status]);
 
   // Fetch leaderboard data
   useEffect(() => {
@@ -393,15 +422,6 @@ export default function Home() {
                     </div>
 
                     <div className="space-y-2">
-                      <Button
-                        onClick={handleSyncXp}
-                        size="sm"
-                        className="w-full"
-                        disabled={!canSyncXp}
-                      >
-                        🔄 Sync GitHub XP
-                      </Button>
-
                       <Button
                         variant="outline"
                         size="sm"
