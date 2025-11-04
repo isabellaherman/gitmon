@@ -11,7 +11,12 @@
       "Bash(vercel)",
       "Bash(vercel:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(curl:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(sqlite3:*)",
+      "Bash(npx prisma db execute:*)",
+      "WebFetch(domain:www.olympicship.com)"
     ],
     "deny": [],
     "ask": []

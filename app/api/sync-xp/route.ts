@@ -17,25 +17,74 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
+    console.log("[Sync XP] Session debug:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      hasEmail: !!session?.user?.email,
+      email: session?.user?.email,
+      name: session?.user?.name
+    });
+
     if (!session?.user?.email) {
+      console.log("[Sync XP] No valid session found - returning 401");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user from database
+    // Get user from database with GitHub account data
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { activities: true }
+      include: {
+        activities: true,
+        accounts: {
+          where: { provider: 'github' }
+        }
+      }
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Get GitHub username from session or user profile
-    const githubUsername = user.githubUsername || session.user.name || session.user.email?.split('@')[0];
+    // Get GitHub username from GitHub account data
+    let githubUsername = user.githubUsername;
+
+    // If not stored, get from GitHub account providerAccountId
+    if (!githubUsername && user.accounts.length > 0) {
+      const githubAccount = user.accounts.find(acc => acc.provider === 'github');
+
+      if (githubAccount) {
+        // Make a request to get the username from GitHub API
+        try {
+          const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
+          const githubUserData = await response.json();
+          githubUsername = githubUserData.login;
+
+          // Save it to user record for future use
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { githubUsername: githubUsername }
+          });
+        } catch (error) {
+          console.error('Failed to get GitHub username from API:', error);
+        }
+      }
+    }
+
+    // Final check
+    if (!githubUsername) {
+      return NextResponse.json({
+        error: "Could not determine GitHub username"
+      }, { status: 400 });
+    }
+
+    console.log(`[Sync XP] Trying to sync for GitHub username: "${githubUsername}"`);
+    console.log(`[Sync XP] User email: ${session.user.email}`);
+    console.log(`[Sync XP] User name: ${session.user.name}`);
 
     if (!githubUsername) {
-      return NextResponse.json({ error: "GitHub username not found" }, { status: 400 });
+      return NextResponse.json({
+        error: "GitHub username not found. Please provide your GitHub username."
+      }, { status: 400 });
     }
 
     // Initialize GitHub service (using public API for now)
@@ -45,66 +94,51 @@ export async function POST(request: Request) {
       // Fetch user's GitHub stats
       const githubStats = await githubService.getUserStats(githubUsername);
 
-      // Calculate new XP based on GitHub activity
-      let totalNewXp = 0;
-      const newActivities = [];
+      // Check if this is first lifetime sync (total XP is very low, meaning we haven't calculated lifetime XP yet)
+      const isFirstSync = user.xp < 100; // If total XP is less than 100, we haven't done lifetime calculation
+      console.log(`[Sync XP] User: ${githubUsername}, isFirstSync: ${isFirstSync}, current weeklyXp: ${user.weeklyXp}`);
 
-      // Process recent commits (simple version for now)
-      for (const activity of githubStats.recentActivity) {
-        if (activity.type === 'commit') {
-          const commitXp = calculateCommitXp(100); // Assuming medium commits for now
-          const streakMultiplier = calculateStreakMultiplier(user.currentStreak);
-          const finalXp = Math.floor(commitXp * streakMultiplier);
+      // Calculate weekly XP based on last 7 days to always show recent activity
+      const weeklyXp = await githubService.getWeeklyXp(githubUsername, true);
+      console.log(`[Sync XP] Calculated weeklyXp: ${weeklyXp}`);
 
-          // Apply daily cap
-          const cappedXp = applyDailyCap(user.dailyXp, finalXp);
+      // Calculate TOTAL LIFETIME XP based on all GitHub activity
+      let lifetimeXp = 0;
 
-          if (cappedXp > 0) {
-            totalNewXp += cappedXp;
-            newActivities.push({
-              userId: user.id,
-              type: 'commit',
-              amount: cappedXp,
-              source: activity.repo,
-              metadata: activity.details
-            });
-          }
-        }
+      if (isFirstSync) {
+        // Calculate total XP from ALL GitHub activity ever
 
-        if (activity.type === 'pr_opened' || activity.type === 'pr_merged') {
-          const prXp = calculatePullRequestXp(
-            activity.type === 'pr_opened',
-            activity.type === 'pr_merged',
-            1000, // Assuming 1k stars repo for now
-            false // Assuming external repo
-          );
+        // XP from followers (1 XP per follower)
+        lifetimeXp += githubStats.followers * 1;
 
-          totalNewXp += prXp;
-          newActivities.push({
-            userId: user.id,
-            type: activity.type,
-            amount: prXp,
-            source: activity.repo,
-            metadata: activity.details
-          });
-        }
+        // XP from total stars received (10 XP per star)
+        lifetimeXp += githubStats.totalStars * 10;
 
-        if (activity.type === 'star_received') {
-          const starXp = calculateStarXp(false, 100, false);
+        // XP from total forks received (5 XP per fork)
+        lifetimeXp += githubStats.totalForks * 5;
 
-          totalNewXp += starXp;
-          newActivities.push({
-            userId: user.id,
-            type: 'star_received',
-            amount: starXp,
-            source: activity.repo,
-            metadata: activity.details
-          });
-        }
+        // XP from public repos (50 XP per repo)
+        lifetimeXp += githubStats.totalRepos * 50;
+
+        // XP from commit count (estimate: assume 5 XP average per commit across all repos)
+        // This is a rough estimate since we can't get exact total commits easily
+        lifetimeXp += githubStats.totalCommits * 5;
+
+        // XP from PRs (estimate: 40 XP average per PR - opened + merged)
+        lifetimeXp += githubStats.totalPRs * 40;
+
+        console.log(`[Sync XP] Lifetime XP calculation:`);
+        console.log(`  Followers: ${githubStats.followers} * 1 = ${githubStats.followers * 1}`);
+        console.log(`  Stars: ${githubStats.totalStars} * 10 = ${githubStats.totalStars * 10}`);
+        console.log(`  Forks: ${githubStats.totalForks} * 5 = ${githubStats.totalForks * 5}`);
+        console.log(`  Repos: ${githubStats.totalRepos} * 50 = ${githubStats.totalRepos * 50}`);
+        console.log(`  Commits: ${githubStats.totalCommits} * 5 = ${githubStats.totalCommits * 5}`);
+        console.log(`  PRs: ${githubStats.totalPRs} * 40 = ${githubStats.totalPRs * 40}`);
+        console.log(`  TOTAL LIFETIME XP: ${lifetimeXp}`);
       }
 
-      // Calculate new total XP and level
-      const newTotalXp = user.xp + totalNewXp;
+      const newTotalXp = isFirstSync ? lifetimeXp : user.xp; // Set lifetime XP on first sync
+      const totalNewXp = isFirstSync ? lifetimeXp : weeklyXp; // XP gained this sync
       const newLevel = calculateLevel(newTotalXp);
       const newRank = getUserRank(newLevel);
 
@@ -113,9 +147,19 @@ export async function POST(request: Request) {
         where: { id: user.id },
         data: {
           githubUsername,
+          githubBio: githubStats.bio,
+          githubLocation: githubStats.location,
+          githubCompany: githubStats.company,
+          githubBlog: githubStats.blog,
+          githubTwitter: githubStats.twitterUsername,
+          githubFollowers: githubStats.followers,
+          githubFollowing: githubStats.following,
+          githubCreatedAt: githubStats.createdAt,
+          avgCommitsPerWeek: githubStats.avgCommitsPerWeek,
           xp: newTotalXp,
           level: newLevel,
-          dailyXp: user.dailyXp + totalNewXp,
+          weeklyXp: weeklyXp, // Set current week's XP
+          dailyXp: isFirstSync ? 0 : user.dailyXp + weeklyXp,
           totalCommits: githubStats.totalCommits,
           totalPRs: githubStats.totalPRs,
           totalStars: githubStats.totalStars,
@@ -125,20 +169,13 @@ export async function POST(request: Request) {
         }
       });
 
-      // Save new activities
-      if (newActivities.length > 0) {
-        await prisma.xpActivity.createMany({
-          data: newActivities
-        });
-      }
-
       return NextResponse.json({
         success: true,
         user: {
           ...updatedUser,
           rank: newRank,
           xpGained: totalNewXp,
-          activitiesProcessed: newActivities.length
+          weeklyXpCalculated: weeklyXp
         }
       });
 

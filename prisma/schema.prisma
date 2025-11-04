@@ -45,11 +45,21 @@ model User {
   image         String?
 
   // GitHub info
-  githubUsername String?
-  githubId       Int?
+  githubUsername    String?
+  githubId          Int?
+  githubBio         String?
+  githubLocation    String?
+  githubCompany     String?
+  githubBlog        String?
+  githubTwitter     String?
+  githubFollowers   Int      @default(0)
+  githubFollowing   Int      @default(0)
+  githubCreatedAt   DateTime?
+  avgCommitsPerWeek Float    @default(0)
 
   // GitMon specific fields
   selectedMonsterId Int?
+  gitmonSelectedAt  DateTime?
   level             Int     @default(1)
   xp                Int     @default(0)
   onboardingCompleted Boolean @default(false)

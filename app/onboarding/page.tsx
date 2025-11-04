@@ -37,6 +37,7 @@ export default function OnboardingPage() {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({ selectedMonsterId: selectedMonster }),
         });
 

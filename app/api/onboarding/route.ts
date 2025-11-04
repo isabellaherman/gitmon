@@ -6,8 +6,10 @@ import { authOptions } from "@/lib/auth";
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
+    console.log("Onboarding - Session:", session?.user?.email);
 
     if (!session?.user?.email) {
+      console.log("Onboarding - No session found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -22,6 +24,7 @@ export async function POST(request: Request) {
       where: { email: session.user.email },
       data: {
         selectedMonsterId,
+        gitmonSelectedAt: new Date(),
         onboardingCompleted: true,
       },
     });

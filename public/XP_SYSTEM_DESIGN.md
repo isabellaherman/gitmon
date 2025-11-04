@@ -1,6 +1,29 @@
 # 🎮 GitMon XP System Design
 ## Economics Design Document v1.0
 
+## ⚠️ CURRENT TECHNICAL LIMITATIONS & OPEN ISSUES
+
+> **🔴 CRITICAL LIMITATION: GitHub Events API Constraints**
+>
+> The weekly XP calculation relies on GitHub's public events API, which has significant limitations:
+> - **Time Window**: Only ~90 days of event history available
+> - **Event Limit**: Maximum 300 events per user
+> - **Data Loss**: Older events are automatically purged by GitHub
+> - **Missing Activity**: Recent commits/PRs may not appear in weekly XP if they exceed the API limits
+>
+> **Impact**: Weekly XP may not accurately reflect a user's actual weekly activity, especially for highly active developers.
+>
+> **Status**: 🟡 Open for discussion - Alternative approaches needed
+>
+> **Proposed Solutions** (under consideration):
+> 1. Switch to GitHub GraphQL API with better querying capabilities
+> 2. Implement webhook-based real-time event tracking
+> 3. Use commit frequency analysis from repository statistics
+> 4. Hybrid approach combining multiple data sources
+> 5. Community feedback on acceptable trade-offs between accuracy and simplicity
+
+---
+
 ### 🎯 **Core Design Philosophy**
 - **Reward meaningful contributions** over quantity
 - **Prevent easy exploitation** while keeping system simple
@@ -181,3 +204,68 @@
 - Average session time
 - GitHub activity increase
 - User progression distribution
+
+---
+
+## 🔬 **Current Implementation vs. Design**
+
+### ✅ **What's Currently Working**
+- **All-Time XP**: Accurately reflects GitHub profile data (followers, stars, repos, etc.)
+- **Level Progression**: Pokemon-inspired formula working as designed
+- **Basic Anti-Cheat**: Profile-based calculations prevent basic exploitation
+
+### 🟡 **What's Partially Working**
+- **Weekly XP**: Limited by GitHub Events API constraints (see limitations above)
+- **Real-time Sync**: Works but may miss activity due to API limits
+
+### 🔴 **What's Not Yet Implemented**
+- Advanced anti-cheat mechanisms (commit analysis, velocity checking)
+- Social features (teams, guilds, mentorship)
+- Achievement system beyond basic XP
+- Seasonal events and bonuses
+- Language diversity tracking
+
+---
+
+## 💬 **Community Discussion & Feedback**
+
+### **Open Questions for Community Input:**
+
+1. **Weekly XP Accuracy Trade-offs**:
+   - Accept current GitHub API limitations for simplicity?
+   - Invest in webhook infrastructure for real-time accuracy?
+   - Use hybrid approach with estimated weekly XP?
+
+2. **Fairness vs. Engagement**:
+   - Should we cap XP for power users to level the playing field?
+   - How to balance casual vs. professional developer experience?
+
+3. **Alternative Data Sources**:
+   - Would commit streak data be acceptable for weekly calculations?
+   - Should we integrate with other platforms (GitLab, Bitbucket)?
+
+### **How to Contribute to the Discussion**:
+- 🐛 **Report Bugs**: Open GitHub issues for XP calculation errors
+- 💡 **Suggest Features**: Propose improvements to the XP system
+- 📊 **Share Data**: Help us understand real-world usage patterns
+- 🔧 **Technical Solutions**: Contribute code or architecture ideas
+
+### **Current Priorities** (Community Input Welcome):
+1. **Fix Weekly XP accuracy** - Technical solution needed
+2. **Implement basic achievements** - Clear milestones for users
+3. **Add team/organization features** - Social gamification
+4. **Improve onboarding** - Help new users understand the system
+
+---
+
+## 📚 **Technical References**
+
+- [GitHub REST API Events Documentation](https://docs.github.com/en/rest/activity/events)
+- [GitHub GraphQL API](https://docs.github.com/en/graphql)
+- [Gamification Design Principles](https://www.interaction-design.org/literature/article/gamification-the-what-the-why-the-how)
+- [Pokemon Experience Point Systems](https://bulbapedia.bulbagarden.net/wiki/Experience)
+
+---
+
+*Last Updated: November 2024*
+*Status: 🟡 Beta - Core features stable, seeking community input on limitations*

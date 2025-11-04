@@ -19,6 +19,8 @@ export const authOptions: NextAuthOptions = {
         session.user.onboardingCompleted = user.onboardingCompleted;
         // @ts-ignore
         session.user.selectedMonsterId = user.selectedMonsterId;
+        // @ts-ignore
+        session.user.gitmonSelectedAt = user.gitmonSelectedAt;
       }
       return session;
     },

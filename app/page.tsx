@@ -7,15 +7,15 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const monsters = [
-  { id: 0, src: "/monsters/monster-000.png", name: "Shadrix" },
-  { id: 1, src: "/monsters/monster-001-png.png", name: "Blazewyrm" },
-  { id: 2, src: "/monsters/monster-002-png.png", name: "Crystalix" },
-  { id: 3, src: "/monsters/monster-003-png.png", name: "Thornspike" },
-  { id: 4, src: "/monsters/monster-004-png.png", name: "Volterra" },
-  { id: 5, src: "/monsters/monster-005-png.png", name: "Aquarus" },
-  { id: 6, src: "/monsters/monster-006-png.png", name: "Infernus" },
-  { id: 7, src: "/monsters/monster-007.png", name: "Lumenis" },
-  { id: 8, src: "/monsters/monster-008.png", name: "Spectra" },
+  { id: 0, src: "/monsters/monster-000.png", name: "Shadrix", type: "shadow" },
+  { id: 1, src: "/monsters/monster-001-png.png", name: "Blazewyrm", type: "fire" },
+  { id: 2, src: "/monsters/monster-002-png.png", name: "Crystalix", type: "ice" },
+  { id: 3, src: "/monsters/monster-003-png.png", name: "Thornspike", type: "grass" },
+  { id: 4, src: "/monsters/monster-004-png.png", name: "Volterra", type: "electric" },
+  { id: 5, src: "/monsters/monster-005-png.png", name: "Aquarus", type: "water" },
+  { id: 6, src: "/monsters/monster-006-png.png", name: "Infernus", type: "fire" },
+  { id: 7, src: "/monsters/monster-007.png", name: "Lumenis", type: "light" },
+  { id: 8, src: "/monsters/monster-008.png", name: "Spectra", type: "psychic" },
 ];
 
 // Leaderboard will be fetched from API
@@ -41,12 +41,15 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [canSyncXp, setCanSyncXp] = useState(false);
+  const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
+  const [githubUsername, setGithubUsername] = useState('');
+  const [showUsernameInput, setShowUsernameInput] = useState(false);
 
   // Fetch leaderboard data
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch('/api/leaderboard?limit=10');
+        const response = await fetch(`/api/leaderboard?limit=10&period=${leaderboardPeriod}`);
         const data = await response.json();
 
         if (data.success) {
@@ -60,7 +63,7 @@ export default function Home() {
     };
 
     fetchLeaderboard();
-  }, []);
+  }, [leaderboardPeriod]);
 
   // Check if user can sync XP (logged in and completed onboarding)
   useEffect(() => {
@@ -94,6 +97,33 @@ export default function Home() {
   const selectedMonsterId = session?.user?.selectedMonsterId;
   const selectedMonster = selectedMonsterId !== null && selectedMonsterId !== undefined ? monsters[selectedMonsterId] : null;
 
+  // @ts-ignore
+  const gitmonSelectedAt = session?.user?.gitmonSelectedAt;
+
+  const getTypeColor = (type: string) => {
+    const colors = {
+      fire: "bg-red-500",
+      water: "bg-blue-500",
+      grass: "bg-green-500",
+      electric: "bg-yellow-500",
+      ice: "bg-cyan-500",
+      psychic: "bg-purple-500",
+      shadow: "bg-gray-800",
+      light: "bg-yellow-300",
+    };
+    return colors[type as keyof typeof colors] || "bg-gray-500";
+  };
+
+  const formatBirthdate = (date: string | Date | null) => {
+    if (!date) return "Unknown";
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -121,8 +151,37 @@ export default function Home() {
           <div className="lg:col-span-2">
             <div className="bg-card rounded-xl overflow-hidden">
               <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 p-6 border-b">
-                <h2 className="text-2xl font-bold">🏆 Top Developers</h2>
-                <p className="text-muted-foreground">This week's coding champions</p>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">🏆 Top Developers</h2>
+                    <p className="text-muted-foreground">
+                      {leaderboardPeriod === 'week' ? "This week's coding champions" : "All-time coding legends"}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setLeaderboardPeriod('week')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        leaderboardPeriod === 'week'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      This Week
+                    </button>
+                    <button
+                      onClick={() => setLeaderboardPeriod('all')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        leaderboardPeriod === 'all'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      All Time
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div className="p-6">
@@ -255,46 +314,83 @@ export default function Home() {
                       <span>Climb the leaderboard!</span>
                     </div>
                   </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-4"
+                    onClick={() => router.push('/docs')}
+                  >
+                    📋 View Full XP System Design
+                  </Button>
                 </div>
               </div>
             ) : (
               /* Logged in */
-              <div className="bg-card rounded-xl p-6 text-center">
+              <div className="bg-card rounded-xl p-6">
+                {/* Trainer Info - Always shown */}
+                <div className="text-center mb-6">
+                  <h3 className="text-lg font-bold mb-3">Trainer Profile</h3>
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Name:</span>
+                      <span className="font-medium">{session.user?.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">GitHub:</span>
+                      <span className="font-medium">@{session.user?.email?.split('@')[0]}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">GitMon:</span>
+                      <span className={selectedMonster ? "text-green-500 font-medium" : "text-yellow-500 font-medium"}>
+                        {selectedMonster ? selectedMonster.name : "Not selected"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {selectedMonster ? (
+                  /* GitMon Info - When selected */
                   <>
-                    <div className="w-32 h-32 mx-auto mb-4 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
-                      <Image
-                        src={selectedMonster.src}
-                        alt={selectedMonster.name}
-                        fill
-                        className="object-contain"
-                        sizes="128px"
-                      />
+                    <div className="text-center mb-6">
+                      <div className="w-32 h-32 mx-auto mb-4 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
+                        <Image
+                          src={selectedMonster.src}
+                          alt={selectedMonster.name}
+                          fill
+                          className="object-contain"
+                          sizes="128px"
+                        />
+                      </div>
+
+                      <h4 className="text-xl font-bold mb-3">{selectedMonster.name}</h4>
+
+                      <div className="flex gap-2 justify-center mb-4">
+                        <span className={`px-3 py-1 rounded-full text-white text-xs font-medium ${getTypeColor(selectedMonster.type)}`}>
+                          {selectedMonster.type}
+                        </span>
+                        <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+                          Born {formatBirthdate(gitmonSelectedAt)}
+                        </span>
+                      </div>
                     </div>
 
-                    <h3 className="text-xl font-bold mb-1">{selectedMonster.name}</h3>
-                    <p className="text-muted-foreground mb-4">Your GitMon Companion</p>
-
                     <div className="space-y-3 mb-6">
-                      <div className="bg-muted rounded-lg p-3">
+                      <div className="bg-muted rounded-lg p-3 text-center">
                         <p className="text-2xl font-bold text-primary">Level 1</p>
                         <p className="text-sm text-muted-foreground">Beginner</p>
                       </div>
 
-                      <div className="bg-muted rounded-lg p-3">
+                      <div className="bg-muted rounded-lg p-3 text-center">
                         <p className="text-2xl font-bold text-primary">0 XP</p>
                         <p className="text-sm text-muted-foreground">Ready to start!</p>
                       </div>
 
-                      <div className="bg-muted rounded-lg p-3">
+                      <div className="bg-muted rounded-lg p-3 text-center">
                         <p className="text-2xl font-bold text-primary">#???</p>
                         <p className="text-sm text-muted-foreground">Your rank</p>
                       </div>
                     </div>
-
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Welcome {session.user?.name}! Start coding to earn XP and climb the leaderboard.
-                    </p>
 
                     <div className="space-y-2">
                       <Button
@@ -304,6 +400,15 @@ export default function Home() {
                         disabled={!canSyncXp}
                       >
                         🔄 Sync GitHub XP
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mb-3"
+                        onClick={() => router.push('/docs')}
+                      >
+                        📋 How it Works
                       </Button>
 
                       <Button
@@ -317,11 +422,12 @@ export default function Home() {
                     </div>
                   </>
                 ) : (
-                  <div>
-                    <p className="mb-4 text-muted-foreground">
-                      You're logged in as {session.user?.name}! But you need to choose your GitMon first.
+                  /* No GitMon - Show onboarding CTA */
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Choose your GitMon companion to start your coding adventure!
                     </p>
-                    <p className="mb-4">This should redirect automatically...</p>
+
                     <Button
                       onClick={() => router.push("/onboarding")}
                       size="lg"
@@ -329,6 +435,16 @@ export default function Home() {
                     >
                       Choose Your GitMon →
                     </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mb-3"
+                      onClick={() => router.push('/docs')}
+                    >
+                      📋 How it Works
+                    </Button>
+
                     <Button
                       onClick={() => signOut()}
                       variant="outline"

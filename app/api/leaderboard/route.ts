@@ -6,7 +6,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
-    const period = searchParams.get('period') || 'all'; // 'all', 'week', 'month'
+    const period = searchParams.get('period') || 'week'; // 'week' or 'all'
+
+    // Choose ordering based on period
+    const orderBy = period === 'week'
+      ? [{ weeklyXp: 'desc' }, { level: 'desc' }, { lastXpUpdate: 'desc' }]
+      : [{ xp: 'desc' }, { level: 'desc' }, { lastXpUpdate: 'desc' }];
 
     // Get users ordered by XP
     const users = await prisma.user.findMany({
@@ -14,11 +19,7 @@ export async function GET(request: Request) {
         onboardingCompleted: true,
         selectedMonsterId: { not: null }
       },
-      orderBy: [
-        { xp: 'desc' },
-        { level: 'desc' },
-        { lastXpUpdate: 'desc' }
-      ],
+      orderBy,
       take: limit,
       select: {
         id: true,
@@ -45,14 +46,17 @@ export async function GET(request: Request) {
       githubUsername: user.githubUsername,
       selectedMonsterId: user.selectedMonsterId,
       level: user.level,
-      xp: user.xp,
+      xp: period === 'week' ? user.weeklyXp : user.xp, // Show weekly or total XP
       dailyXp: user.dailyXp,
       weeklyXp: user.weeklyXp,
+      totalXp: user.xp, // Always include total for reference
       rank_title: getUserRank(user.level),
       stats: {
-        commits: user.totalCommits,
-        prs: user.totalPRs,
-        stars: user.totalStars,
+        // For weekly view, estimate commits/PRs based on weekly XP
+        // For all-time view, show totals
+        commits: period === 'week' ? Math.floor(user.weeklyXp / 5) : user.totalCommits,
+        prs: period === 'week' ? Math.floor(user.weeklyXp / 40) : user.totalPRs,
+        stars: user.totalStars, // Always show total stars
         streak: user.currentStreak
       },
       lastActive: user.lastXpUpdate
