@@ -471,7 +471,14 @@ export default function Home() {
                       <div className="flex-1">
                         {/* Desktop layout */}
                         <div className="hidden md:flex items-center gap-2">
-                          <h3 className="font-semibold">{user.name}</h3>
+                          <a
+                            href={`https://github.com/${user.githubUsername || user.name}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline"
+                          >
+                            {user.name}
+                          </a>
                           <span className="text-sm text-muted-foreground">
                             {monsters[user.selectedMonsterId]?.name || 'Unknown'}
                           </span>
@@ -481,7 +488,14 @@ export default function Home() {
                         </div>
                         {/* Mobile layout - stacked */}
                         <div className="md:hidden space-y-1">
-                          <h3 className="font-semibold">{user.name}</h3>
+                          <a
+                            href={`https://github.com/${user.githubUsername || user.name}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline block"
+                          >
+                            {user.name}
+                          </a>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">
                               {monsters[user.selectedMonsterId]?.name || 'Unknown'}
