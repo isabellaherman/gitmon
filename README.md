@@ -1,36 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Gitmon is an open-source experiment that turns your commits and contributions into evolving monsters. Built with Next.js, GitHub API, and a bit of chaos.
 
-## Getting Started
+## 🌐 https://gitmon.xyz/
 
-First, run the development server:
+If you’re into game design, systems, or balancing you can dive into how Gitmon is designed to work at https://www.gitmon.xyz/docs.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+# 🧾 License & Usage
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Gitmon’s source code is open and free to explore.
+You can read it, fork it, learn from it, or build on top of it. Just **don’t** reuse the GitMonster characters, images, or names outside of this project.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+All art, character designs, and names are © Gitmon.xyz — not for commercial or personal redistribution.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 🧩 Own a GitMonster
 
-## Learn More
+You can support the project (and have some fun with it) by owning a GitMonster and its IP, meaning that you get the rights to that specific character (its name, design, and identity) to use in your own projects, branding, or creative work, including commercial use and monetized projects.
 
-To learn more about Next.js, take a look at the following resources:
+Owning a GitMon also allows you to sponsor your name, project, or link on dedicated GitMon screens, shown alongside the monster’s stats in places like the Character Selection and GitDex pages. (WIP)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Some monsters include editable files for customization, others are sealed artworks.
+Either way, you get a lifetime IP license for that character and its name.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Only 9 GitMon slots will be available for ownership and project support — released one at a time.
+Get in touch if you’re interested, or just keep an eye on the website for updates.
