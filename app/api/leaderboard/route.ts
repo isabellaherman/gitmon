@@ -82,7 +82,7 @@ export async function GET(request: Request) {
         }
       });
 
-      if (currentUser && currentUser.onboardingCompleted && currentUser.selectedMonsterId) {
+      if (currentUser && currentUser.onboardingCompleted && currentUser.selectedMonsterId !== null) {
         // Calcula a posição real do usuário
         const userRank = await prisma.user.count({
           where: {
