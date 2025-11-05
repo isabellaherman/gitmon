@@ -8,7 +8,7 @@ import {
   getUserRank
 } from "@/lib/xp-system";
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
     // Get logged in user from session
     const session = await getServerSession(authOptions);

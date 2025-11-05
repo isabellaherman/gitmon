@@ -5,7 +5,6 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import ContributionGraph from "@/components/ContributionGraph";
 import SupportCard from "@/components/SupportCard";
 import SponsorBar from "@/components/SponsorBar";
 
@@ -43,11 +42,7 @@ export default function Home() {
   const router = useRouter();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
-  const [canSyncXp, setCanSyncXp] = useState(false);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
-  const [githubUsername, setGithubUsername] = useState('');
-  const [showUsernameInput, setShowUsernameInput] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
 
   useEffect(() => {
     if (session?.user?.email && status === 'authenticated') {
@@ -95,30 +90,11 @@ export default function Home() {
     fetchLeaderboard();
   }, [leaderboardPeriod, session]);
 
-  useEffect(() => {
-    if (session?.user) {
-          setCanSyncXp((session.user as Record<string, unknown>)?.onboardingCompleted as boolean || false);
-    }
-  }, [session]);
 
   const handleSignIn = () => {
     signIn("github");
   };
 
-  const handleSyncXp = async () => {
-    if (!canSyncXp) return;
-
-    try {
-      const response = await fetch('/api/sync-xp', { method: 'POST' });
-      const data = await response.json();
-
-      if (data.success) {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Failed to sync XP:', error);
-    }
-  };
 
   const selectedMonsterId = (session?.user as Record<string, unknown>)?.selectedMonsterId as number;
   const selectedMonster = selectedMonsterId !== null && selectedMonsterId !== undefined ? monsters[selectedMonsterId] : null;
@@ -463,7 +439,7 @@ export default function Home() {
                       className={`flex items-center gap-4 px-4 py-2 rounded-full transition-colors ${
                         user.rank <= 3
                           ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
-                          : (user as any).isCurrentUser
+                          : 'isCurrentUser' in user && user.isCurrentUser
                           ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20'
                           : 'bg-muted/50 hover:bg-muted'
                       }`}

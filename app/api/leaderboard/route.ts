@@ -37,7 +37,7 @@ export async function GET(request: Request) {
       }
     });
 
-    let leaderboard = users.map((user: typeof users[0], index: number) => ({
+    const leaderboard = users.map((user: typeof users[0], index: number) => ({
       rank: index + 1,
       id: user.id,
       name: user.name || user.githubUsername || 'Anonymous',
@@ -57,6 +57,8 @@ export async function GET(request: Request) {
       },
       lastActive: user.lastXpUpdate
     }));
+
+    type LeaderboardEntry = typeof leaderboard[0] & { isCurrentUser?: boolean };
 
     // Se o usuário atual não está no top 50, busca ele separadamente
     if (currentUserId && !users.find(u => u.id === currentUserId)) {
@@ -114,7 +116,7 @@ export async function GET(request: Request) {
           }
         }) + 1;
 
-        const currentUserEntry = {
+        const currentUserEntry: LeaderboardEntry = {
           rank: userRank,
           id: currentUser.id,
           name: currentUser.name || currentUser.githubUsername || 'Anonymous',
@@ -136,7 +138,7 @@ export async function GET(request: Request) {
           isCurrentUser: true
         };
 
-        leaderboard.push(currentUserEntry);
+        (leaderboard as LeaderboardEntry[]).push(currentUserEntry);
       }
     }
 
