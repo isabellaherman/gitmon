@@ -89,8 +89,8 @@ export default function SupportCard() {
                       <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown alongside the monster&apos;s stats in places like the Character Selection and GitDex pages.
                     </p>
                   </div>
-                  <p className="text-blue-500 font-semibold text-sm mt-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    3/3 slots available
+                  <p className="text-orange-500 font-semibold text-sm mt-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    2/3 slots available
                   </p>
                 </div>
 

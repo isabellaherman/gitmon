@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import ContributionGraph from "@/components/ContributionGraph";
 import SupportCard from "@/components/SupportCard";
+import SponsorBar from "@/components/SponsorBar";
 
 const monsters = [
   { id: 0, src: "/monsters/monster-000.png", name: "Shadrix", type: "shadow" },
@@ -160,7 +161,9 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <>
+      <SponsorBar />
+      <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -496,5 +499,6 @@ export default function Home() {
         </div>
       </div>
     </main>
+    </>
   );
 }
