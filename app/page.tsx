@@ -166,13 +166,25 @@ export default function Home() {
       <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent" style={{ fontFamily: 'Minecraftia, monospace' }}>
             GitMon Leaderboard
           </h1>
           <p className="text-muted-foreground">
             Compete with developers worldwide and level up your coding game
           </p>
+
+          {/* GitDex Button - Positioned absolutely on right */}
+          <div className="absolute right-0 top-0">
+            <Button
+              onClick={() => router.push('/gitdex')}
+              size="sm"
+              className="bg-pink-500 hover:bg-pink-600 text-white border-pink-500"
+              style={{ fontFamily: 'Minecraftia, monospace' }}
+            >
+              GITDEX
+            </Button>
+          </div>
         </div>
 
         {/* Main Layout */}
