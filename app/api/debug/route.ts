@@ -7,21 +7,21 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
-  return NextResponse.json({
-    logged_in: false,
-    message: "No session found"
-  });
-}
-
-const user = await prisma.user.findUnique({
-  where: { email: session.user.email },
-  include: {
-    accounts: {
-      where: { provider: 'github' }
+    if (!session) {
+      return NextResponse.json({
+        logged_in: false,
+        message: "No session found"
+      });
     }
-  }
-});
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user?.email || "" },
+      include: {
+        accounts: {
+          where: { provider: 'github' }
+        }
+      }
+    });
 
     const githubAccount = user?.accounts.find(acc => acc.provider === 'github');
 
