@@ -77,7 +77,9 @@ export default function Home() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch(`/api/leaderboard?period=${leaderboardPeriod}`);
+        const userId = (session?.user as Record<string, unknown>)?.id as string;
+        const userIdParam = userId ? `&userId=${userId}` : '';
+        const response = await fetch(`/api/leaderboard?period=${leaderboardPeriod}${userIdParam}`);
         const data = await response.json();
 
         if (data.success) {
@@ -91,7 +93,7 @@ export default function Home() {
     };
 
     fetchLeaderboard();
-  }, [leaderboardPeriod]);
+  }, [leaderboardPeriod, session]);
 
   useEffect(() => {
     if (session?.user) {
@@ -461,6 +463,8 @@ export default function Home() {
                       className={`flex items-center gap-4 px-4 py-2 rounded-full transition-colors ${
                         user.rank <= 3
                           ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
+                          : (user as any).isCurrentUser
+                          ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20'
                           : 'bg-muted/50 hover:bg-muted'
                       }`}
                     >
@@ -477,7 +481,7 @@ export default function Home() {
                             rel="noopener noreferrer"
                             className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline"
                           >
-                            {user.name}
+                            @{user.githubUsername || user.name}
                           </a>
                           <span className="text-sm text-muted-foreground">
                             {monsters[user.selectedMonsterId]?.name || 'Unknown'}
@@ -494,7 +498,7 @@ export default function Home() {
                             rel="noopener noreferrer"
                             className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline block"
                           >
-                            {user.name}
+                            @{user.githubUsername || user.name}
                           </a>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">
