@@ -245,7 +245,7 @@ export default function Home() {
                         className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                         onClick={() => setShowSupportModal(true)}
                       >
-                        Let's Go
+                        Let&apos;s Go
                       </Button>
                     </div>
                   </div>
@@ -551,7 +551,7 @@ export default function Home() {
                   </div>
                   <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
                     <p>
-                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown alongside the monster's stats in places like the Character Selection and GitDex pages.
+                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown alongside the monster&apos;s stats in places like the Character Selection and GitDex pages.
                     </p>
                     <p>
                       <b>Own its IP:</b> get the rights to that specific character (its name, design, and identity) to use in your own projects, branding, or creative work, including commercial use.
@@ -569,7 +569,7 @@ export default function Home() {
                   </div>
                   <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
                     <p>
-                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown alongside the monster's stats in places like the Character Selection and GitDex pages.
+                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown alongside the monster&apos;s stats in places like the Character Selection and GitDex pages.
                     </p>
                   </div>
                   <p className="text-blue-500 font-semibold text-sm mt-3" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -587,7 +587,7 @@ export default function Home() {
                       Close
                     </Button>
                     <Button
-                      onClick={() => window.open('https://x.com/IsabellaHermn', '_blank')}
+                      onClick={() => window.open('https://x.com/isahermanx', '_blank')}
                       className="flex-1 bg-blue-500 hover:bg-green-500"
                     >
                       SUPPORT OPEN SOURCE
