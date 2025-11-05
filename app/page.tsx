@@ -75,7 +75,7 @@ export default function Home() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch(`/api/leaderboard?limit=10&period=${leaderboardPeriod}`);
+        const response = await fetch(`/api/leaderboard?period=${leaderboardPeriod}`);
         const data = await response.json();
 
         if (data.success) {
