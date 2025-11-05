@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       }
     });
 
-    const leaderboard = users.map((user, index) => ({
+    const leaderboard = users.map((user: typeof users[0], index) => ({
       rank: index + 1,
       id: user.id,
       name: user.name || user.githubUsername || 'Anonymous',
