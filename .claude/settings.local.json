@@ -22,7 +22,8 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx next build:*)"
+      "Bash(npx next build:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
