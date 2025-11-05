@@ -97,3 +97,53 @@ Modificado o script `build` no package.json:
 ```
 
 Isso garante que o Prisma client seja gerado antes do build do Next.js na Vercel.
+
+---
+
+## NOVO ERRO: Missing Environment Variable
+
+### 7. Build Error - DATABASE_URL Missing
+**Erro:** `PrismaConfigEnvError: Missing required environment variable: DATABASE_URL`
+
+**Local:** Prisma generate step durante o build
+
+**Causa:** A variável de ambiente `DATABASE_URL` não está configurada na Vercel.
+
+### ✅ CORREÇÃO NECESSÁRIA:
+
+**Você está usando SQLite!** Aqui estão suas opções:
+
+#### Opção 1: Para desenvolvimento/teste rápido
+Adicionar no dashboard da Vercel:
+- `DATABASE_URL`: `file:./dev.db`
+
+#### Opção 2: Migrar para PostgreSQL (recomendado para produção)
+1. Mudar o schema.prisma:
+```prisma
+datasource db {
+  provider = "postgresql"  // era "sqlite"
+  url      = env("DATABASE_URL")
+}
+```
+2. Criar banco PostgreSQL gratuito (Supabase, Neon, etc.)
+3. Configurar DATABASE_URL na Vercel
+
+#### Opção 3: SQLite em memória (temporário)
+- `DATABASE_URL`: `file::memory:?cache=shared`
+
+**Recomendação:** Use Opção 1 para testar rápido, depois migre para Opção 2.
+
+### ⚠️ IMPORTANTE: SQLite + Vercel em Produção
+**SQLite NÃO funciona bem na Vercel em produção** porque:
+- Vercel é serverless (containers temporários)
+- Arquivo SQLite é perdido quando container é destruído
+- Dados são perdidos em cada deploy
+- Múltiplas instâncias não compartilham dados
+
+### 🎯 SOLUÇÃO DEFINITIVA: PostgreSQL Gratuito
+**Neon DB (recomendado):**
+1. Ir para neon.tech
+2. Criar conta gratuita (500MB)
+3. Criar projeto
+4. Copiar DATABASE_URL
+5. Configurar na Vercel
