@@ -444,7 +444,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-0 md:p-6">
                 {isLoadingLeaderboard ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">Loading leaderboard...</p>
@@ -469,7 +469,8 @@ export default function Home() {
                       </div>
 
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
+                        {/* Desktop layout */}
+                        <div className="hidden md:flex items-center gap-2">
                           <h3 className="font-semibold">{user.name}</h3>
                           <span className="text-sm text-muted-foreground">
                             {monsters[user.selectedMonsterId]?.name || 'Unknown'}
@@ -478,12 +479,25 @@ export default function Home() {
                             Level {user.level}
                           </span>
                         </div>
+                        {/* Mobile layout - stacked */}
+                        <div className="md:hidden space-y-1">
+                          <h3 className="font-semibold">{user.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {monsters[user.selectedMonsterId]?.name || 'Unknown'}
+                            </span>
+                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                              Level {user.level}
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <div className="text-right">
                           <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
-                          <p className="text-xs text-muted-foreground">
+                          {/* Hide commit/PR info on mobile */}
+                          <p className="text-xs text-muted-foreground hidden md:block">
                             {user.stats.commits} commits • {user.stats.prs} PRs
                           </p>
                         </div>
