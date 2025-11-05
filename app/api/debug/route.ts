@@ -23,7 +23,7 @@ export async function GET() {
       }
     });
 
-    const githubAccount = user?.accounts.find(acc => acc.provider === 'github');
+    const githubAccount = user?.accounts[0];
 
     return NextResponse.json({
       logged_in: true,

@@ -18,7 +18,8 @@
       "Bash(npx prisma db execute:*)",
       "WebFetch(domain:www.olympicship.com)",
       "WebFetch(domain:retroui.io)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
