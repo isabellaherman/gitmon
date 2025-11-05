@@ -71,3 +71,29 @@ const leaderboard = users.map((user: typeof users[0], index: number) => ({
 ## Total de Erros Corrigidos: 9
 
 Todos os erros que causavam falha no build da Vercel foram identificados e corrigidos.
+
+---
+
+## NOVO ERRO: Prisma Client Not Initialized
+
+### 6. Build Error - Prisma Client
+**Erro:** `@prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.`
+
+**Local:** `.next/server/app/api/debug-sync/route.js:1:550`
+
+**Causa:** O Prisma client precisa ser gerado antes do build do Next.js.
+
+**Correção necessária:** Adicionar `prisma generate` ao processo de build da Vercel.
+
+### ✅ CORREÇÃO APLICADA:
+Modificado o script `build` no package.json:
+
+```json
+// ❌ ANTES
+"build": "next build"
+
+// ✅ DEPOIS
+"build": "prisma generate && next build"
+```
+
+Isso garante que o Prisma client seja gerado antes do build do Next.js na Vercel.
