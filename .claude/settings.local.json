@@ -20,7 +20,9 @@
       "WebFetch(domain:retroui.io)",
       "Bash(unzip:*)",
       "Bash(npm run build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next build:*)"
     ],
     "deny": [],
     "ask": []

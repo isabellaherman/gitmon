@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     let githubUsername = user.githubUsername;
 
     if (!githubUsername && user.accounts.length > 0) {
-      const githubAccount = user.accounts.find(acc => acc.provider === 'github');
+      const githubAccount = user.accounts[0];
 
       if (githubAccount) {
         try {
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     // Get GitHub access token from account
     let accessToken = undefined;
     if (user.accounts.length > 0) {
-      const githubAccount = user.accounts.find(acc => acc.provider === 'github');
+      const githubAccount = user.accounts[0];
       accessToken = githubAccount?.access_token;
       console.log(`[Sync XP] GitHub account found:`, !!githubAccount);
       console.log(`[Sync XP] Access token available:`, !!accessToken);

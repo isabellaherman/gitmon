@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
       // Get GitHub username if not already stored
       if (!githubUsername && updatedUser.accounts.length > 0) {
-        const githubAccount = updatedUser.accounts.find(acc => acc.provider === 'github');
+        const githubAccount = updatedUser.accounts[0];
         if (githubAccount?.providerAccountId) {
           try {
             const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         // Get GitHub access token
         let accessToken = undefined;
         if (updatedUser.accounts.length > 0) {
-          const githubAccount = updatedUser.accounts.find(acc => acc.provider === 'github');
+          const githubAccount = updatedUser.accounts[0];
           accessToken = githubAccount?.access_token;
         }
 
