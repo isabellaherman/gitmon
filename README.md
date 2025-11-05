@@ -1,17 +1,17 @@
 Gitmon is an open-source experiment that turns your commits and contributions into evolving monsters. Built with Next.js, GitHub API, and a bit of chaos.
 
-# 🌐 https://gitmon.xyz/
+## 🌐 https://gitmon.xyz/
 
 If you’re into game design, systems, or balancing you can dive into how Gitmon is designed to work at https://www.gitmon.xyz/docs.
 
-🧾 License & Usage
+# 🧾 License & Usage
 
 Gitmon’s source code is open and free to explore.
 You can read it, fork it, learn from it, or build on top of it. Just **don’t** reuse the GitMonster characters, images, or names outside of this project.
 
 All art, character designs, and names are © Gitmon.xyz — not for commercial or personal redistribution.
 
-🧩 Own a GitMonster
+# 🧩 Own a GitMonster
 
 You can support the project (and have some fun with it) by owning a GitMonster and its IP, meaning that you get the rights to that specific character (its name, design, and identity) to use in your own projects, branding, or creative work, including commercial use and monetized projects.
 
