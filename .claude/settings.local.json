@@ -19,7 +19,8 @@
       "WebFetch(domain:www.olympicship.com)",
       "WebFetch(domain:retroui.io)",
       "Bash(unzip:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
