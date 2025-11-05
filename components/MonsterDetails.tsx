@@ -29,13 +29,13 @@ const getTypeColor = (type: string) => {
 
 const getMonsterDescription = (monster: Monster) => {
   const descriptions = {
-    "Shadrix": "A mysterious shadow-type GitMon that lurks in the depths of code repositories. Masters of stealth commits and silent debugging.",
+    "Shadrix": "A mysterious shadow-type GitMon that lurks in the depths of code repositories. Shadrix wanders through digital voids, devouring lines and golden commits.",
     "Fairy": "A fiery and passionate GitMon that brings energy to any development team. Known for explosive code deployments and hot fixes.",
     "Crystalix": "An ice-type GitMon with crystalline precision. Specializes in clean, structured code and cooling down heated merge conflicts.",
-    "Guarana": "A grass-type GitMon that promotes organic code growth. Expert at cultivating healthy codebases and sustainable development practices.",
+    "Guarana": "A grass-type GitMon emerged from the heart of the Amazon Forest. Guarana watches over every repository through countless eyes hidden in its vines.",
     "Volterra": "An electric-type GitMon that energizes development workflows. Powers through complex algorithms and charges up team productivity.",
     "Aquarus": "A water-type GitMon that flows seamlessly through development cycles. Adapts to any environment and keeps projects fluid.",
-    "Infernus": "A powerful fire-type GitMon with intense coding abilities. Burns through technical debt and ignites innovation in projects.",
+    "Infernus": "A powerful fire-type GitMon with intense coding abilities. It could ignite innovation… but usually chooses a nap instead.",
     "Lumenis": "A bright grass-type GitMon that illuminates the path to clean code. Grows robust applications and nurtures developer skills.",
     "Spectra": "A psychic-type GitMon with mind-reading debugging abilities. Predicts bugs before they happen and telepathically optimizes code."
   };
@@ -106,7 +106,7 @@ export default function MonsterDetails({ monster }: MonsterDetailsProps) {
         </p>
       </div>
 
-      {/* Stats */}
+      {/* depois eu vejo isso 
       <div className="bg-muted/50 rounded-lg p-4">
         <h3 className="font-semibold mb-4">Base Stats</h3>
         <div className="space-y-3">
@@ -162,9 +162,9 @@ export default function MonsterDetails({ monster }: MonsterDetailsProps) {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      {/* Abilities (placeholder) */}
+      {/* Abilities 
       <div className="bg-muted/50 rounded-lg p-4">
         <h3 className="font-semibold mb-2">Special Abilities</h3>
         <div className="text-sm text-muted-foreground">
@@ -172,7 +172,7 @@ export default function MonsterDetails({ monster }: MonsterDetailsProps) {
           <p>• Version Control: Advanced Git operations</p>
           <p>• Team Synergy: Boosts collaborative development</p>
         </div>
-      </div>
+      </div>*/}
     </div>
   );
 }

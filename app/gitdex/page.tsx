@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import SponsorBar from "@/components/SponsorBar";
@@ -20,17 +20,53 @@ const monsters = [
 ];
 
 export default function GitDexPage() {
-  const [selectedMonster, setSelectedMonster] = useState<number>(0); // First monster selected by default
+  const [selectedMonster, setSelectedMonster] = useState<number>(6);
   const router = useRouter();
+
+  const goToPreviousMonster = () => {
+    setSelectedMonster((prev) => (prev === 0 ? monsters.length - 1 : prev - 1));
+  };
+
+  const goToNextMonster = () => {
+    setSelectedMonster((prev) => (prev === monsters.length - 1 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024;
+
+    if (isMobile) {
+      
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+
+      
+      const setVH = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      };
+
+      setVH();
+      window.addEventListener('resize', setVH);
+      window.addEventListener('orientationchange', setVH);
+
+      return () => {
+        
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        window.removeEventListener('resize', setVH);
+        window.removeEventListener('orientationchange', setVH);
+      };
+    }
+  }, []);
 
   return (
     <>
       <SponsorBar />
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen lg:min-h-screen bg-background" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
+          
           <div className="text-center mb-8 relative">
-            {/* Back Button - Positioned absolutely */}
+            
             <div className="absolute left-0 top-0">
               <Button
                 onClick={() => router.push('/')}
@@ -64,8 +100,8 @@ export default function GitDexPage() {
             </p>
           </div>
 
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Desktop Layout - Two Columns */}
+          <div className="hidden lg:grid lg:grid-cols-2 gap-8">
             {/* Left Column - Monster Grid */}
             <div className="bg-card rounded-xl p-6">
               <h2 className="text-xl font-bold mb-6" style={{ fontFamily: 'Minecraftia, monospace' }}>
@@ -83,6 +119,72 @@ export default function GitDexPage() {
               <MonsterDetails
                 monster={monsters[selectedMonster]}
               />
+            </div>
+          </div>
+
+          {/* Mobile Layout - Single Column with Navigation */}
+          <div className="lg:hidden">
+            <div className="flex flex-col h-[calc(100vh-140px)] max-h-screen">
+              {/* Counter at top */}
+              <div className="text-center mb-2 flex-shrink-0">
+                <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                  {selectedMonster + 1} / {monsters.length}
+                </p>
+              </div>
+
+              {/* Monster Details - Scrollable area */}
+              <div className="bg-card rounded-xl p-4 flex-1 overflow-y-auto min-h-0">
+                <MonsterDetails
+                  monster={monsters[selectedMonster]}
+                />
+              </div>
+
+              {/* Navigation Buttons - Fixed at bottom */}
+              <div className="flex items-center justify-between gap-4 mt-4 flex-shrink-0 pb-4">
+                <Button
+                  onClick={goToPreviousMonster}
+                  variant="outline"
+                  size="lg"
+                  className="flex items-center gap-2 flex-1"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m15 18-6-6 6-6"/>
+                  </svg>
+                  Previous
+                </Button>
+
+                <Button
+                  onClick={goToNextMonster}
+                  variant="outline"
+                  size="lg"
+                  className="flex items-center gap-2 flex-1"
+                >
+                  Next
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m9 18 6-6-6-6"/>
+                  </svg>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
