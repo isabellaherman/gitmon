@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     let githubUsername = user.githubUsername;
     if (!githubUsername && user.accounts.length > 0) {
-      const githubAccount = user.accounts.find(acc => acc.provider === 'github');
+      const githubAccount = user.accounts.find((acc: { provider: string }) => acc.provider === 'github');
       if (githubAccount?.providerAccountId) {
         try {
           const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
