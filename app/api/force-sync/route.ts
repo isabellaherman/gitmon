@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     // Get GitHub access token from account
     let accessToken = undefined;
     if (user.accounts.length > 0) {
-      const githubAccount = user.accounts.find(acc => acc.provider === 'github');
+      const githubAccount = user.accounts[0];
       accessToken = githubAccount?.access_token;
       console.log(`[Force Sync] GitHub account found:`, !!githubAccount);
       console.log(`[Force Sync] Access token available:`, !!accessToken);
