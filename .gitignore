@@ -43,3 +43,6 @@ next-env.d.ts
 .env.local
 
 /lib/generated/prisma
+
+# Event planning docs
+/docs/events/

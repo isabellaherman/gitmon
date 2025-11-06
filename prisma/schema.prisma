@@ -81,6 +81,7 @@ model User {
   accounts Account[]
   sessions Session[]
   activities XpActivity[]
+  eventParticipations EventParticipant[]
 
   @@map("users")
 }
@@ -97,6 +98,19 @@ model XpActivity {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("xp_activities")
+}
+
+model EventParticipant {
+  id             String   @id @default(cuid())
+  userId         String
+  eventId        String
+  githubUsername String?
+  joinedAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@map("event_participants")
 }
 
 model VerificationToken {
