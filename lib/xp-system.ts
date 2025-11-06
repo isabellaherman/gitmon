@@ -1,4 +1,3 @@
-
 export interface GitHubStats {
   commits: number;
   pullRequests: number;
@@ -33,10 +32,7 @@ export function calculateXpForLevel(level: number): number {
   if (level <= 1) return 0;
 
   const xp = Math.floor(
-    Math.pow(level, 3) * 4 -
-    15 * Math.pow(level, 2) +
-    100 * level -
-    140
+    Math.pow(level, 3) * 4 - 15 * Math.pow(level, 2) + 100 * level - 140
   );
 
   return Math.max(0, xp);
@@ -55,7 +51,8 @@ export function getProgressToNextLevel(currentXp: number): number {
 
   if (nextLevelXp === currentLevelXp) return 1;
 
-  const progress = (currentXp - currentLevelXp) / (nextLevelXp - currentLevelXp);
+  const progress =
+    (currentXp - currentLevelXp) / (nextLevelXp - currentLevelXp);
   return Math.min(1, Math.max(0, progress));
 }
 
@@ -114,18 +111,27 @@ export function calculateForkXp(isFirstFork: boolean): number {
   return isFirstFork ? 30 : 5;
 }
 
-export function calculateIssueXp(type: 'created' | 'resolved_by_author' | 'resolved_by_community' | 'bug_report'): number {
+export function calculateIssueXp(
+  type:
+    | 'created'
+    | 'resolved_by_author'
+    | 'resolved_by_community'
+    | 'bug_report'
+): number {
   const xpMap = {
     created: 10,
     resolved_by_author: 20,
     resolved_by_community: 30,
-    bug_report: 40
+    bug_report: 40,
   };
 
   return xpMap[type] || 0;
 }
 
-export function calculateReviewXp(leadsToChanges: boolean, targetRepoStars: number): number {
+export function calculateReviewXp(
+  leadsToChanges: boolean,
+  targetRepoStars: number
+): number {
   let baseXp = leadsToChanges ? 25 : 15;
 
   if (targetRepoStars >= 1000) {
@@ -135,18 +141,22 @@ export function calculateReviewXp(leadsToChanges: boolean, targetRepoStars: numb
   return Math.floor(baseXp);
 }
 
-export function calculateReleaseXp(versionType: 'major' | 'minor' | 'patch' | 'first'): number {
+export function calculateReleaseXp(
+  versionType: 'major' | 'minor' | 'patch' | 'first'
+): number {
   const xpMap = {
     first: 100,
     major: 75,
     minor: 50,
-    patch: 25
+    patch: 25,
   };
 
   return xpMap[versionType] || 0;
 }
 
-export function calculateLanguageDiversityBonus(languagesUsed: string[]): number {
+export function calculateLanguageDiversityBonus(
+  languagesUsed: string[]
+): number {
   const uniqueLanguages = new Set(languagesUsed).size;
 
   if (uniqueLanguages >= 10) {
@@ -172,7 +182,9 @@ export function applyDailyCap(currentDailyXp: number, newXp: number): number {
   return Math.min(newXp, Math.max(0, remainingCap));
 }
 
-export function getGitMonEvolution(level: number): 'basic' | 'evolved' | 'final' | 'legendary' {
+export function getGitMonEvolution(
+  level: number
+): 'basic' | 'evolved' | 'final' | 'legendary' {
   if (level >= 50) return 'legendary';
   if (level >= 26) return 'final';
   if (level >= 11) return 'evolved';
@@ -208,5 +220,5 @@ export default {
   calculateStreakMultiplier,
   applyDailyCap,
   getGitMonEvolution,
-  getUserRank
+  getUserRank,
 };

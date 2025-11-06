@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import GitHubService from "@/lib/github-service";
-import {
-  calculateLevel,
-  getUserRank
-} from "@/lib/xp-system";
+import { NextResponse } from 'next/server';
+
+import { getServerSession } from 'next-auth';
+
+import { authOptions } from '@/lib/auth';
+import GitHubService from '@/lib/github-service';
+import { prisma } from '@/lib/prisma';
+import { calculateLevel, getUserRank } from '@/lib/xp-system';
 
 export async function POST() {
   try {
@@ -14,20 +13,20 @@ export async function POST() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
         accounts: {
-          where: { provider: 'github' }
-        }
-      }
+          where: { provider: 'github' },
+        },
+      },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     console.log(`[Force Sync] Starting sync for ${user.email}`);
@@ -37,7 +36,9 @@ export async function POST() {
       const githubAccount = user.accounts[0];
       if (githubAccount?.providerAccountId) {
         try {
-          const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
+          const response = await fetch(
+            `https://api.github.com/user/${githubAccount.providerAccountId}`
+          );
           const githubUserData = await response.json();
           githubUsername = githubUserData.login;
           console.log(`[Force Sync] Found GitHub username: ${githubUsername}`);
@@ -48,7 +49,10 @@ export async function POST() {
     }
 
     if (!githubUsername) {
-      return NextResponse.json({ error: "GitHub username not found" }, { status: 400 });
+      return NextResponse.json(
+        { error: 'GitHub username not found' },
+        { status: 400 }
+      );
     }
 
     // Get GitHub access token from account
@@ -59,7 +63,9 @@ export async function POST() {
       console.log(`[Force Sync] GitHub account found:`, !!githubAccount);
       console.log(`[Force Sync] Access token available:`, !!accessToken);
     } else {
-      console.log(`[Force Sync] No GitHub account linked for user ${user.email}`);
+      console.log(
+        `[Force Sync] No GitHub account linked for user ${user.email}`
+      );
     }
 
     const githubService = new GitHubService(accessToken || undefined);
@@ -70,19 +76,19 @@ export async function POST() {
         totalCommits: githubStats.totalCommits,
         totalPRs: githubStats.totalPRs,
         totalStars: githubStats.totalStars,
-        followers: githubStats.followers
+        followers: githubStats.followers,
       });
 
       const weeklyXp = await githubService.getWeeklyXp(githubUsername, true);
       console.log(`[Force Sync] Weekly XP: ${weeklyXp}`);
 
       const lifetimeXp =
-        (githubStats.followers * 1) +
-        (githubStats.totalStars * 10) +
-        (githubStats.totalForks * 5) +
-        (githubStats.totalRepos * 50) +
-        (githubStats.totalCommits * 5) +
-        (githubStats.totalPRs * 40);
+        githubStats.followers * 1 +
+        githubStats.totalStars * 10 +
+        githubStats.totalForks * 5 +
+        githubStats.totalRepos * 50 +
+        githubStats.totalCommits * 5 +
+        githubStats.totalPRs * 40;
 
       console.log(`[Force Sync] Calculated lifetime XP: ${lifetimeXp}`);
 
@@ -110,13 +116,13 @@ export async function POST() {
           totalStars: githubStats.totalStars,
           totalRepos: githubStats.totalRepos,
           languagesUsed: JSON.stringify(githubStats.languages),
-          lastXpUpdate: new Date()
-        }
+          lastXpUpdate: new Date(),
+        },
       });
 
       return NextResponse.json({
         success: true,
-        message: "Force sync completed",
+        message: 'Force sync completed',
         data: {
           username: githubUsername,
           oldXp: user.xp,
@@ -129,21 +135,28 @@ export async function POST() {
             totalCommits: githubStats.totalCommits,
             totalPRs: githubStats.totalPRs,
             totalStars: githubStats.totalStars,
-            followers: githubStats.followers
-          }
-        }
+            followers: githubStats.followers,
+          },
+        },
       });
-
     } catch (githubError) {
-      console.error("GitHub API error in force sync:", githubError);
-      return NextResponse.json({
-        error: "GitHub API error",
-        details: githubError instanceof Error ? githubError.message : 'Unknown error'
-      }, { status: 500 });
+      console.error('GitHub API error in force sync:', githubError);
+      return NextResponse.json(
+        {
+          error: 'GitHub API error',
+          details:
+            githubError instanceof Error
+              ? githubError.message
+              : 'Unknown error',
+        },
+        { status: 500 }
+      );
     }
-
   } catch (error) {
-    console.error("Force sync error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Force sync error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }

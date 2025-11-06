@@ -1,5 +1,6 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+
+import { withAuth } from 'next-auth/middleware';
 
 export default withAuth(
   function middleware(req) {
@@ -16,6 +17,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|monsters|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$).*)",
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|monsters|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$).*)',
   ],
 };

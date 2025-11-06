@@ -1,33 +1,27 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
-import GitHubService from "@/lib/github-service";
-import {
-  calculateLevel,
-  calculateCommitXp,
-  calculatePullRequestXp,
-  calculateStarXp,
-  calculateStreakMultiplier,
-  applyDailyCap,
-  getUserRank
-} from "@/lib/xp-system";
+import { NextResponse } from 'next/server';
+
+import { getServerSession } from 'next-auth';
+
+import { authOptions } from '@/lib/auth';
+import GitHubService from '@/lib/github-service';
+import { prisma } from '@/lib/prisma';
+import { calculateLevel, getUserRank } from '@/lib/xp-system';
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    console.log("[Sync XP] Session debug:", {
+    console.log('[Sync XP] Session debug:', {
       hasSession: !!session,
       hasUser: !!session?.user,
       hasEmail: !!session?.user?.email,
       email: session?.user?.email,
-      name: session?.user?.name
+      name: session?.user?.name,
     });
 
     if (!session?.user?.email) {
-      console.log("[Sync XP] No valid session found - returning 401");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.log('[Sync XP] No valid session found - returning 401');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -35,13 +29,13 @@ export async function POST(request: Request) {
       include: {
         activities: true,
         accounts: {
-          where: { provider: 'github' }
-        }
-      }
+          where: { provider: 'github' },
+        },
+      },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     let githubUsername = user.githubUsername;
@@ -51,13 +45,15 @@ export async function POST(request: Request) {
 
       if (githubAccount) {
         try {
-          const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
+          const response = await fetch(
+            `https://api.github.com/user/${githubAccount.providerAccountId}`
+          );
           const githubUserData = await response.json();
           githubUsername = githubUserData.login;
 
           await prisma.user.update({
             where: { id: user.id },
-            data: { githubUsername: githubUsername }
+            data: { githubUsername: githubUsername },
           });
         } catch (error) {
           console.error('Failed to get GitHub username from API:', error);
@@ -66,19 +62,28 @@ export async function POST(request: Request) {
     }
 
     if (!githubUsername) {
-      return NextResponse.json({
-        error: "Could not determine GitHub username"
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Could not determine GitHub username',
+        },
+        { status: 400 }
+      );
     }
 
-    console.log(`[Sync XP] Trying to sync for GitHub username: "${githubUsername}"`);
+    console.log(
+      `[Sync XP] Trying to sync for GitHub username: "${githubUsername}"`
+    );
     console.log(`[Sync XP] User email: ${session.user.email}`);
     console.log(`[Sync XP] User name: ${session.user.name}`);
 
     if (!githubUsername) {
-      return NextResponse.json({
-        error: "GitHub username not found. Please provide your GitHub username."
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            'GitHub username not found. Please provide your GitHub username.',
+        },
+        { status: 400 }
+      );
     }
 
     // Get GitHub access token from account
@@ -98,7 +103,9 @@ export async function POST(request: Request) {
       const githubStats = await githubService.getUserStats(githubUsername);
 
       const isFirstSync = user.xp < 100;
-      console.log(`[Sync XP] User: ${githubUsername}, isFirstSync: ${isFirstSync}, current weeklyXp: ${user.weeklyXp}`);
+      console.log(
+        `[Sync XP] User: ${githubUsername}, isFirstSync: ${isFirstSync}, current weeklyXp: ${user.weeklyXp}`
+      );
 
       const weeklyXp = await githubService.getWeeklyXp(githubUsername, true);
       console.log(`[Sync XP] Calculated weeklyXp: ${weeklyXp}`);
@@ -106,7 +113,6 @@ export async function POST(request: Request) {
       let lifetimeXp = 0;
 
       if (isFirstSync) {
-
         lifetimeXp += githubStats.followers * 1;
 
         lifetimeXp += githubStats.totalStars * 10;
@@ -120,12 +126,24 @@ export async function POST(request: Request) {
         lifetimeXp += githubStats.totalPRs * 40;
 
         console.log(`[Sync XP] Lifetime XP calculation:`);
-        console.log(`  Followers: ${githubStats.followers} * 1 = ${githubStats.followers * 1}`);
-        console.log(`  Stars: ${githubStats.totalStars} * 10 = ${githubStats.totalStars * 10}`);
-        console.log(`  Forks: ${githubStats.totalForks} * 5 = ${githubStats.totalForks * 5}`);
-        console.log(`  Repos: ${githubStats.totalRepos} * 50 = ${githubStats.totalRepos * 50}`);
-        console.log(`  Commits: ${githubStats.totalCommits} * 5 = ${githubStats.totalCommits * 5}`);
-        console.log(`  PRs: ${githubStats.totalPRs} * 40 = ${githubStats.totalPRs * 40}`);
+        console.log(
+          `  Followers: ${githubStats.followers} * 1 = ${githubStats.followers * 1}`
+        );
+        console.log(
+          `  Stars: ${githubStats.totalStars} * 10 = ${githubStats.totalStars * 10}`
+        );
+        console.log(
+          `  Forks: ${githubStats.totalForks} * 5 = ${githubStats.totalForks * 5}`
+        );
+        console.log(
+          `  Repos: ${githubStats.totalRepos} * 50 = ${githubStats.totalRepos * 50}`
+        );
+        console.log(
+          `  Commits: ${githubStats.totalCommits} * 5 = ${githubStats.totalCommits * 5}`
+        );
+        console.log(
+          `  PRs: ${githubStats.totalPRs} * 40 = ${githubStats.totalPRs * 40}`
+        );
         console.log(`  TOTAL LIFETIME XP: ${lifetimeXp}`);
       }
 
@@ -156,8 +174,8 @@ export async function POST(request: Request) {
           totalStars: githubStats.totalStars,
           totalRepos: githubStats.totalRepos,
           languagesUsed: JSON.stringify(githubStats.languages),
-          lastXpUpdate: new Date()
-        }
+          lastXpUpdate: new Date(),
+        },
       });
 
       return NextResponse.json({
@@ -166,25 +184,26 @@ export async function POST(request: Request) {
           ...updatedUser,
           rank: newRank,
           xpGained: totalNewXp,
-          weeklyXpCalculated: weeklyXp
-        }
+          weeklyXpCalculated: weeklyXp,
+        },
       });
-
     } catch (githubError) {
-      console.error("GitHub API error:", githubError);
+      console.error('GitHub API error:', githubError);
 
       return NextResponse.json({
         success: true,
-        warning: "GitHub API unavailable",
+        warning: 'GitHub API unavailable',
         user: {
           ...user,
-        }
+        },
       });
     }
-
   } catch (error) {
-    console.error("XP sync error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('XP sync error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
 

@@ -1,22 +1,21 @@
-"use client";
+'use client';
 
-import { signIn } from "next-auth/react";
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-
-      <h1 className="text-3xl font-bold mb-4 text-gray-800">Git Leaderboard</h1>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-100 px-4">
+      <h1 className="mb-4 text-3xl font-bold text-gray-800">Git Leaderboard</h1>
 
       <button
-        onClick={() => signIn("github", { callbackUrl: "/" })}
-        className="flex items-center gap-2 px-4 py-2 rounded-md bg-black text-white hover:bg-gray-800 transition"
+        onClick={() => signIn('github', { callbackUrl: '/' })}
+        className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <path
             fillRule="evenodd"
@@ -28,7 +27,4 @@ export default function LoginPage() {
       </button>
     </main>
   );
-  
 }
-
-
