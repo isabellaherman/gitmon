@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from 'next/server';
+
+import { getServerSession } from 'next-auth';
+
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
@@ -10,17 +12,17 @@ export async function GET() {
     if (!session) {
       return NextResponse.json({
         logged_in: false,
-        message: "No session found"
+        message: 'No session found',
       });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user?.email || "" },
+      where: { email: session.user?.email || '' },
       include: {
         accounts: {
-          where: { provider: 'github' }
-        }
-      }
+          where: { provider: 'github' },
+        },
+      },
     });
 
     const githubAccount = user?.accounts[0];
@@ -29,26 +31,32 @@ export async function GET() {
       logged_in: true,
       session: {
         email: session.user?.email,
-        name: session.user?.name
+        name: session.user?.name,
       },
-      user: user ? {
-        id: user.id,
-        email: user.email,
-        githubUsername: user.githubUsername,
-        xp: user.xp,
-        weeklyXp: user.weeklyXp,
-        onboardingCompleted: user.onboardingCompleted,
-        selectedMonsterId: user.selectedMonsterId
-      } : null,
-      github_account: githubAccount ? {
-        provider: githubAccount.provider,
-        providerAccountId: githubAccount.providerAccountId,
-        has_access_token: !!githubAccount.access_token
-      } : null
+      user: user
+        ? {
+            id: user.id,
+            email: user.email,
+            githubUsername: user.githubUsername,
+            xp: user.xp,
+            weeklyXp: user.weeklyXp,
+            onboardingCompleted: user.onboardingCompleted,
+            selectedMonsterId: user.selectedMonsterId,
+          }
+        : null,
+      github_account: githubAccount
+        ? {
+            provider: githubAccount.provider,
+            providerAccountId: githubAccount.providerAccountId,
+            has_access_token: !!githubAccount.access_token,
+          }
+        : null,
     });
-
   } catch (error) {
-    console.error("Debug error:", error);
-    return NextResponse.json({ error: "Debug error", details: error }, { status: 500 });
+    console.error('Debug error:', error);
+    return NextResponse.json(
+      { error: 'Debug error', details: error },
+      { status: 500 }
+    );
   }
 }

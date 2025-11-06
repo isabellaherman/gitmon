@@ -1,24 +1,33 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
-import GitHubService from "@/lib/github-service";
-import { calculateLevel, getUserRank } from "@/lib/xp-system";
+import { NextResponse } from 'next/server';
+
+import { getServerSession } from 'next-auth';
+
+import { authOptions } from '@/lib/auth';
+import GitHubService from '@/lib/github-service';
+import { prisma } from '@/lib/prisma';
+import { calculateLevel, getUserRank } from '@/lib/xp-system';
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    console.log("Onboarding - Session:", session?.user?.email);
+    console.log('Onboarding - Session:', session?.user?.email);
 
     if (!session?.user?.email) {
-      console.log("Onboarding - No session found");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.log('Onboarding - No session found');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { selectedMonsterId } = await request.json();
 
-    if (typeof selectedMonsterId !== "number" || selectedMonsterId < 0 || selectedMonsterId > 8) {
-      return NextResponse.json({ error: "Invalid monster ID" }, { status: 400 });
+    if (
+      typeof selectedMonsterId !== 'number' ||
+      selectedMonsterId < 0 ||
+      selectedMonsterId > 8
+    ) {
+      return NextResponse.json(
+        { error: 'Invalid monster ID' },
+        { status: 400 }
+      );
     }
 
     // First update user with onboarding completion
@@ -31,9 +40,9 @@ export async function POST(request: Request) {
       },
       include: {
         accounts: {
-          where: { provider: 'github' }
-        }
-      }
+          where: { provider: 'github' },
+        },
+      },
     });
 
     console.log(`[Onboarding] User completed onboarding: ${updatedUser.email}`);
@@ -47,10 +56,14 @@ export async function POST(request: Request) {
         const githubAccount = updatedUser.accounts[0];
         if (githubAccount?.providerAccountId) {
           try {
-            const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
+            const response = await fetch(
+              `https://api.github.com/user/${githubAccount.providerAccountId}`
+            );
             const githubUserData = await response.json();
             githubUsername = githubUserData.login;
-            console.log(`[Onboarding] Found GitHub username: ${githubUsername}`);
+            console.log(
+              `[Onboarding] Found GitHub username: ${githubUsername}`
+            );
           } catch (error) {
             console.error('[Onboarding] Failed to get GitHub username:', error);
           }
@@ -65,7 +78,9 @@ export async function POST(request: Request) {
           accessToken = githubAccount?.access_token;
         }
 
-        console.log(`[Onboarding] Starting automatic XP sync for ${githubUsername}`);
+        console.log(
+          `[Onboarding] Starting automatic XP sync for ${githubUsername}`
+        );
         const githubService = new GitHubService(accessToken || undefined);
 
         const githubStats = await githubService.getUserStats(githubUsername);
@@ -73,12 +88,12 @@ export async function POST(request: Request) {
 
         // Calculate lifetime XP
         const lifetimeXp =
-          (githubStats.followers * 1) +
-          (githubStats.totalStars * 10) +
-          (githubStats.totalForks * 5) +
-          (githubStats.totalRepos * 50) +
-          (githubStats.totalCommits * 5) +
-          (githubStats.totalPRs * 40);
+          githubStats.followers * 1 +
+          githubStats.totalStars * 10 +
+          githubStats.totalForks * 5 +
+          githubStats.totalRepos * 50 +
+          githubStats.totalCommits * 5 +
+          githubStats.totalPRs * 40;
 
         const newLevel = calculateLevel(lifetimeXp);
         const newRank = getUserRank(newLevel);
@@ -105,11 +120,13 @@ export async function POST(request: Request) {
             totalStars: githubStats.totalStars,
             totalRepos: githubStats.totalRepos,
             languagesUsed: JSON.stringify(githubStats.languages),
-            lastXpUpdate: new Date()
-          }
+            lastXpUpdate: new Date(),
+          },
         });
 
-        console.log(`[Onboarding] XP sync completed for ${githubUsername}: ${lifetimeXp} XP, Level ${newLevel}`);
+        console.log(
+          `[Onboarding] XP sync completed for ${githubUsername}: ${lifetimeXp} XP, Level ${newLevel}`
+        );
 
         return NextResponse.json({
           success: true,
@@ -119,20 +136,19 @@ export async function POST(request: Request) {
             lifetimeXp,
             weeklyXp,
             level: newLevel,
-            rank: newRank
-          }
+            rank: newRank,
+          },
         });
-
       } else {
         console.log('[Onboarding] No GitHub username found, skipping XP sync');
         return NextResponse.json({
           success: true,
           user: updatedUser,
           xpSynced: false,
-          message: "Onboarding completed but XP sync skipped (no GitHub username)"
+          message:
+            'Onboarding completed but XP sync skipped (no GitHub username)',
         });
       }
-
     } catch (xpError) {
       console.error('[Onboarding] XP sync failed:', xpError);
       // Still return success for onboarding, but note XP sync failed
@@ -140,11 +156,15 @@ export async function POST(request: Request) {
         success: true,
         user: updatedUser,
         xpSynced: false,
-        xpError: xpError instanceof Error ? xpError.message : 'Unknown XP sync error'
+        xpError:
+          xpError instanceof Error ? xpError.message : 'Unknown XP sync error',
       });
     }
   } catch (error) {
-    console.error("Onboarding error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Onboarding error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }

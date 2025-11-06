@@ -1,5 +1,5 @@
-import { Octokit } from '@octokit/rest';
 import { graphql } from '@octokit/graphql';
+import { Octokit } from '@octokit/rest';
 
 export interface GitHubUserStats {
   username: string;
@@ -24,7 +24,14 @@ export interface GitHubUserStats {
 }
 
 export interface GitHubActivity {
-  type: 'commit' | 'pr_opened' | 'pr_merged' | 'star_received' | 'fork_received' | 'issue_created' | 'review';
+  type:
+    | 'commit'
+    | 'pr_opened'
+    | 'pr_merged'
+    | 'star_received'
+    | 'fork_received'
+    | 'issue_created'
+    | 'review';
   repo: string;
   date: Date;
   details: Record<string, unknown>;
@@ -37,7 +44,7 @@ export class GitHubService {
   constructor(accessToken?: string) {
     this.octokit = new Octokit({
       auth: accessToken,
-      userAgent: 'GitMon/1.0'
+      userAgent: 'GitMon/1.0',
     });
 
     this.graphqlWithAuth = graphql.defaults({
@@ -52,18 +59,24 @@ export class GitHubService {
       const contributionData = await this.getAccurateContributionData(username);
 
       const { data: user } = await this.octokit.rest.users.getByUsername({
-        username
+        username,
       });
 
       const { data: repos } = await this.octokit.rest.repos.listForUser({
         username,
         per_page: 100,
-        sort: 'updated'
+        sort: 'updated',
       });
 
       const totalRepos = user.public_repos;
-      const totalStars = repos.reduce((sum, repo) => sum + (repo.stargazers_count || 0), 0);
-      const totalForks = repos.reduce((sum, repo) => sum + (repo.forks_count || 0), 0);
+      const totalStars = repos.reduce(
+        (sum, repo) => sum + (repo.stargazers_count || 0),
+        0
+      );
+      const totalForks = repos.reduce(
+        (sum, repo) => sum + (repo.forks_count || 0),
+        0
+      );
 
       const languages = new Set<string>();
       for (const repo of repos.slice(0, 20)) {
@@ -72,10 +85,11 @@ export class GitHubService {
         }
       }
 
-      const { data: events } = await this.octokit.rest.activity.listPublicEventsForUser({
-        username,
-        per_page: 100
-      });
+      const { data: events } =
+        await this.octokit.rest.activity.listPublicEventsForUser({
+          username,
+          per_page: 100,
+        });
 
       const recentActivity = this.parseEvents(events);
 
@@ -104,9 +118,8 @@ export class GitHubService {
         totalIssues,
         languages: Array.from(languages),
         recentActivity,
-        avgCommitsPerWeek
+        avgCommitsPerWeek,
       };
-
     } catch (error) {
       console.error('Error fetching GitHub stats:', error);
       throw new Error('Failed to fetch GitHub statistics');
@@ -120,7 +133,9 @@ export class GitHubService {
     totalReviews: number;
   }> {
     try {
-      console.log(`[GitHub GraphQL] Getting accurate contribution data for ${username}`);
+      console.log(
+        `[GitHub GraphQL] Getting accurate contribution data for ${username}`
+      );
 
       const query = `
         query($username: String!) {
@@ -159,7 +174,10 @@ export class GitHubService {
         }
       `;
 
-      const response: Record<string, unknown> = await this.graphqlWithAuth(query, { username });
+      const response: Record<string, unknown> = await this.graphqlWithAuth(
+        query,
+        { username }
+      );
       const user = response.user;
 
       if (!user) {
@@ -173,7 +191,9 @@ export class GitHubService {
       let totalReviews = 0;
 
       years.forEach(year => {
-        const key = year ? `contributionsCollection${year}` : 'contributionsCollection';
+        const key = year
+          ? `contributionsCollection${year}`
+          : 'contributionsCollection';
         const collection = (user as Record<string, unknown>)[key];
         if (collection && typeof collection === 'object') {
           const col = collection as Record<string, number>;
@@ -194,23 +214,25 @@ export class GitHubService {
         totalCommits,
         totalPRs,
         totalIssues,
-        totalReviews
+        totalReviews,
       };
-
     } catch (error) {
       console.error('Error fetching GraphQL contribution data:', error);
 
-      console.log(`[GitHub GraphQL] Falling back to events-based estimation for ${username}`);
-      const { data: events } = await this.octokit.rest.activity.listPublicEventsForUser({
-        username,
-        per_page: 100
-      });
+      console.log(
+        `[GitHub GraphQL] Falling back to events-based estimation for ${username}`
+      );
+      const { data: events } =
+        await this.octokit.rest.activity.listPublicEventsForUser({
+          username,
+          per_page: 100,
+        });
 
       return {
         totalCommits: this.countCommitsFromEvents(events),
         totalPRs: this.countPRsFromEvents(events),
         totalIssues: this.countIssuesFromEvents(events),
-        totalReviews: 0
+        totalReviews: 0,
       };
     }
   }
@@ -239,9 +261,10 @@ export class GitHubService {
           repo,
           date,
           details: {
-            commits: (event.payload as { commits?: unknown[] })?.commits?.length || 1,
-            size: (event.payload as { size?: number })?.size || 0
-          }
+            commits:
+              (event.payload as { commits?: unknown[] })?.commits?.length || 1,
+            size: (event.payload as { size?: number })?.size || 0,
+          },
         };
 
       case 'PullRequestEvent':
@@ -252,19 +275,42 @@ export class GitHubService {
             repo,
             date,
             details: {
-              title: ((event.payload as Record<string, unknown>)?.pull_request as { title?: string })?.title,
-              number: ((event.payload as Record<string, unknown>)?.pull_request as { number?: number })?.number
-            }
+              title: (
+                (event.payload as Record<string, unknown>)?.pull_request as {
+                  title?: string;
+                }
+              )?.title,
+              number: (
+                (event.payload as Record<string, unknown>)?.pull_request as {
+                  number?: number;
+                }
+              )?.number,
+            },
           };
-        } else if (action === 'closed' && ((event.payload as Record<string, unknown>)?.pull_request as { merged?: boolean })?.merged) {
+        } else if (
+          action === 'closed' &&
+          (
+            (event.payload as Record<string, unknown>)?.pull_request as {
+              merged?: boolean;
+            }
+          )?.merged
+        ) {
           return {
             type: 'pr_merged',
             repo,
             date,
             details: {
-              title: ((event.payload as Record<string, unknown>)?.pull_request as { title?: string })?.title,
-              number: ((event.payload as Record<string, unknown>)?.pull_request as { number?: number })?.number
-            }
+              title: (
+                (event.payload as Record<string, unknown>)?.pull_request as {
+                  title?: string;
+                }
+              )?.title,
+              number: (
+                (event.payload as Record<string, unknown>)?.pull_request as {
+                  number?: number;
+                }
+              )?.number,
+            },
           };
         }
         break;
@@ -275,8 +321,8 @@ export class GitHubService {
           repo,
           date,
           details: {
-            action: (event.payload as Record<string, unknown>)?.action
-          }
+            action: (event.payload as Record<string, unknown>)?.action,
+          },
         };
 
       case 'ForkEvent':
@@ -285,8 +331,12 @@ export class GitHubService {
           repo,
           date,
           details: {
-            forkee: ((event.payload as Record<string, unknown>)?.forkee as { full_name?: string })?.full_name
-          }
+            forkee: (
+              (event.payload as Record<string, unknown>)?.forkee as {
+                full_name?: string;
+              }
+            )?.full_name,
+          },
         };
 
       case 'IssuesEvent':
@@ -296,9 +346,17 @@ export class GitHubService {
             repo,
             date,
             details: {
-              title: ((event.payload as Record<string, unknown>)?.issue as { title?: string })?.title,
-              number: ((event.payload as Record<string, unknown>)?.issue as { number?: number })?.number
-            }
+              title: (
+                (event.payload as Record<string, unknown>)?.issue as {
+                  title?: string;
+                }
+              )?.title,
+              number: (
+                (event.payload as Record<string, unknown>)?.issue as {
+                  number?: number;
+                }
+              )?.number,
+            },
           };
         }
         break;
@@ -310,8 +368,12 @@ export class GitHubService {
           date,
           details: {
             action: (event.payload as Record<string, unknown>)?.action,
-            review_id: ((event.payload as Record<string, unknown>)?.review as { id?: number })?.id
-          }
+            review_id: (
+              (event.payload as Record<string, unknown>)?.review as {
+                id?: number;
+              }
+            )?.id,
+          },
         };
     }
 
@@ -321,33 +383,42 @@ export class GitHubService {
   private countCommitsFromEvents(events: Record<string, unknown>[]): number {
     return events
       .filter(event => event.type === 'PushEvent')
-      .reduce((sum, event) => sum + ((event.payload as { commits?: unknown[] })?.commits?.length || 1), 0);
+      .reduce(
+        (sum, event) =>
+          sum +
+          ((event.payload as { commits?: unknown[] })?.commits?.length || 1),
+        0
+      );
   }
 
   private countPRsFromEvents(events: Record<string, unknown>[]): number {
-    return events
-      .filter(event => event.type === 'PullRequestEvent' && (event.payload as Record<string, unknown>)?.action === 'opened')
-      .length;
+    return events.filter(
+      event =>
+        event.type === 'PullRequestEvent' &&
+        (event.payload as Record<string, unknown>)?.action === 'opened'
+    ).length;
   }
 
   private countIssuesFromEvents(events: Record<string, unknown>[]): number {
-    return events
-      .filter(event => event.type === 'IssuesEvent' && (event.payload as Record<string, unknown>)?.action === 'opened')
-      .length;
+    return events.filter(
+      event =>
+        event.type === 'IssuesEvent' &&
+        (event.payload as Record<string, unknown>)?.action === 'opened'
+    ).length;
   }
 
   async getRepositoryInfo(owner: string, repo: string) {
     try {
       const { data } = await this.octokit.rest.repos.get({
         owner,
-        repo
+        repo,
       });
 
       return {
         stars: data.stargazers_count,
         forks: data.forks_count,
         language: data.language,
-        isOwner: false
+        isOwner: false,
       };
     } catch (error) {
       console.error('Error fetching repository info:', error);
@@ -355,9 +426,13 @@ export class GitHubService {
     }
   }
 
-  private calculateAvgCommitsPerWeek(events: Record<string, unknown>[]): number {
+  private calculateAvgCommitsPerWeek(
+    events: Record<string, unknown>[]
+  ): number {
     const now = new Date();
-    const twelveWeeksAgo = new Date(now.getTime() - (12 * 7 * 24 * 60 * 60 * 1000));
+    const twelveWeeksAgo = new Date(
+      now.getTime() - 12 * 7 * 24 * 60 * 60 * 1000
+    );
 
     const recentCommitEvents = events.filter(event => {
       if (event.type !== 'PushEvent') return false;
@@ -366,7 +441,9 @@ export class GitHubService {
     });
 
     const totalCommits = recentCommitEvents.reduce((sum, event) => {
-      return sum + ((event.payload as { commits?: unknown[] })?.commits?.length || 1);
+      return (
+        sum + ((event.payload as { commits?: unknown[] })?.commits?.length || 1)
+      );
     }, 0);
 
     return Math.round((totalCommits / 12) * 10) / 10;
@@ -389,7 +466,10 @@ export class GitHubService {
     return startOfWeek;
   }
 
-  private filterCurrentWeekEvents(events: Record<string, unknown>[], useLastSevenDays: boolean = false): Record<string, unknown>[] {
+  private filterCurrentWeekEvents(
+    events: Record<string, unknown>[],
+    useLastSevenDays: boolean = false
+  ): Record<string, unknown>[] {
     const startOfWeek = this.getStartOfWeek(useLastSevenDays);
     return events.filter(event => {
       const eventDate = new Date(event.created_at as string);
@@ -397,9 +477,14 @@ export class GitHubService {
     });
   }
 
-  async getWeeklyXp(username: string, useLastSevenDays: boolean = false): Promise<number> {
+  async getWeeklyXp(
+    username: string,
+    useLastSevenDays: boolean = false
+  ): Promise<number> {
     try {
-      console.log(`[GitHub Service] Getting weekly XP for ${username} using GraphQL`);
+      console.log(
+        `[GitHub Service] Getting weekly XP for ${username} using GraphQL`
+      );
 
       const now = new Date();
       const startDate = new Date(now);
@@ -421,24 +506,41 @@ export class GitHubService {
         }
       `;
 
-      const response: Record<string, unknown> = await this.graphqlWithAuth(query, {
-        username,
-        from: fromDate,
-        to: toDate
-      });
+      const response: Record<string, unknown> = await this.graphqlWithAuth(
+        query,
+        {
+          username,
+          from: fromDate,
+          to: toDate,
+        }
+      );
 
-      const collection = (response.user as Record<string, unknown>)?.contributionsCollection;
+      const collection = (response.user as Record<string, unknown>)
+        ?.contributionsCollection;
 
       if (!collection) {
         throw new Error('No contribution data found');
       }
 
-      const commits = Number((collection as Record<string, unknown>).totalCommitContributions) || 0;
-      const prs = Number((collection as Record<string, unknown>).totalPullRequestContributions) || 0;
-      const issues = Number((collection as Record<string, unknown>).totalIssueContributions) || 0;
-      const reviews = Number((collection as Record<string, unknown>).totalPullRequestReviewContributions) || 0;
+      const commits =
+        Number(
+          (collection as Record<string, unknown>).totalCommitContributions
+        ) || 0;
+      const prs =
+        Number(
+          (collection as Record<string, unknown>).totalPullRequestContributions
+        ) || 0;
+      const issues =
+        Number(
+          (collection as Record<string, unknown>).totalIssueContributions
+        ) || 0;
+      const reviews =
+        Number(
+          (collection as Record<string, unknown>)
+            .totalPullRequestReviewContributions
+        ) || 0;
 
-      const weeklyXp = (commits * 5) + (prs * 40) + (issues * 10) + (reviews * 15);
+      const weeklyXp = commits * 5 + prs * 40 + issues * 10 + reviews * 15;
 
       console.log(`[GitHub Service] Weekly GraphQL data for ${username}:`);
       console.log(`  Commits: ${commits} × 5 = ${commits * 5} XP`);
@@ -448,32 +550,45 @@ export class GitHubService {
       console.log(`  TOTAL WEEKLY XP: ${weeklyXp}`);
 
       return weeklyXp;
-
     } catch (error) {
       console.error('Error calculating weekly XP with GraphQL:', error);
       console.log('Falling back to events-based calculation...');
 
-      const { data: events } = await this.octokit.rest.activity.listPublicEventsForUser({
-        username,
-        per_page: 100
-      });
+      const { data: events } =
+        await this.octokit.rest.activity.listPublicEventsForUser({
+          username,
+          per_page: 100,
+        });
 
       const weekEvents = this.filterCurrentWeekEvents(events, true);
       let weeklyXp = 0;
 
       for (const event of weekEvents) {
         if (event.type === 'PushEvent') {
-          const commits = ((event.payload as { commits?: unknown[] })?.commits?.length || 1);
+          const commits =
+            (event.payload as { commits?: unknown[] })?.commits?.length || 1;
           weeklyXp += Math.min(10, Math.max(2, Math.floor(commits * 2.5)));
         }
         if (event.type === 'PullRequestEvent') {
           const action = (event.payload as { action?: string })?.action;
           if (action === 'opened') weeklyXp += 15;
-          if (action === 'closed' && ((event.payload as Record<string, unknown>)?.pull_request as { merged?: boolean })?.merged) weeklyXp += 25;
+          if (
+            action === 'closed' &&
+            (
+              (event.payload as Record<string, unknown>)?.pull_request as {
+                merged?: boolean;
+              }
+            )?.merged
+          )
+            weeklyXp += 25;
         }
         if (event.type === 'WatchEvent') weeklyXp += 10;
         if (event.type === 'ForkEvent') weeklyXp += 5;
-        if (event.type === 'IssuesEvent' && (event.payload as Record<string, unknown>)?.action === 'opened') weeklyXp += 10;
+        if (
+          event.type === 'IssuesEvent' &&
+          (event.payload as Record<string, unknown>)?.action === 'opened'
+        )
+          weeklyXp += 10;
         if (event.type === 'PullRequestReviewEvent') weeklyXp += 15;
       }
 

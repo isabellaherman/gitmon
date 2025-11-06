@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+echo "🔧 Running format..."
+npx npm run format
+
+echo "🧹 Running lint:fix..."
+npx npm run lint:fix
