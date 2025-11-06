@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import SponsorBar from "@/components/SponsorBar";
 
 export default function EventPage() {
@@ -112,40 +113,44 @@ export default function EventPage() {
               </Button>
             </div>
 
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent" style={{ fontFamily: 'Minecraftia, monospace' }}>
-              GitMon 1st Community Events
-            </h1>
+            {/* Warning - Centered */}
+            <div className="text-center mb-0">
+              <span className="text-red-600 text-xs font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                WARNING
+              </span>
+            </div>
+            <div className="relative mb-4">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-80 rounded-lg"></div>
+              <h1 className="relative text-4xl font-bold text-white py-4 px-8" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                CALLING ALL GIT TRAINERS!
+              </h1>
+            </div>
             <p className="text-muted-foreground text-lg">
-              Join developers worldwide to beat the boss
+              This is a message for all GitTrainers. Please, do not .ignore
             </p>
+            <p className="text-black-foreground text-lg">
+              The <b>Mad Monkey</b> has emerged from the void, and now chaos is coming to the gitmon realm.
+            </p>
+            
           </div>
 
           {/* Main Content */}
           <div className="max-w-2xl mx-auto">
-            <div className="bg-card rounded-xl p-8 text-center">
+            <div className="bg-card rounded-xl p-0 text-center">
               {/* Event Visual/Icon */}
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-red-500"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                  <path d="M2 17l10 5 10-5"/>
-                  <path d="M2 12l10 5 10-5"/>
-                </svg>
+              <div className="w-100 h-100 mx-auto mb-6">
+                <Image
+                  src="/events/MadMonkey.png"
+                  alt="Mad Monkey"
+                  width={192}
+                  height={192}
+                  className="object-contain w-full h-full"
+                />
               </div>
 
               {!session ? (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold">Ready to Join the Battle?</h2>
+                  <h2 className="text-2xl font-bold">Help us defeat Mad Monkey</h2>
                   <p className="text-muted-foreground">
                     You need to be logged in with GitHub to participate in this community event.
                   </p>
@@ -188,7 +193,7 @@ export default function EventPage() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold">Ready to Join the Battle?</h2>
+                  <h2 className="text-2xl font-bold">Help us defeat Mad Monkey</h2>
                   <p className="text-muted-foreground">
                     Welcome, <strong>@{session.user?.email?.split('@')[0]}</strong>! <br/>
                     Join thousands of developers in our first community event.
