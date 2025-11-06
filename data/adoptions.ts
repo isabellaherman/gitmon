@@ -7,14 +7,13 @@ export const adoptionData = {
     sponsorName: "REAL OFICIAL",
     sponsorUrl: "https://realoficial.com.br/?utm_source=GITMON"
   },
+  "Spectra": {
+    sponsorName: "KODUS",
+    sponsorUrl: "https://t.co/4E8Ciww11J"
+  },
   // "Volterra": {
   //   sponsorName: "Your Company Name",
   //   sponsorUrl: "https://yourcompany.com/?utm_source=GITMON"
-  // },
-
-  // "Spectra": {
-  //   sponsorName: "Another Sponsor",
-  //   sponsorUrl: "https://anothersponsor.com/?utm_source=GITMON"
   // },
 };
 

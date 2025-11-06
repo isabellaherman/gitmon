@@ -20,7 +20,7 @@ const monsters = [
 ];
 
 export default function GitDexPage() {
-  const [selectedMonster, setSelectedMonster] = useState<number>(6);
+  const [selectedMonster, setSelectedMonster] = useState<number>(8);
   const router = useRouter();
 
   const goToPreviousMonster = () => {

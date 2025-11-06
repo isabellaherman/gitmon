@@ -4,6 +4,15 @@ export default function SponsorBar() {
       <span>
         Sponsored by{" "}
         <a
+          href="https://t.co/4E8Ciww11J"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold underline hover:no-underline"
+        >
+          KODUS
+        </a>
+        {" • "}
+        <a
           href="https://realoficial.com.br/?utm_source=GITMON"
           target="_blank"
           rel="noopener noreferrer"
