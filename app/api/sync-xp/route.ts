@@ -173,29 +173,11 @@ export async function POST(request: Request) {
     } catch (githubError) {
       console.error("GitHub API error:", githubError);
 
-      const fallbackXp = 10;
-      const newTotalXp = user.xp + fallbackXp;
-      const newLevel = calculateLevel(newTotalXp);
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          githubUsername,
-          xp: newTotalXp,
-          level: newLevel,
-          lastXpUpdate: new Date()
-        }
-      });
-
       return NextResponse.json({
         success: true,
-        warning: "GitHub API unavailable, gave fallback XP",
+        warning: "GitHub API unavailable",
         user: {
           ...user,
-          xp: newTotalXp,
-          level: newLevel,
-          rank: getUserRank(newLevel),
-          xpGained: fallbackXp
         }
       });
     }
