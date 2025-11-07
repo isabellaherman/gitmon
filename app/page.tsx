@@ -45,6 +45,7 @@ export default function Home() {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
   const [showEventPopup, setShowEventPopup] = useState(false);
+  const [totalTrainers, setTotalTrainers] = useState<number>(0);
 
   useEffect(() => {
     if (session?.user?.email && status === 'authenticated') {
@@ -99,6 +100,24 @@ export default function Home() {
     }, 1000); // Show popup after 1 second
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // Fetch total trainers count
+  useEffect(() => {
+    const fetchTotalTrainers = async () => {
+      try {
+        const response = await fetch('/api/total-trainers');
+        const data = await response.json();
+
+        if (data.success) {
+          setTotalTrainers(data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching total trainers:', error);
+      }
+    };
+
+    fetchTotalTrainers();
   }, []);
 
 
@@ -448,6 +467,14 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Total trainers count - only on desktop */}
+                    <div className="hidden md:flex items-center gap-4 bg-muted/30">
+                      <div className="flex-1 text-right">
+                        <p className="text-xs text-muted-foreground">
+                          {totalTrainers.toLocaleString()} TRAINERS
+                        </p>
+                      </div>
+                    </div>
                     {leaderboard.map((user) => (
                     <div
                       key={user.rank}
