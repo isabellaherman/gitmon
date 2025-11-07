@@ -458,6 +458,14 @@ export default function Home() {
               </div>
 
               <div className="p-0 md:p-6">
+                {/* Total trainers count - only on desktop - always visible */}
+                <div className="hidden md:flex items-center gap-4 bg-muted/30">
+                  <div className="flex-1 text-right">
+                    <p className="text-xs text-muted-foreground">
+                      {totalTrainers.toLocaleString()} TRAINERS
+                    </p>
+                  </div>
+                </div>
                 {isLoadingLeaderboard ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">Loading leaderboard...</p>
@@ -467,15 +475,7 @@ export default function Home() {
                     <p className="text-muted-foreground">No players yet. Be the first to join!</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {/* Total trainers count - only on desktop */}
-                    <div className="hidden md:flex items-center gap-4 bg-muted/30">
-                      <div className="flex-1 text-right">
-                        <p className="text-xs text-muted-foreground">
-                          {totalTrainers.toLocaleString()} TRAINERS
-                        </p>
-                      </div>
-                    </div>
+                  <div className="space-y-4 mt-4">
                     {leaderboard.map((user) => (
                     <div
                       key={user.rank}
