@@ -93,13 +93,18 @@ export default function Home() {
     fetchLeaderboard();
   }, [leaderboardPeriod, session]);
 
-  // Show event popup on page load
+  // Show event popup on page load (only once per session)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowEventPopup(true);
-    }, 1000); // Show popup after 1 second
+    const hasSeenEventPopup = sessionStorage.getItem('hasSeenEventPopup');
 
-    return () => clearTimeout(timer);
+    if (!hasSeenEventPopup) {
+      const timer = setTimeout(() => {
+        setShowEventPopup(true);
+        sessionStorage.setItem('hasSeenEventPopup', 'true');
+      }, 1000); // Show popup after 1 second
+
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Fetch total trainers count
