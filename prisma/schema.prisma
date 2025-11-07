@@ -60,6 +60,8 @@ model User {
   // GitMon specific fields
   selectedMonsterId Int?
   gitmonSelectedAt  DateTime?
+  guildId           String? // Guild membership
+  isGitMonContributor Boolean @default(false) // Contributed to GitMon repository
   level             Int     @default(1)
   xp                Int     @default(0)
   onboardingCompleted Boolean @default(false)
