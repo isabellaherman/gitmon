@@ -17,6 +17,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "GitMon - Open Source Coding Leaderboard",
   description: "GitMon transforms your GitHub activity into an open source game. Climb the leaderboard, evolve your GitMons, and compete to become the ultimate developer!",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -28,6 +33,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link href="https://fonts.cdnfonts.com/css/minecraftia" rel="stylesheet" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
       </head>
       <body
         className={`${silkscreen.variable} ${inter.variable} antialiased`}
