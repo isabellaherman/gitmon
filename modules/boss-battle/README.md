@@ -272,4 +272,4 @@ const bossConfig = {
 - Synchronization between multiple clients
 - Instant feedback for user actions
 
-This module transforms the static event experience into a collaborative and interactive adventure, maintaining GitMon's essence while adding a new dimension of engagement!
+## For later I think it would be very cool if each monster have a unique effect on battle such as support, heal, etc.
