@@ -171,4 +171,4 @@
 
 ---
 
-*Want to understand how this works in practice? Check out [How XP Works →](/how-xp-works)*
+*Want to understand how this works in practice? Check out [How XP Works →](/docs?doc=how-xp-works)*
