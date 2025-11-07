@@ -194,8 +194,6 @@ export default function EventPage() {
                 </div>
               ) : hasJoined ? (
                 <div className="space-y-6">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-4">
-                  </div>
                   <h2 className="text-2xl font-bold text-green-500" style={{ fontFamily: 'Minecraftia, monospace' }}>
                     JOINED SUCCESSFULLY!
                   </h2>
