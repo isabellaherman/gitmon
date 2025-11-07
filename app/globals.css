@@ -123,6 +123,15 @@
     font-family: 'Minecraftia', monospace !important;
   }
 
+  html, body {
+    overflow-x: hidden;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
   .docs-page * {
     font-family: var(--font-inter) !important;
   }
