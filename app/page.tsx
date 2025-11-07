@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import SupportCard from "@/components/SupportCard";
 import SponsorBar from "@/components/SponsorBar";
+import EventPopup from "@/components/EventPopup";
 
 const monsters = [
   { id: 0, src: "/monsters/monster-000.png", name: "Shadrix", type: "shadow" },
@@ -43,6 +44,7 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
+  const [showEventPopup, setShowEventPopup] = useState(false);
 
   useEffect(() => {
     if (session?.user?.email && status === 'authenticated') {
@@ -89,6 +91,15 @@ export default function Home() {
 
     fetchLeaderboard();
   }, [leaderboardPeriod, session]);
+
+  // Show event popup on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowEventPopup(true);
+    }, 1000); // Show popup after 1 second
+
+    return () => clearTimeout(timer);
+  }, []);
 
 
   const handleSignIn = () => {
@@ -141,6 +152,10 @@ export default function Home() {
   return (
     <>
       <SponsorBar />
+      <EventPopup
+        isOpen={showEventPopup}
+        onClose={() => setShowEventPopup(false)}
+      />
       <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -149,7 +164,7 @@ export default function Home() {
             GitMon Leaderboard
           </h1>
           <p className="text-muted-foreground">
-            Compete with developers worldwide and level up your coding game
+            Compete with developers worldwide. Open-source GitHub leaderboard.
           </p>
 
           {/* GitDex Button - Positioned absolutely on right */}
@@ -459,9 +474,12 @@ export default function Home() {
                           >
                             @{user.githubUsername || user.name}
                           </a>
-                          <span className="text-sm text-muted-foreground">
+                          <button
+                            onClick={() => router.push(`/gitdex?monster=${user.selectedMonsterId}`)}
+                            className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
+                          >
                             {monsters[user.selectedMonsterId]?.name || 'Unknown'}
-                          </span>
+                          </button>
                           <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                             Level {user.level}
                           </span>

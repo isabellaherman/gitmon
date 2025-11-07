@@ -13,6 +13,8 @@ export default function EventPage() {
   const [isJoining, setIsJoining] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const [isCheckingParticipation, setIsCheckingParticipation] = useState(false);
+  const [participantCount, setParticipantCount] = useState<number>(0);
+  const [isLoadingCount, setIsLoadingCount] = useState(true);
 
   // Check if user already joined when session loads
   useEffect(() => {
@@ -38,6 +40,26 @@ export default function EventPage() {
       checkParticipation();
     }
   }, [session, status]);
+
+  // Fetch participant count
+  useEffect(() => {
+    const fetchParticipantCount = async () => {
+      try {
+        const response = await fetch('/api/event-participants-count?eventId=first-community-event');
+        const data = await response.json();
+
+        if (data.success) {
+          setParticipantCount(data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching participant count:', error);
+      } finally {
+        setIsLoadingCount(false);
+      }
+    };
+
+    fetchParticipantCount();
+  }, [hasJoined]); // Refetch when user joins
 
   const handleJoinEvent = async () => {
     if (!session) {
@@ -131,6 +153,7 @@ export default function EventPage() {
             <p className="text-black-foreground text-lg">
               The <b>Mad Monkey</b> has emerged from the void, and now chaos is coming to the gitmon realm.
             </p>
+
             
           </div>
 
@@ -151,6 +174,11 @@ export default function EventPage() {
               {!session ? (
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold">Help us defeat Mad Monkey</h2>
+                  <div className="mb-4">
+                    <span className="text-green-600 text-sm font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                      {isLoadingCount ? 'LOADING...' : `${participantCount.toLocaleString()} TRAINERS JOINED`}
+                    </span>
+                  </div>
                   <p className="text-muted-foreground">
                     You need to be logged in with GitHub to participate in this community event.
                   </p>
@@ -194,6 +222,11 @@ export default function EventPage() {
               ) : (
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold">Help us defeat Mad Monkey</h2>
+                  <div className="mb-4">
+                    <span className="text-green-600 text-sm font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                      {isLoadingCount ? 'LOADING...' : `${participantCount.toLocaleString()} TRAINERS JOINED`}
+                    </span>
+                  </div>
                   <p className="text-muted-foreground">
                     Welcome, <strong>@{session.user?.email?.split('@')[0]}</strong>! <br/>
                     Join thousands of developers in our first community event.
