@@ -20,14 +20,15 @@ export default function BadgeWall({ userData }: BadgeWallProps) {
         Badge Collection ({badges.filter(b => b.earned).length}/{badges.length})
       </h4>
 
-      <div className="flex justify-center">
+      <div className="flex flex-wrap md:flex-nowrap justify-center gap-y-4 gap-x-2 md:gap-0 px-4 overflow-visible">
         {badges.map((badge, index) => (
           <div
             key={badge.id}
             className={`
-              relative w-24 h-24 rounded-full flex items-center justify-center
+              relative w-24 h-24 rounded-full flex items-center justify-center flex-shrink-0
               transition-all duration-300 cursor-pointer group
               hover:-translate-y-2 hover:scale-110 active:-translate-y-2 active:scale-110
+              ${index > 0 ? 'md:-ml-3' : ''}
               ${badge.earned && badge.image
                 ? 'hover:z-30 active:z-30'
                 : badge.earned
@@ -36,7 +37,6 @@ export default function BadgeWall({ userData }: BadgeWallProps) {
               }
             `}
             style={{
-              marginLeft: index > 0 ? '-12px' : '0',
               zIndex: 20 - index
             }}
           >
