@@ -186,17 +186,6 @@ export default function Home() {
             Compete with developers worldwide. Open-source GitHub leaderboard.
           </p>
 
-          {/* GitDex Button - Positioned absolutely on right */}
-          <div className="absolute right-0 top-0">
-            <Button
-              onClick={() => router.push('/gitdex')}
-              size="sm"
-              className="bg-pink-500 hover:bg-pink-600 text-white border-pink-500"
-              style={{ fontFamily: 'Minecraftia, monospace' }}
-            >
-              GITDEX
-            </Button>
-          </div>
         </div>
 
         {/* Main Layout */}
@@ -509,7 +498,8 @@ export default function Home() {
                             {monsters[user.selectedMonsterId]?.name || 'Unknown'}
                           </button>
                           <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            Level {user.level}
+                            <span className="hidden md:inline">Level {user.level}</span>
+                            <span className="md:hidden">Lv. {user.level}</span>
                           </span>
                         </div>
                         {/* Mobile layout - stacked */}
@@ -527,7 +517,8 @@ export default function Home() {
                               {monsters[user.selectedMonsterId]?.name || 'Unknown'}
                             </span>
                             <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                              Level {user.level}
+                              <span className="hidden md:inline">Level {user.level}</span>
+                              <span className="md:hidden">Lv. {user.level}</span>
                             </span>
                           </div>
                         </div>
