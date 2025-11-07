@@ -455,12 +455,14 @@ export default function Home() {
                       <div className="flex-1">
                         {/* Desktop layout */}
                         <div className="hidden md:flex items-center gap-2">
-                          <button
-                            onClick={() => router.push(`/${user.githubUsername || user.name}`)}
+                          <a
+                            href={`https://github.com/${user.githubUsername || user.name}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline"
                           >
                             @{user.githubUsername || user.name}
-                          </button>
+                          </a>
                           <button
                             onClick={() => router.push(`/gitdex?monster=${user.selectedMonsterId}`)}
                             className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
@@ -474,12 +476,14 @@ export default function Home() {
                         </div>
                         {/* Mobile layout - stacked */}
                         <div className="md:hidden space-y-1">
-                          <button
-                            onClick={() => router.push(`/${user.githubUsername || user.name}`)}
+                          <a
+                            href={`https://github.com/${user.githubUsername || user.name}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline block"
                           >
                             @{user.githubUsername || user.name}
-                          </button>
+                          </a>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">
                               {monsters[user.selectedMonsterId]?.name || 'Unknown'}

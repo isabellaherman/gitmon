@@ -26,18 +26,6 @@ export const guilds: Guild[] = [
     color: "#9ca3af",
     link: "#"
   },
-  {
-    id: "kodus",
-    name: "KODUS",
-    color: "#3b82f6",
-    link: "https://t.co/4E8Ciww11J"
-  },
-  {
-    id: "bero-lab",
-    name: "BERO LAB",
-    color: "#10b981",
-    link: "https://x.com/berolabx"
-  },
   // 🚀 ADD YOUR GUILD HERE!
   // Just copy the format above and submit a PR
   // Example:
@@ -66,8 +54,6 @@ export const getGuildTextColor = (guildId: string | null): string => {
   const colorMap: { [key: string]: string } = {
     "#9333ea": "text-purple-600",
     "#9ca3af": "text-gray-400",
-    "#3b82f6": "text-blue-500",
-    "#10b981": "text-emerald-500",
   };
 
   return colorMap[guild?.color || "#9ca3af"] || "text-gray-400";
