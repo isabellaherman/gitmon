@@ -82,7 +82,7 @@ export default function AdoptionStatus({ monsterName, adoptionData }: AdoptionSt
                     </p>
                   </div>
                   <p className="text-red-500 font-semibold text-sm mt-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    1/3 slots available
+                    2/3 slots available
                   </p>
                 </div>
 

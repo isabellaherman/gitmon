@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Silkscreen, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import SupportCard from "@/components/SupportCard";
 
 const silkscreen = Silkscreen({
   variable: "--font-silkscreen",
@@ -41,6 +42,8 @@ export default function RootLayout({
       >
         <Providers>
           {children}
+          {/* Global SupportCard for modal trigger - only modal shows, not the card content */}
+          <SupportCard hideCard={true} />
         </Providers>
       </body>
     </html>
