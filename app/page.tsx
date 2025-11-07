@@ -258,10 +258,10 @@ export default function Home() {
                       <span className="text-muted-foreground">Name:</span>
                       <span className="font-medium">{session.user?.name}</span>
                     </div>
-                    <div className="flex justify-between">
+                    {/* <div className="flex justify-between">
                       <span className="text-muted-foreground">GitHub:</span>
                       <span className="font-medium">@{session.user?.email?.split('@')[0]}</span>
-                    </div>
+                    </div> */}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">GitMon:</span>
                       <span className={selectedMonster ? "text-green-500 font-medium" : "text-yellow-500 font-medium"}>
@@ -428,10 +428,11 @@ export default function Home() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push('/docs')}
-                      className="rounded-full text-xs"
+                      onClick={() => router.push('/gitdex')}
+                      className="rounded-full text-xs shadow-green-500/30 hover:shadow-green-500/50 transition-shadow drop-shadow-none"
+                      style={{ boxShadow: '0 0 15px rgba(34, 197, 94, 0.3)' }}
                     >
-                      📋 How it Works
+                      📚 GITDEX
                     </Button>
                     <Button
                       variant="outline"

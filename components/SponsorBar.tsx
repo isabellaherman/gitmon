@@ -7,7 +7,7 @@ export default function SponsorBar() {
 
   return (
     <>
-      <div className="bg-gradient-to-r from-yellow-600 to-white-600 text-white text-center py-2 px-4 text-sm">
+      <div className="bg-gradient-to-r from-gray-500 to-white-600 text-white text-center py-2 px-4 text-sm">
         <div className="flex items-center justify-center gap-6">
           <span>
             Sponsored by{" "}
@@ -31,19 +31,10 @@ export default function SponsorBar() {
             {" • "}
             <button
               onClick={() => setShowSupportModal(true)}
-              className="font-semibold underline hover:no-underline text-green-700 hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer"
+              className="font-semibold underline hover:no-underline text-black hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer"
             >
               1 SEAT LEFT
             </button>
-          </span>
-
-          <span className="border-l border-white/30 pl-6">
-            <a
-              href="/event"
-              className="font-semibold underline hover:no-underline text-red-500 hover:text-white transition-colors"
-            >
-              NEW EVENT
-            </a>
           </span>
         </div>
       </div>
