@@ -15,8 +15,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GitMon - Level Up Your Code",
-  description: "Gamify your coding journey with GitMon",
+  title: "GitMon - Open Source Coding Leaderboard",
+  description: "GitMon transforms your GitHub activity into an open source game. Climb the leaderboard, evolve your GitMons, and compete to become the ultimate developer!",
 };
 
 export default function RootLayout({
