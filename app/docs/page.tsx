@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Zap } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import FloatingBackButton from "@/components/FloatingBackButton";
 
 type DocType = "how-xp-works" | "system-design";
 
@@ -93,7 +94,7 @@ function DocsContent() {
               variant="outline"
               size="sm"
               onClick={() => router.back()}
-              className="flex items-center gap-2"
+              className="hidden md:flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -165,12 +166,15 @@ function DocsContent() {
 
 export default function DocsPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    }>
-      <DocsContent />
-    </Suspense>
+    <>
+      <FloatingBackButton />
+      <Suspense fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      }>
+        <DocsContent />
+      </Suspense>
+    </>
   );
 }

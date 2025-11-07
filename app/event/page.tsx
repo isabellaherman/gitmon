@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import SponsorBar from "@/components/SponsorBar";
+import FloatingBackButton from "@/components/FloatingBackButton";
 
 export default function EventPage() {
   const { data: session, status } = useSession();
@@ -105,12 +106,13 @@ export default function EventPage() {
   return (
     <>
       <SponsorBar />
+      <FloatingBackButton />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="text-center mb-8 relative">
-            {/* Back Button */}
-            <div className="absolute left-0 top-0">
+            {/* Back Button - Hidden on mobile */}
+            <div className="absolute left-0 top-0 hidden md:block">
               <Button
                 onClick={() => router.push('/')}
                 variant="outline"
@@ -211,6 +213,11 @@ export default function EventPage() {
                   <h2 className="text-2xl font-bold text-green-500" style={{ fontFamily: 'Minecraftia, monospace' }}>
                     JOINED SUCCESSFULLY!
                   </h2>
+                  <div className="mb-4">
+                    <span className="text-green-600 text-sm font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                      {isLoadingCount ? 'LOADING...' : `${participantCount.toLocaleString()} TRAINERS JOINED`}
+                    </span>
+                  </div>
                   <p className="text-muted-foreground">
                     You&apos;ve successfully joined the GitMon 1st Community Event! <br/>
                     Keep coding and stay tuned for more details about the boss battle.

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import SponsorBar from "@/components/SponsorBar";
 import MonsterGrid from "@/components/MonsterGrid";
 import MonsterDetails from "@/components/MonsterDetails";
+import FloatingBackButton from "@/components/FloatingBackButton";
 
 const monsters = [
   { id: 0, src: "/monsters/monster-000.png", name: "Shadrix", type: "shadow" },
@@ -62,12 +63,13 @@ export default function GitDexPage() {
   return (
     <>
       <SponsorBar />
+      <FloatingBackButton />
       <main className="min-h-screen lg:min-h-screen bg-background" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
         <div className="container mx-auto px-4 py-8">
           
           <div className="text-center mb-8 relative">
             
-            <div className="absolute left-0 top-0">
+            <div className="absolute left-0 top-0 hidden md:block">
               <Button
                 onClick={() => router.push('/')}
                 variant="outline"
