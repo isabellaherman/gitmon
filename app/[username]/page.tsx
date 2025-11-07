@@ -1,12 +1,16 @@
+"use client";
+
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import Image from "next/image";
-import { monsters, getMonsterById, getTypeTextColor } from "@/lib/monsters";
+import { getMonsterById } from "@/lib/monsters";
 import { getGuildById, getGuildTextColor } from "@/data/guilds";
-import { checkAndUpdateContributorStatus } from "@/lib/contributor-checker";
 import MonsterDisplay from "@/components/MonsterDisplay";
 import UserStats from "@/components/UserStats";
 import BadgeWall from "@/components/BadgeSystem";
+import GuildSelectionModal from "@/components/GuildSelectionModal";
+import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -14,43 +18,80 @@ interface ProfilePageProps {
   }>;
 }
 
-async function getUserByUsername(username: string) {
-  const user = await prisma.user.findFirst({
-    where: {
-      githubUsername: {
-        equals: username,
-        mode: "insensitive",
-      },
-    },
-    include: {
-      activities: {
-        orderBy: {
-          earnedAt: "desc",
-        },
-        take: 5,
-      },
-      eventParticipations: true,
-    },
-  });
-
-  return user;
+interface UserData {
+  id: string;
+  name?: string;
+  email?: string;
+  githubUsername?: string;
+  selectedMonsterId?: number;
+  gitmonSelectedAt?: Date;
+  guildId?: string | null;
+  level: number;
+  xp: number;
+  totalCommits: number;
+  totalPRs: number;
+  currentStreak: number;
+  totalStars: number;
+  activities: Array<{
+    id: string;
+    type: string;
+    amount: number;
+    source?: string;
+  }>;
 }
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
-  const { username } = await params;
-  const user = await getUserByUsername(username);
+async function getUserByUsername(username: string): Promise<UserData | null> {
+  try {
+    const response = await fetch(`/api/user/${username}`);
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    return null;
+  }
+}
+
+export default function ProfilePage({ params }: ProfilePageProps) {
+  const { data: session } = useSession();
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState<string>('');
+  const [showGuildModal, setShowGuildModal] = useState(false);
+
+  useEffect(() => {
+    const getUsername = async () => {
+      const { username: paramUsername } = await params;
+      setUsername(paramUsername);
+      const userData = await getUserByUsername(paramUsername);
+      setUser(userData);
+      setLoading(false);
+    };
+    getUsername();
+  }, [params]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <p>Loading...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!user || !user.githubUsername) {
     notFound();
   }
 
-  const selectedMonster = getMonsterById(user.selectedMonsterId);
-  const userGuild = getGuildById(user.guildId);
+  const selectedMonster = getMonsterById(user.selectedMonsterId || null);
+  const userGuild = getGuildById(user.guildId || null);
+  const isOwnProfile = session?.user?.email === user.email;
 
-  // Check and update contributor status in the background
-  if (user.githubUsername) {
-    checkAndUpdateContributorStatus(user.githubUsername).catch(console.error);
-  }
+  const handleGuildChange = (newGuildId: string | null) => {
+    setUser(prev => prev ? { ...prev, guildId: newGuildId } : null);
+  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -78,14 +119,23 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               <>
                 <span className="hidden md:inline"> </span>
                 <span
-                  className={`text-2xl uppercase font-bold cursor-pointer transition-colors ${getGuildTextColor(user.guildId)} relative group md:inline block md:mt-0 mt-2`}
+                  className={`text-2xl uppercase font-bold cursor-pointer transition-colors ${getGuildTextColor(user.guildId || null)} relative group md:inline block md:mt-0 mt-2`}
                 >
                   {userGuild.name}
-                  <span className="absolute top-full left-0 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                    Guild system coming soon!
-                  </span>
                 </span>
               </>
+            )}
+            {isOwnProfile && (
+              <div className="mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowGuildModal(true)}
+                  className="bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300"
+                >
+                  CHANGE GUILD
+                </Button>
+              </div>
             )}
           </h2>
         </div>
@@ -160,23 +210,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <BadgeWall userData={user} />
           </div>
         </div>
+
+        {/* Guild Selection Modal */}
+        <GuildSelectionModal
+          isOpen={showGuildModal}
+          onClose={() => setShowGuildModal(false)}
+          currentGuildId={user.guildId}
+          onGuildSelected={handleGuildChange}
+        />
       </div>
     </main>
   );
 }
 
-export async function generateMetadata({ params }: ProfilePageProps) {
-  const { username } = await params;
-  const user = await getUserByUsername(username);
-
-  if (!user) {
-    return {
-      title: "Trainer not found - GitMon",
-    };
-  }
-
-  return {
-    title: `${user.name || user.githubUsername} - GitMon Profile`,
-    description: `Check out ${user.name || user.githubUsername}'s GitMon profile. Level ${user.level}, ${user.xp} XP total.`,
-  };
-}
+// Note: generateMetadata removed since this is now a client component
+// SEO can be handled with next/head if needed
