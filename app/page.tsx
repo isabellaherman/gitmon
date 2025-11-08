@@ -217,7 +217,7 @@ export default function Home() {
                     <h3 className="text-lg font-bold">Trainer Profile</h3>
                     <button
                       onClick={() => router.push(`/${currentUserInLeaderboard?.githubUsername || session.user?.email?.split('@')[0]}`)}
-                      className="text-blue-500 hover:text-blue-700 transition-colors"
+                      className="text-blue-500 hover:text-blue-700 hover:scale-110 transition-all duration-200 cursor-pointer"
                       title="View full profile"
                     >
                       <svg
