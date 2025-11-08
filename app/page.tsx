@@ -213,7 +213,27 @@ export default function Home() {
             ) : (
               <div className="bg-card rounded-xl p-6">
                 <div className="text-center mb-6">
-                  <h3 className="text-lg font-bold mb-3">Trainer Profile</h3>
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <h3 className="text-lg font-bold">Trainer Profile</h3>
+                    <button
+                      onClick={() => router.push(`/${session.user?.email?.split('@')[0]}`)}
+                      className="text-blue-500 hover:text-blue-700 transition-colors"
+                      title="View full profile"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        className="w-5 h-5"
+                      >
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                        <polyline points="15,3 21,3 21,9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </button>
+                  </div>
                   <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Name:</span>
