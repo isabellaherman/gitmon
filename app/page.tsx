@@ -216,7 +216,7 @@ export default function Home() {
                   <div className="flex items-center justify-center gap-2 mb-3">
                     <h3 className="text-lg font-bold">Trainer Profile</h3>
                     <button
-                      onClick={() => router.push(`/${session.user?.email?.split('@')[0]}`)}
+                      onClick={() => router.push(`/${currentUserInLeaderboard?.githubUsername || session.user?.email?.split('@')[0]}`)}
                       className="text-blue-500 hover:text-blue-700 transition-colors"
                       title="View full profile"
                     >
