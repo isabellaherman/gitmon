@@ -70,6 +70,7 @@ model User {
   lastXpUpdate      DateTime @default(now())
   dailyXp           Int      @default(0)
   weeklyXp          Int      @default(0)
+  weekStartDate     DateTime? // Início da semana atual para reset automático
   currentStreak     Int      @default(0)
   longestStreak     Int      @default(0)
 

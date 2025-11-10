@@ -27,7 +27,10 @@
       "Bash(npx:*)",
       "Bash(yes)",
       "mcp__ide__getDiagnostics",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(node:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.github.com)"
     ],
     "deny": [],
     "ask": []

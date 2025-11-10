@@ -389,6 +389,25 @@ export class GitHubService {
     return startOfWeek;
   }
 
+  private getCalendarWeekRange(): { from: string; to: string } {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0=domingo, 1=segunda
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - daysFromMonday);
+    startOfWeek.setHours(0, 0, 0, 0); // Segunda 00:00:00
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999); // Domingo 23:59:59
+
+    return {
+      from: startOfWeek.toISOString(),
+      to: endOfWeek.toISOString()
+    };
+  }
+
   private filterCurrentWeekEvents(events: Record<string, unknown>[], useLastSevenDays: boolean = false): Record<string, unknown>[] {
     const startOfWeek = this.getStartOfWeek(useLastSevenDays);
     return events.filter(event => {
@@ -401,12 +420,8 @@ export class GitHubService {
     try {
       console.log(`[GitHub Service] Getting weekly XP for ${username} using GraphQL`);
 
-      const now = new Date();
-      const startDate = new Date(now);
-      startDate.setDate(now.getDate() - 7);
-
-      const fromDate = startDate.toISOString();
-      const toDate = now.toISOString();
+      // Use calendar week (Monday-Sunday) instead of 7 rolling days
+      const { from: fromDate, to: toDate } = this.getCalendarWeekRange();
 
       const query = `
         query($username: String!, $from: DateTime!, $to: DateTime!) {
