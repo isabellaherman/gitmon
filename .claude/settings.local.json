@@ -35,7 +35,8 @@
       "Bash(for i in {1..5})",
       "Bash(do echo \"Test $i:\")",
       "Bash(done)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
