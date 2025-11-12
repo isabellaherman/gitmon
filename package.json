@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@octokit/graphql": "^9.0.3",
     "@octokit/rest": "^22.0.1",

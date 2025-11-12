@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import SponsorBar from "@/components/SponsorBar";
 import FloatingBackButton from "@/components/FloatingBackButton";
+import BattleLog from "@/components/BattleLog";
 
 export default function EventPage() {
   const { data: session, status } = useSession();
@@ -237,6 +238,12 @@ export default function EventPage() {
                 </div>
               )}
             </div>
+
+            {/* Battle Log */}
+            <BattleLog
+              currentUsername={session?.user?.email?.split('@')[0]}
+              isParticipant={hasJoined}
+            />
 
             {/* Event Info */}
             <div className="mt-8 grid gap-4 md:grid-cols-2">

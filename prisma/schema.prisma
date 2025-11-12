@@ -123,3 +123,50 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model Event {
+  id              String   @id @default(cuid())
+  name            String
+  startDateTime   DateTime
+  endDateTime     DateTime
+  timezone        String   @default("America/Sao_Paulo")
+  bossMaxHp       Int      @default(10000)
+  bossCurrentHp   Int      @default(10000)
+  status          String   @default("active") // active, ended, paused
+  createdAt       DateTime @default(now())
+
+  battleLogs      BattleLog[]
+
+  @@map("events")
+}
+
+model BattleLog {
+  id           String   @id @default(cuid())
+  eventId      String
+  username     String
+  actionType   String   // commit, combo, milestone, event_start, event_end
+  message      String
+  timestamp    DateTime
+  damageDealt  Int      @default(0)
+  commitSha    String?
+  repoName     String?
+  metadata     Json?    // { additions, deletions, files_changed, combo_count, is_critical }
+
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, timestamp])
+  @@map("battle_logs")
+}
+
+model ParticipantActivityCache {
+  eventId         String
+  username        String
+  lastCommitSha   String?
+  lastActivity    DateTime?
+  totalCommits    Int      @default(0)
+  totalDamage     Int      @default(0)
+  lastChecked     DateTime @default(now())
+
+  @@id([eventId, username])
+  @@map("participant_activity_cache")
+}

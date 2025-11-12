@@ -30,7 +30,12 @@
       "Bash(pkill:*)",
       "Bash(node:*)",
       "WebSearch",
-      "WebFetch(domain:docs.github.com)"
+      "WebFetch(domain:docs.github.com)",
+      "Bash(chmod:*)",
+      "Bash(for i in {1..5})",
+      "Bash(do echo \"Test $i:\")",
+      "Bash(done)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
