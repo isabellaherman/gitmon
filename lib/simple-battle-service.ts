@@ -33,7 +33,7 @@ export class SimpleBattleService {
 
       // 2. Para cada participante, buscar commits da GitHub API
       const allCommits: CommitData[] = [];
-      const batchSize = 5; // Rate limit friendly
+      const batchSize = 10; // Aumentar batch size (GitHub permite 5000/hora)
 
       for (let i = 0; i < participants.length; i += batchSize) {
         const batch = participants.slice(i, i + batchSize);
@@ -50,9 +50,9 @@ export class SimpleBattleService {
           }
         });
 
-        // Rate limit delay
+        // Delay reduzido: 500ms em vez de 1000ms
         if (i + batchSize < participants.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
 
@@ -153,17 +153,21 @@ export class SimpleBattleService {
   private async saveNewBattleLogs(commits: CommitData[]): Promise<number> {
     let newLogsCount = 0;
 
+    // OTIMIZAÇÃO: buscar todos os SHAs existentes de uma vez
+    const existingCommitShas = new Set(
+      (await prisma.battleLog.findMany({
+        where: {
+          eventId: this.eventId,
+          commitSha: { in: commits.map(c => c.sha) }
+        },
+        select: { commitSha: true }
+      })).map(log => log.commitSha)
+    );
+
     for (const commit of commits) {
       try {
-        // Verificar se já existe
-        const existing = await prisma.battleLog.findFirst({
-          where: {
-            commitSha: commit.sha,
-            eventId: this.eventId
-          }
-        });
-
-        if (existing) continue; // Skip duplicates
+        // Verificar se já existe (agora O(1) lookup)
+        if (existingCommitShas.has(commit.sha)) continue;
 
         // Calcular dano e mensagem
         const damage = this.calculateCommitDamage(commit);
