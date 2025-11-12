@@ -22,5 +22,3 @@ Either way, you get a lifetime IP license for that character and its name.
 
 Only 9 GitMon slots will be available for ownership and project support — released one at a time.
 Get in touch if you’re interested, or just keep an eye on the website for updates.
-
-
