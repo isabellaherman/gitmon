@@ -16,6 +16,9 @@ export default function EventPage() {
   const [isCheckingParticipation, setIsCheckingParticipation] = useState(false);
   const [participantCount, setParticipantCount] = useState<number>(0);
   const [isLoadingCount, setIsLoadingCount] = useState(true);
+  const [battleLogs, setBattleLogs] = useState<any[]>([]);
+  const [isRefreshingBattle, setIsRefreshingBattle] = useState(false);
+  const [isBattleLogOpen, setIsBattleLogOpen] = useState(true);
 
   // Check if user already joined when session loads
   useEffect(() => {
@@ -61,6 +64,51 @@ export default function EventPage() {
 
     fetchParticipantCount();
   }, [hasJoined]); // Refetch when user joins
+
+  // Fetch battle logs for everyone
+  useEffect(() => {
+    const fetchBattleLogs = async () => {
+      try {
+        const response = await fetch('/api/battle-refresh');
+        const data = await response.json();
+
+        if (data.success) {
+          setBattleLogs(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching battle logs:', error);
+      }
+    };
+
+    fetchBattleLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleRefreshBattle = async () => {
+    setIsRefreshingBattle(true);
+
+    try {
+      // First, trigger a refresh
+      const refreshResponse = await fetch('/api/battle-refresh', {
+        method: 'POST'
+      });
+      const refreshData = await refreshResponse.json();
+
+      if (refreshData.success) {
+        // Then fetch updated logs
+        const logsResponse = await fetch('/api/battle-refresh');
+        const logsData = await logsResponse.json();
+
+        if (logsData.success) {
+          setBattleLogs(logsData.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing battle logs:', error);
+    } finally {
+      setIsRefreshingBattle(false);
+    }
+  };
 
   const handleJoinEvent = async () => {
     if (!session) {
@@ -237,6 +285,82 @@ export default function EventPage() {
                 </div>
               )}
             </div>
+
+            {/* Battle Log Section - Available for everyone */}
+            <div className="mt-8 bg-card rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <button
+                    onClick={() => setIsBattleLogOpen(!isBattleLogOpen)}
+                    className="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity text-green-500"
+                    style={{ fontFamily: 'Minecraftia, monospace' }}
+                  >
+                    <span className={`transform transition-transform ${isBattleLogOpen ? 'rotate-90' : ''}`}>
+                      {'>'}
+                    </span>
+                    BATTLE LOG
+                  </button>
+                  <Button
+                    onClick={handleRefreshBattle}
+                    disabled={isRefreshingBattle}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    {isRefreshingBattle ? 'REFRESHING...' : 'REFRESH'}
+                  </Button>
+                </div>
+
+                {isBattleLogOpen && (
+                  <>
+                    <div className="p-4 text-sm max-h-64 overflow-y-auto">
+                      <div className="space-y-2">
+                        {battleLogs.length > 0 ? (
+                          battleLogs.map((log, index) => {
+                            const now = new Date();
+                            const logTime = new Date(log.timestamp);
+                            const diffMs = now.getTime() - logTime.getTime();
+                            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                            const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                            let timeAgo;
+                            if (diffHours > 0) {
+                              timeAgo = `${diffHours}h ago`;
+                            } else if (diffMins > 0) {
+                              timeAgo = `${diffMins}m ago`;
+                            } else {
+                              timeAgo = 'now';
+                            }
+
+                            // Extract damage from message (new format: "@username dealt 25 damage to MadMonkey")
+                            const damageMatch = log.message.match(/dealt (\d+) damage/);
+                            const damage = damageMatch ? damageMatch[1] : '0';
+                            const usernameMatch = log.message.match(/@(\w+)/);
+                            const username = usernameMatch ? usernameMatch[1] : 'unknown';
+
+                            return (
+                              <div key={log.id || index} className="text-foreground">
+                                <span className="text-muted-foreground">{timeAgo}</span> @{username} dealt <span className="text-red-500 font-bold">{damage} damage</span> to MadMonkey
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <>
+                            <div className="text-muted-foreground">🔄 Click REFRESH to load battle logs...</div>
+                            <div className="text-muted-foreground text-xs mt-2">
+                              Battle logs show real commits from event participants
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-2 text-center">
+                      <span className="text-red-600 text-xs font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                        MAD MONKEY HP: {Math.max(0, 10000 - (battleLogs.length * 25)).toLocaleString()} / 10,000
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
 
             {/* Event Info */}
             <div className="mt-8 grid gap-4 md:grid-cols-2">
