@@ -16,9 +16,26 @@ export default function EventPage() {
   const [isCheckingParticipation, setIsCheckingParticipation] = useState(false);
   const [participantCount, setParticipantCount] = useState<number>(0);
   const [isLoadingCount, setIsLoadingCount] = useState(true);
-  const [battleLogs, setBattleLogs] = useState<any[]>([]);
-  const [isRefreshingBattle, setIsRefreshingBattle] = useState(false);
-  const [isBattleLogOpen, setIsBattleLogOpen] = useState(true);
+  const [commits, setCommits] = useState<Array<{
+    username: string;
+    sha: string;
+    message: string;
+    repoName: string;
+    committedAt: string;
+    createdAt: string;
+  }>>([]);
+  const [isLoadingCommits, setIsLoadingCommits] = useState(false);
+  const [isCommitsOpen, setIsCommitsOpen] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [stats, setStats] = useState({
+    totalParticipants: 0,
+    totalCommits: 0,
+    commitsLast24h: 0,
+    lastSyncAt: null as string | null,
+    eventStartDate: '',
+    eventEndDate: '',
+    currentDate: ''
+  });
 
   // Check if user already joined when session loads
   useEffect(() => {
@@ -65,48 +82,61 @@ export default function EventPage() {
     fetchParticipantCount();
   }, [hasJoined]); // Refetch when user joins
 
-  // Fetch battle logs for everyone
-  useEffect(() => {
-    const fetchBattleLogs = async () => {
-      try {
-        const response = await fetch('/api/battle-refresh');
-        const data = await response.json();
-
-        if (data.success) {
-          setBattleLogs(data.data || []);
-        }
-      } catch (error) {
-        console.error('Error fetching battle logs:', error);
-      }
-    };
-
-    fetchBattleLogs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleRefreshBattle = async () => {
-    setIsRefreshingBattle(true);
-
+  // Fetch commits from database
+  const fetchCommits = async () => {
     try {
-      // First, trigger a refresh
-      const refreshResponse = await fetch('/api/battle-refresh', {
-        method: 'POST'
-      });
-      const refreshData = await refreshResponse.json();
+      const response = await fetch('/api/event-commits');
+      const data = await response.json();
 
-      if (refreshData.success) {
-        // Then fetch updated logs
-        const logsResponse = await fetch('/api/battle-refresh');
-        const logsData = await logsResponse.json();
-
-        if (logsData.success) {
-          setBattleLogs(logsData.data || []);
-        }
+      if (data.success) {
+        setCommits(data.commits || []);
+        setStats(data.stats || {});
+        console.log('Commits loaded:', data.total);
+        console.log('Stats:', data.stats);
       }
     } catch (error) {
-      console.error('Error refreshing battle logs:', error);
+      console.error('Error fetching commits:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCommits();
+  }, []);
+
+  const handleSyncCommits = async () => {
+    setIsSyncing(true);
+
+    try {
+      // Trigger sync for ALL participants
+      const syncResponse = await fetch('/api/sync-event-commits', {
+        method: 'POST'
+      });
+      const syncData = await syncResponse.json();
+
+      if (syncData.success) {
+        console.log('🔴 [DEBUG] Sync completed:', syncData);
+        console.log('🔴 [DEBUG] Current time:', new Date().toISOString());
+        console.log('🔴 [DEBUG] Message:', syncData.message);
+        console.log('🔴 [DEBUG] Stats:', syncData.stats);
+        // Refresh the commit list
+        await fetchCommits();
+      } else {
+        console.error('🔴 [DEBUG] Sync failed:', syncData.error);
+        console.error('🔴 [DEBUG] Full response:', syncData);
+      }
+    } catch (error) {
+      console.error('Error syncing commits:', error);
     } finally {
-      setIsRefreshingBattle(false);
+      setIsSyncing(false);
+    }
+  };
+
+  const handleRefreshCommits = async () => {
+    setIsLoadingCommits(true);
+    try {
+      await fetchCommits();
+    } finally {
+      setIsLoadingCommits(false);
     }
   };
 
@@ -286,81 +316,134 @@ export default function EventPage() {
               )}
             </div>
 
-            {/* Battle Log Section - Available for everyone */}
+            {/* Event Commits Section */}
             <div className="mt-8 bg-card rounded-xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={() => setIsBattleLogOpen(!isBattleLogOpen)}
-                    className="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity text-green-500"
-                    style={{ fontFamily: 'Minecraftia, monospace' }}
-                  >
-                    <span className={`transform transition-transform ${isBattleLogOpen ? 'rotate-90' : ''}`}>
-                      {'>'}
-                    </span>
-                    BATTLE LOG
-                  </button>
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => setIsCommitsOpen(!isCommitsOpen)}
+                  className="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity text-green-500"
+                  style={{ fontFamily: 'Minecraftia, monospace' }}
+                >
+                  <span className={`transform transition-transform ${isCommitsOpen ? 'rotate-90' : ''}`}>
+                    {'>'}
+                  </span>
+                  EVENT COMMITS
+                </button>
+                <div className="flex gap-2">
                   <Button
-                    onClick={handleRefreshBattle}
-                    disabled={isRefreshingBattle}
+                    onClick={handleSyncCommits}
+                    disabled={isSyncing}
+                    variant="default"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    {isSyncing ? 'SYNCING ALL 88 USERS...' : 'SYNC ALL'}
+                  </Button>
+                  <Button
+                    onClick={handleRefreshCommits}
+                    disabled={isLoadingCommits}
                     variant="outline"
                     size="sm"
                     className="text-xs"
                   >
-                    {isRefreshingBattle ? 'REFRESHING...' : 'REFRESH'}
+                    {isLoadingCommits ? 'LOADING...' : 'REFRESH'}
                   </Button>
                 </div>
+              </div>
 
-                {isBattleLogOpen && (
-                  <>
-                    <div className="p-4 text-sm max-h-64 overflow-y-auto">
-                      <div className="space-y-2">
-                        {battleLogs.length > 0 ? (
-                          battleLogs.map((log, index) => {
-                            const now = new Date();
-                            const logTime = new Date(log.timestamp);
-                            const diffMs = now.getTime() - logTime.getTime();
-                            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                            const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+              {isCommitsOpen && (
+                <div className="space-y-4">
+                  {/* Debug Info */}
+                  <div className="p-3 bg-red-100 border border-red-300 rounded text-red-800 text-xs">
+                    <div className="font-bold">🔴 DEBUG - EVENT DATE RANGE:</div>
+                    <div className="mt-1">
+                      <strong>Current Time:</strong> {stats.currentDate || new Date().toISOString()}
+                    </div>
+                    <div>
+                      <strong>Event Start (Nov 12, 2025):</strong> {stats.eventStartDate || '2025-11-12T00:00:00.000Z'}
+                    </div>
+                    <div>
+                      <strong>Event End (Nov 30, 2025):</strong> {stats.eventEndDate || '2025-11-30T23:59:59.999Z'}
+                    </div>
+                    {stats.lastSyncAt && (
+                      <div>
+                        <strong>Last Sync:</strong> {stats.lastSyncAt}
+                      </div>
+                    )}
+                    <div className="mt-2 text-xs text-red-600">
+                      <strong>Search Query Format:</strong> author:username committer-date:2025-11-12..2025-11-30
+                    </div>
+                  </div>
 
-                            let timeAgo;
-                            if (diffHours > 0) {
-                              timeAgo = `${diffHours}h ago`;
-                            } else if (diffMins > 0) {
-                              timeAgo = `${diffMins}m ago`;
-                            } else {
-                              timeAgo = 'now';
-                            }
-
-                            // Extract damage from message (new format: "@username dealt 25 damage to MadMonkey")
-                            const damageMatch = log.message.match(/dealt (\d+) damage/);
-                            const damage = damageMatch ? damageMatch[1] : '0';
-                            const usernameMatch = log.message.match(/@(\w+)/);
-                            const username = usernameMatch ? usernameMatch[1] : 'unknown';
-
-                            return (
-                              <div key={log.id || index} className="text-foreground">
-                                <span className="text-muted-foreground">{timeAgo}</span> @{username} dealt <span className="text-red-500 font-bold">{damage} damage</span> to MadMonkey
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <>
-                            <div className="text-muted-foreground">🔄 Click REFRESH to load battle logs...</div>
-                            <div className="text-muted-foreground text-xs mt-2">
-                              Battle logs show real commits from event participants
-                            </div>
-                          </>
-                        )}
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-2 bg-muted/50 rounded">
+                      <div className="text-lg font-bold text-green-600">{stats.totalParticipants}</div>
+                      <div className="text-xs text-muted-foreground">Participants</div>
+                    </div>
+                    <div className="text-center p-2 bg-muted/50 rounded">
+                      <div className="text-lg font-bold text-blue-600">{stats.totalCommits}</div>
+                      <div className="text-xs text-muted-foreground">Total Commits</div>
+                    </div>
+                    <div className="text-center p-2 bg-muted/50 rounded">
+                      <div className="text-lg font-bold text-purple-600">{stats.commitsLast24h}</div>
+                      <div className="text-xs text-muted-foreground">Last 24h</div>
+                    </div>
+                    <div className="text-center p-2 bg-muted/50 rounded">
+                      <div className="text-xs text-muted-foreground">Last Sync</div>
+                      <div className="text-xs text-muted-foreground">
+                        {stats.lastSyncAt ? new Date(stats.lastSyncAt).toLocaleTimeString() : 'Never'}
                       </div>
                     </div>
-                    <div className="mt-2 text-center">
-                      <span className="text-red-600 text-xs font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
-                        MAD MONKEY HP: {Math.max(0, 10000 - (battleLogs.length * 25)).toLocaleString()} / 10,000
-                      </span>
+                  </div>
+
+                  {/* Commits Feed */}
+                  <div className="p-4 text-sm max-h-96 overflow-y-auto bg-muted/30 rounded">
+                    <div className="space-y-2">
+                      {commits.length > 0 ? (
+                        commits.map((commit, index) => {
+                          const committedAt = new Date(commit.committedAt);
+                          const timeAgo = Math.floor((Date.now() - committedAt.getTime()) / (1000 * 60 * 60));
+
+                          return (
+                            <div key={`${commit.sha}-${index}`} className="border-l-2 border-green-500 pl-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <span className="font-bold text-green-500">@{commit.username}</span>
+                                  <span className="text-muted-foreground text-xs ml-2">
+                                    {timeAgo > 24 ? `${Math.floor(timeAgo/24)}d` : `${timeAgo}h`} ago • {commit.repoName}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-sm mt-1">{commit.message}</div>
+                              <div className="text-xs text-muted-foreground font-mono">
+                                {commit.sha.substring(0, 8)}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                          <div>📦 No commits tracked yet</div>
+                          <div className="text-xs mt-2">
+                            Click &quot;SYNC ALL&quot; to fetch commits from all {stats.totalParticipants} participants
+                          </div>
+                          <div className="text-xs mt-1 text-yellow-600">
+                            ⏱️ First sync takes 2-3 minutes (checking all users), then it&apos;s incremental!
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+
+                  <div className="text-center">
+                    <span className="text-blue-600 text-sm font-bold">
+                      COMMITS TRACKED: {commits.length}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Event Info */}
             <div className="mt-8 grid gap-4 md:grid-cols-2">

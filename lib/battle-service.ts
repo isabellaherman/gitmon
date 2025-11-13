@@ -20,57 +20,97 @@ export class BattleService {
     this.githubService = new GitHubService(githubToken);
   }
 
-  // REUTILIZAR o sistema de XP para buscar commits dos participantes
-  async refreshBattleLogs(): Promise<{ success: boolean; message: string; stats: any }> {
+  // SIMPLIFIED: Just get and list commits to prove it works
+  async getCommitsFromParticipants(): Promise<{
+    success: boolean;
+    participants: string[];
+    commits: Array<{
+      username: string;
+      sha: string;
+      message: string;
+      repo: string;
+      date: string;
+    }>;
+    total: number;
+  }> {
     try {
-      console.log('🔍 Starting battle log refresh using XP system...');
+      console.log('🔍 Getting commits from event participants...');
 
-      // 1. Buscar participantes do evento (igual ao sistema original)
+      // 1. Get participants
       const participants = await this.getEventParticipants();
-      console.log(`📋 Found ${participants.length} participants`);
+      console.log(`📋 Found ${participants.length} participants:`, participants);
 
-      const newCommits: BattleCommit[] = [];
+      const allCommits: Array<{
+        username: string;
+        sha: string;
+        message: string;
+        repo: string;
+        date: string;
+      }> = [];
 
-      // 2. Para cada participante, usar a MESMA lógica do XP
-      for (const username of participants) {
-        try {
-          console.log(`🔍 Checking ${username}...`);
+      // 2. Search commits for participants (process in batches to avoid rate limits)
+      const batchSize = 10; // Process 10 users at a time
+      const maxUsers = 30;  // Limit to first 30 users for now
+      const usersToCheck = participants.slice(0, maxUsers);
 
-          // REUTILIZAR getWeeklyXp que já funciona perfeitamente
-          const weeklyXp = await this.githubService.getWeeklyXp(username, true);
+      console.log(`🔍 Checking commits for ${usersToCheck.length} participants (limited for performance)...`);
 
-          if (weeklyXp > 0) {
-            // Buscar os eventos reais que geraram esse XP
-            const recentCommits = await this.getRecentCommitsFromEvents(username);
-            newCommits.push(...recentCommits);
+      for (let i = 0; i < usersToCheck.length; i += batchSize) {
+        const batch = usersToCheck.slice(i, i + batchSize);
+
+        // Process batch in parallel
+        const batchPromises = batch.map(async (username) => {
+          try {
+            console.log(`🔍 Searching commits for ${username}...`);
+            const commits = await this.githubService.getCommitsViaSearch(username, 7);
+
+            const formattedCommits = commits.map(commit => ({
+              username,
+              sha: commit.sha,
+              message: commit.message,
+              repo: commit.repoName,
+              date: commit.timestamp.toISOString()
+            }));
+
+            console.log(`  ✅ Found ${commits.length} commits for ${username}`);
+            return formattedCommits;
+
+          } catch (error) {
+            console.log(`  ❌ Error for ${username}:`, error instanceof Error ? error.message : 'Unknown error');
+            return [];
           }
+        });
 
-        } catch (error) {
-          console.log(`⚠️ Error checking ${username}: ${error.message}`);
+        // Wait for batch to complete
+        const batchResults = await Promise.allSettled(batchPromises);
+
+        // Add successful results
+        batchResults.forEach(result => {
+          if (result.status === 'fulfilled') {
+            allCommits.push(...result.value);
+          }
+        });
+
+        // Small delay between batches to respect rate limits
+        if (i + batchSize < usersToCheck.length) {
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
         }
       }
 
-      console.log(`🎯 Found ${newCommits.length} total recent commits`);
-
-      // 3. Salvar como battle logs (evitando duplicatas)
-      const savedLogs = await this.saveBattleLogs(newCommits);
-
       return {
         success: true,
-        message: `Found ${newCommits.length} commits, saved ${savedLogs} new battle logs`,
-        stats: {
-          participants: participants.length,
-          commitsFound: newCommits.length,
-          newLogsSaved: savedLogs
-        }
+        participants,
+        commits: allCommits,
+        total: allCommits.length
       };
 
     } catch (error) {
-      console.error('Battle log refresh error:', error);
+      console.error('Error getting commits:', error);
       return {
         success: false,
-        message: `Error: ${error.message}`,
-        stats: {}
+        participants: [],
+        commits: [],
+        total: 0
       };
     }
   }
@@ -95,14 +135,33 @@ export class BattleService {
       .filter(Boolean) as string[];
   }
 
-  // REUTILIZAR a lógica de eventos do GitHub Service
+  // NEW: Use GitHub Search API instead of events
+  private async getCommitsViaSearch(username: string): Promise<BattleCommit[]> {
+    try {
+      console.log(`🔍 Searching commits for ${username} using GitHub Search API`);
+
+      const commits = await this.githubService.getCommitsViaSearch(username, 7);
+
+      return commits.map(commit => ({
+        username,
+        commitSha: commit.sha,
+        message: commit.message,
+        repoName: commit.repoName,
+        timestamp: commit.timestamp,
+        damage: this.calculateDamage()
+      }));
+
+    } catch (error) {
+      console.error(`Error searching commits for ${username}:`, error);
+      return [];
+    }
+  }
+
+  // DEPRECATED: Old event-based approach (keeping for reference)
   private async getRecentCommitsFromEvents(username: string): Promise<BattleCommit[]> {
     try {
       // Usar a MESMA API que o sistema de XP usa
-      const { data: events } = await this.githubService['octokit'].rest.activity.listPublicEventsForUser({
-        username,
-        per_page: 30
-      });
+      const events = await this.githubService.getPublicEventsForUser(username, 30);
 
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const commits: BattleCommit[] = [];
@@ -120,7 +179,7 @@ export class BattleService {
             continue;
           }
 
-          const payload = event.payload as any;
+          const payload = event.payload as { commits?: unknown[]; size?: number };
           const repoName = event.repo?.name || 'unknown';
 
           // Cada push gera UM battle log (simples)
@@ -145,7 +204,7 @@ export class BattleService {
     }
   }
 
-  private generateCommitMessage(payload: any, repoName: string): string {
+  private generateCommitMessage(payload: { commits?: unknown[]; size?: number }, repoName: string): string {
     const commitCount = payload.commits?.length || payload.size || 1;
     return `${commitCount} commit${commitCount > 1 ? 's' : ''} to ${repoName}`;
   }
@@ -155,63 +214,4 @@ export class BattleService {
     return Math.floor(Math.random() * 30) + 15;
   }
 
-  // Salvar battle logs evitando duplicatas
-  private async saveBattleLogs(commits: BattleCommit[]): Promise<number> {
-    let savedCount = 0;
-
-    for (const commit of commits) {
-      try {
-        // Verificar se já existe (por commitSha único)
-        const existing = await prisma.battleLog.findFirst({
-          where: {
-            commitSha: commit.commitSha,
-            eventId: this.eventId
-          }
-        });
-
-        if (existing) continue; // Skip duplicate
-
-        // Criar battle log com mensagem épica
-        const epicMessage = this.generateBattleMessage(commit);
-
-        await prisma.battleLog.create({
-          data: {
-            eventId: this.eventId,
-            username: commit.username,
-            actionType: 'commit',
-            message: epicMessage,
-            timestamp: commit.timestamp,
-            damageDealt: commit.damage,
-            commitSha: commit.commitSha,
-            repoName: commit.repoName,
-            metadata: {
-              originalMessage: commit.message,
-              fromXpSystem: true
-            }
-          }
-        });
-
-        savedCount++;
-        console.log(`💾 Saved: ${commit.username} - ${commit.repoName}`);
-
-      } catch (error) {
-        console.error(`Error saving commit ${commit.commitSha}:`, error);
-      }
-    }
-
-    return savedCount;
-  }
-
-  private generateBattleMessage(commit: BattleCommit): string {
-    return `@${commit.username} dealt ${commit.damage} damage to MadMonkey`;
-  }
-
-  // Buscar battle logs existentes
-  async getBattleLogs(limit: number = 50) {
-    return await prisma.battleLog.findMany({
-      where: { eventId: this.eventId },
-      orderBy: { timestamp: 'desc' },
-      take: limit
-    });
-  }
 }

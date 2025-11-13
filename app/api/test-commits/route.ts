@@ -4,24 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const battleService = new BattleService();
-    const logs = await battleService.getBattleLogs(50);
-
-    return NextResponse.json({
-      success: true,
-      data: logs
-    });
-  } catch (error) {
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: 500 });
-  }
-}
-
-export async function POST() {
-  try {
-    // Buscar token do GitHub (igual ao sistema de XP)
+    // Get GitHub token
     const githubAccount = await prisma.account.findFirst({
       where: {
         provider: 'github',
@@ -37,15 +20,15 @@ export async function POST() {
     }
 
     const battleService = new BattleService(githubAccount.access_token);
-    const result = await battleService.refreshBattleLogs();
+    const result = await battleService.getCommitsFromParticipants();
 
     return NextResponse.json(result);
 
   } catch (error) {
-    console.error('Battle refresh error:', error);
+    console.error('Test commits error:', error);
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
