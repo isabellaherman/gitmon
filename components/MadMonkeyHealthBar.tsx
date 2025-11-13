@@ -1,17 +1,16 @@
 'use client';
 
 interface MadMonkeyHealthBarProps {
+  totalDamage: number;
   totalCommits: number;
   maxHp?: number;
-  damagePerCommit?: number;
 }
 
 export default function MadMonkeyHealthBar({
+  totalDamage,
   totalCommits,
-  maxHp = 10000,
-  damagePerCommit = 20
+  maxHp = 10000
 }: MadMonkeyHealthBarProps) {
-  const totalDamage = totalCommits * damagePerCommit;
   const currentHp = Math.max(0, maxHp - totalDamage);
   const healthPercentage = (currentHp / maxHp) * 100;
 

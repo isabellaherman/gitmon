@@ -234,9 +234,9 @@ export default function EventPage() {
             {/* Mad Monkey Health Bar */}
             <div className="mb-8">
               <MadMonkeyHealthBar
-                totalCommits={commits.length}
+                totalDamage={stats.totalCommits * 20}
+                totalCommits={stats.totalCommits}
                 maxHp={10000}
-                damagePerCommit={20}
               />
             </div>
           </div>
@@ -291,8 +291,9 @@ export default function EventPage() {
                       </Button>
                     </div>
 
-                    <div className="h-64 overflow-y-auto text-sm space-y-1">
-                      {commits.length > 0 ? (
+                    {isBattleLogOpen && (
+                      <div className="h-64 overflow-y-auto text-sm space-y-1">
+                        {commits.length > 0 ? (
                         commits.map((commit, index) => {
                           const committedAt = new Date(commit.committedAt);
                           const timeAgo = Math.floor(
@@ -332,8 +333,9 @@ export default function EventPage() {
                             Click SYNC ALL to start tracking hits!
                           </div>
                         </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="text-center pt-2 border-t mt-2">
                       <span className="text-orange-400 text-xs font-bold">
