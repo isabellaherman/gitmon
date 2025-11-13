@@ -3,11 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import SupportCard from "@/components/SupportCard";
 import SponsorBar from "@/components/SponsorBar";
-import EventPopup from "@/components/EventPopup";
 
 import { monsters, getTypeColor, formatBirthdate, getMonsterById } from "@/lib/monsters";
 
@@ -34,9 +33,7 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
-  const [showEventPopup, setShowEventPopup] = useState(false);
   const [totalTrainers, setTotalTrainers] = useState<number>(0);
-  const eventPopupTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (session?.user?.email && status === 'authenticated') {
@@ -84,57 +81,6 @@ export default function Home() {
     fetchLeaderboard();
   }, [leaderboardPeriod, session]);
 
-  // Show event popup on page load (only once per session and if user is not already participating)
-  useEffect(() => {
-    const EVENT_POPUP_KEY = 'hasSeenEventPopup';
-    const EVENT_ID = 'first-community-event';
-    const POPUP_DELAY_MS = 1000;
-
-    const hasSeenEventPopup = sessionStorage.getItem(EVENT_POPUP_KEY);
-    if (hasSeenEventPopup) return;
-
-    const markPopupAsSeen = () => {
-      sessionStorage.setItem(EVENT_POPUP_KEY, 'true');
-    };
-
-    const showPopupWithDelay = () => {
-      eventPopupTimerRef.current = setTimeout(() => {
-        setShowEventPopup(true);
-        markPopupAsSeen();
-      }, POPUP_DELAY_MS);
-    };
-
-    const isAuthenticated = session?.user?.email && status === 'authenticated';
-
-    if (isAuthenticated) {
-      const checkParticipation = async () => {
-        try {
-          const response = await fetch(`/api/check-event-participation?eventId=${EVENT_ID}`);
-          const data = await response.json();
-
-          if (data.success && !data.hasJoined) {
-            showPopupWithDelay();
-          } else {
-            markPopupAsSeen();
-          }
-        } catch (error) {
-          console.error('Error checking event participation:', error);
-          showPopupWithDelay();
-        }
-      };
-
-      checkParticipation();
-    } else {
-      showPopupWithDelay();
-    }
-
-    return () => {
-      if (eventPopupTimerRef.current) {
-        clearTimeout(eventPopupTimerRef.current);
-        eventPopupTimerRef.current = null;
-      }
-    };
-  }, [session, status]);
 
   // Fetch total trainers count
   useEffect(() => {
@@ -182,10 +128,6 @@ export default function Home() {
   return (
     <>
       <SponsorBar />
-      <EventPopup
-        isOpen={showEventPopup}
-        onClose={() => setShowEventPopup(false)}
-      />
       <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
