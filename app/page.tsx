@@ -215,20 +215,40 @@ export default function Home() {
                       </svg>
                     </button>
                   </div>
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name:</span>
-                      <span className="font-medium">{session.user?.name}</span>
+
+                  {/* Mad Monkey Event Banner */}
+                  <div className="relative p-0.5 rounded-2xl cursor-pointer hover:scale-105 transition-all duration-300 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 mb-6">
+                    <div
+                      className="bg-white rounded-2xl p-3 flex items-center gap-3"
+                      onClick={() => router.push('/event')}
+                    >
+                    {/* Mad Monkey Image - Left side */}
+                    <div className="w-16 h-16 relative flex-shrink-0">
+                      <Image
+                        src="/events/MadMonkey.png"
+                        alt="Mad Monkey"
+                        fill
+                        className="object-contain"
+                        sizes="64px"
+                      />
                     </div>
-                    {/* <div className="flex justify-between">
-                      <span className="text-muted-foreground">GitHub:</span>
-                      <span className="font-medium">@{session.user?.email?.split('@')[0]}</span>
-                    </div> */}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">GitMon:</span>
-                      <span className={selectedMonster ? "text-green-500 font-medium" : "text-yellow-500 font-medium"}>
-                        {selectedMonster ? selectedMonster.name.toUpperCase() : "Not selected"}
-                      </span>
+
+                    {/* Banner Content - Right side */}
+                    <div className="flex-1">
+                      <div className="mb-1">
+                        <span className="text-red-600 text-xs font-bold uppercase" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                          🚨 NEW EVENT
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-800 font-bold">
+                        Mad Monkey is bringing chaos!
+                      </p>
+                    </div>
+
+                    {/* Arrow indicator */}
+                    <div className="text-orange-500 text-lg">
+                      →
+                    </div>
                     </div>
                   </div>
                 </div>
