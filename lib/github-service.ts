@@ -506,6 +506,58 @@ export class GitHubService {
       return null;
     }
   }
+
+  async getPublicEventsForUser(username: string, perPage: number = 30) {
+    try {
+      const { data } = await this.octokit.rest.activity.listPublicEventsForUser({
+        username,
+        per_page: perPage
+      });
+      return data;
+    } catch (error) {
+      console.error(`Error getting events for ${username}:`, error);
+      return [];
+    }
+  }
+
+  async getCommitsViaSearch(username: string, daysBack: number = 7): Promise<Array<{
+    sha: string;
+    message: string;
+    repoName: string;
+    timestamp: Date;
+    url: string;
+  }>> {
+    try {
+      const sinceDate = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
+      const sinceDateStr = sinceDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      console.log(`[GitHub Search] Looking for commits from ${username} since ${sinceDateStr}`);
+
+      // Search for commits by this author in the specified time range
+      const { data } = await this.octokit.rest.search.commits({
+        q: `author:${username} committer-date:>${sinceDateStr}`,
+        sort: 'committer-date',
+        order: 'desc',
+        per_page: 100
+      });
+
+      console.log(`[GitHub Search] Found ${data.items.length} commits for ${username}`);
+
+      return data.items.map(commit => ({
+        sha: commit.sha,
+        message: commit.commit.message.split('\n')[0], // First line only
+        repoName: commit.repository?.full_name || 'unknown',
+        timestamp: new Date(commit.commit.committer?.date || commit.commit.author.date),
+        url: commit.html_url
+      }));
+
+    } catch (error) {
+      console.error(`[GitHub Search] Error searching commits for ${username}:`, error);
+
+      // If search fails, fall back to empty array
+      return [];
+    }
+  }
 }
 
 export default GitHubService;

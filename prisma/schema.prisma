@@ -109,12 +109,29 @@ model EventParticipant {
   eventId        String
   githubUsername String?
   joinedAt       DateTime @default(now())
+  lastSyncAt     DateTime? // Track when we last checked this user's commits
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, eventId])
   @@map("event_participants")
 }
+
+model EventCommit {
+  id          String   @id @default(cuid())
+  eventId     String
+  username    String
+  sha         String   // GitHub commit SHA (unique identifier)
+  message     String
+  repoName    String
+  committedAt DateTime // When the commit was actually made
+  createdAt   DateTime @default(now()) // When we discovered it
+
+  @@unique([eventId, sha]) // Prevent duplicates
+  @@index([eventId, committedAt]) // For efficient querying
+  @@map("event_commits")
+}
+
 
 model VerificationToken {
   identifier String
