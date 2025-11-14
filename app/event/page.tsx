@@ -29,7 +29,7 @@ export default function EventPage() {
   >([]);
   const [isCommitsOpen, setIsCommitsOpen] = useState(true);
   const [isBattleLogOpen, setIsBattleLogOpen] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
+  // DISABLED: const [isSyncing, setIsSyncing] = useState(false);
   const [stats, setStats] = useState({
     totalParticipants: 0,
     totalCommits: 0,
@@ -110,6 +110,8 @@ export default function EventPage() {
     fetchCommits();
   }, []);
 
+  // DISABLED: Sync function commented out to prevent rate limiting attacks
+  /*
   const handleSyncCommits = async () => {
     setIsSyncing(true);
 
@@ -137,6 +139,7 @@ export default function EventPage() {
       setIsSyncing(false);
     }
   };
+  */
 
   const handleJoinEvent = async () => {
     if (!session) {
@@ -280,7 +283,8 @@ export default function EventPage() {
                         </span>
                         BATTLE LOG
                       </button>
-                      <Button
+                      {/* TEMPORARILY DISABLED: Button causing rate limit issues */}
+                      {/* <Button
                         onClick={handleSyncCommits}
                         disabled={isSyncing}
                         variant="default"
@@ -288,7 +292,7 @@ export default function EventPage() {
                         className="text-xs"
                       >
                         {isSyncing ? "SYNCING..." : "SYNC ALL"}
-                      </Button>
+                      </Button> */}
                     </div>
 
                     {isBattleLogOpen && (
@@ -330,7 +334,7 @@ export default function EventPage() {
                         <div className="text-center text-muted-foreground py-8 text-xs">
                           <div>No battle activity yet</div>
                           <div className="mt-2">
-                            Click SYNC ALL to start tracking hits!
+                            Sync functionality temporarily disabled for rate limiting protection
                           </div>
                         </div>
                         )}
