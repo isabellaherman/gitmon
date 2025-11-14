@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import GitHubService from "@/lib/github-service";
-import { calculateLevel, getUserRank } from "@/lib/xp-system";
+import { syncUserData } from "@/lib/xp-calculator";
+import { getUserRank } from "@/lib/xp-system";
 
 export async function POST(request: Request) {
   try {
@@ -38,98 +38,42 @@ export async function POST(request: Request) {
 
     console.log(`[Onboarding] User completed onboarding: ${updatedUser.email}`);
 
-    // Automatically sync XP after onboarding
+    // Automatically sync XP after onboarding using shared sync function
     try {
-      let githubUsername = updatedUser.githubUsername;
+      console.log(`[Onboarding] Starting automatic XP sync for user ${updatedUser.id}`);
 
-      // Get GitHub username if not already stored
-      if (!githubUsername && updatedUser.accounts.length > 0) {
-        const githubAccount = updatedUser.accounts[0];
-        if (githubAccount?.providerAccountId) {
-          try {
-            const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
-            const githubUserData = await response.json();
-            githubUsername = githubUserData.login;
-            console.log(`[Onboarding] Found GitHub username: ${githubUsername}`);
-          } catch (error) {
-            console.error('[Onboarding] Failed to get GitHub username:', error);
-          }
-        }
-      }
+      const syncResult = await syncUserData(updatedUser);
 
-      if (githubUsername) {
-        // Get GitHub access token
-        let accessToken = undefined;
-        if (updatedUser.accounts.length > 0) {
-          const githubAccount = updatedUser.accounts[0];
-          accessToken = githubAccount?.access_token;
-        }
+      if (syncResult) {
+        const newRank = getUserRank(syncResult.level);
 
-        console.log(`[Onboarding] Starting automatic XP sync for ${githubUsername}`);
-        const githubService = new GitHubService(accessToken || undefined);
-
-        const githubStats = await githubService.getUserStats(githubUsername);
-        const weeklyXp = await githubService.getWeeklyXp(githubUsername, true);
-
-        // Calculate lifetime XP
-        const lifetimeXp =
-          (githubStats.followers * 1) +
-          (githubStats.totalStars * 10) +
-          (githubStats.totalForks * 5) +
-          (githubStats.totalRepos * 50) +
-          (githubStats.totalCommits * 5) +
-          (githubStats.totalPRs * 40);
-
-        const newLevel = calculateLevel(lifetimeXp);
-        const newRank = getUserRank(newLevel);
-
-        // Update user with XP data
-        const finalUser = await prisma.user.update({
-          where: { id: updatedUser.id },
-          data: {
-            githubUsername,
-            githubBio: githubStats.bio,
-            githubLocation: githubStats.location,
-            githubCompany: githubStats.company,
-            githubBlog: githubStats.blog,
-            githubTwitter: githubStats.twitterUsername,
-            githubFollowers: githubStats.followers,
-            githubFollowing: githubStats.following,
-            githubCreatedAt: githubStats.createdAt,
-            avgCommitsPerWeek: githubStats.avgCommitsPerWeek,
-            xp: lifetimeXp,
-            level: newLevel,
-            weeklyXp: weeklyXp,
-            totalCommits: githubStats.totalCommits,
-            totalPRs: githubStats.totalPRs,
-            totalStars: githubStats.totalStars,
-            totalRepos: githubStats.totalRepos,
-            languagesUsed: JSON.stringify(githubStats.languages),
-            lastXpUpdate: new Date()
-          }
+        // Get the updated user data
+        const finalUser = await prisma.user.findUnique({
+          where: { id: updatedUser.id }
         });
 
-        console.log(`[Onboarding] XP sync completed for ${githubUsername}: ${lifetimeXp} XP, Level ${newLevel}`);
+        console.log(`[Onboarding] XP sync completed for ${syncResult.username}: ${syncResult.newXp} XP, Level ${syncResult.level}`);
 
         return NextResponse.json({
           success: true,
           user: finalUser,
           xpSynced: true,
           xpData: {
-            lifetimeXp,
-            weeklyXp,
-            level: newLevel,
-            rank: newRank
+            lifetimeXp: syncResult.newXp,
+            weeklyXp: syncResult.newWeeklyXp,
+            level: syncResult.level,
+            rank: newRank,
+            username: syncResult.username
           }
         });
 
       } else {
-        console.log('[Onboarding] No GitHub username found, skipping XP sync');
+        console.log('[Onboarding] XP sync returned null, likely no GitHub username found');
         return NextResponse.json({
           success: true,
           user: updatedUser,
           xpSynced: false,
-          message: "Onboarding completed but XP sync skipped (no GitHub username)"
+          message: "Onboarding completed but XP sync skipped (no GitHub username or sync failed)"
         });
       }
 

@@ -81,6 +81,11 @@ model User {
   totalRepos        Int      @default(0)
   languagesUsed     String?  // JSON string of languages array
 
+  // Ranking cache
+  allTimeRank       Int?     // Cached all-time ranking position
+  weeklyRank        Int?     // Cached weekly ranking position
+  rankUpdatedAt     DateTime? // When rankings were last calculated
+
   accounts Account[]
   sessions Session[]
   activities XpActivity[]
