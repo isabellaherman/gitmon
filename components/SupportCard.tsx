@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface SupportCardProps {
   externalModalOpen?: boolean;
@@ -12,6 +13,7 @@ interface SupportCardProps {
 
 export default function SupportCard({ externalModalOpen, onExternalModalClose, hideCard = false }: SupportCardProps = {}) {
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const router = useRouter();
 
   // Listen for global event to open modal
   useEffect(() => {
@@ -35,7 +37,43 @@ export default function SupportCard({ externalModalOpen, onExternalModalClose, h
   return (
     <>
       {!hideCard && (
-        <div className="mt-6 pt-6 border-t">
+        <div className="mt-6 pt-6 border-t space-y-4">
+        {/* Mad Monkey Event Banner */}
+        <div className="relative p-0.5 rounded-2xl cursor-pointer hover:scale-105 transition-all duration-300 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500">
+          <div
+            className="bg-white rounded-2xl p-3 flex items-center gap-3"
+            onClick={() => router.push('/event')}
+          >
+          {/* Mad Monkey Image - Left side */}
+          <div className="w-16 h-16 relative flex-shrink-0">
+            <Image
+              src="/events/MadMonkey.png"
+              alt="Mad Monkey"
+              fill
+              className="object-contain"
+              sizes="64px"
+            />
+          </div>
+
+          {/* Banner Content - Right side */}
+          <div className="flex-1">
+            <div className="mb-1">
+              <span className="text-red-600 text-xs font-bold uppercase" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                🚨 NEW EVENT
+              </span>
+            </div>
+            <p className="text-sm text-gray-800 font-bold">
+              Mad Monkey is bringing chaos!
+            </p>
+          </div>
+
+          {/* Arrow indicator */}
+          <div className="text-orange-500 text-lg">
+            →
+          </div>
+          </div>
+        </div>
+
         <div className="relative bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-6 overflow-hidden">
           {/* Left Monster - Infernus */}
           <div className="absolute -left-6 top-1/2 transform -translate-y-1/2 w-26 h-26 z-10">
