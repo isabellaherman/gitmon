@@ -117,8 +117,9 @@ async function forceUpdateTopUsersWeeklyXp() {
 
 export async function GET(request: Request) {
   try {
-    // Check and reset weekly XP if needed (automatic reset)
-    await checkAndResetWeeklyXp();
+    // EMERGENCY FIX: Disabled heavy weekly XP reset that was causing DB overload
+    // TODO: Move to cron job that runs once per hour
+    // await checkAndResetWeeklyXp();
 
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'week';
@@ -203,38 +204,10 @@ export async function GET(request: Request) {
       });
 
       if (currentUser && currentUser.onboardingCompleted && currentUser.selectedMonsterId !== null) {
-        // Calcula a posição real do usuário
-        const userRank = await prisma.user.count({
-          where: {
-            onboardingCompleted: true,
-            selectedMonsterId: { not: null },
-            OR: period === 'week'
-              ? [
-                  { weeklyXp: { gt: currentUser.weeklyXp } },
-                  {
-                    weeklyXp: currentUser.weeklyXp,
-                    level: { gt: currentUser.level }
-                  },
-                  {
-                    weeklyXp: currentUser.weeklyXp,
-                    level: currentUser.level,
-                    lastXpUpdate: { gt: currentUser.lastXpUpdate }
-                  }
-                ]
-              : [
-                  { xp: { gt: currentUser.xp } },
-                  {
-                    xp: currentUser.xp,
-                    level: { gt: currentUser.level }
-                  },
-                  {
-                    xp: currentUser.xp,
-                    level: currentUser.level,
-                    lastXpUpdate: { gt: currentUser.lastXpUpdate }
-                  }
-                ]
-          }
-        }) + 1;
+        // EMERGENCY FIX: Disabled expensive user ranking calculation
+        // TODO: Implement efficient ranking with cached values
+        // const userRank = await prisma.user.count({...}) + 1;
+        const userRank = 999; // Temporary fallback rank
 
         const currentUserEntry: LeaderboardEntry = {
           rank: userRank,

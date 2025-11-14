@@ -35,30 +35,31 @@ export default function Home() {
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
   const [totalTrainers, setTotalTrainers] = useState<number>(0);
 
-  useEffect(() => {
-    if (session?.user?.email && status === 'authenticated') {
-      const now = Date.now();
-      const sessionKey = `sync_${session.user.email}`;
-      const lastSync = localStorage.getItem(sessionKey);
+  // EMERGENCY FIX: Disabled auto-sync loop that was causing 400k requests/hour
+  // useEffect(() => {
+  //   if (session?.user?.email && status === 'authenticated') {
+  //     const now = Date.now();
+  //     const sessionKey = `sync_${session.user.email}`;
+  //     const lastSync = localStorage.getItem(sessionKey);
 
-      if (!lastSync || (now - parseInt(lastSync)) > 10 * 60 * 1000) {
-        console.log('[Auto Sync] Performing automatic XP sync...');
+  //     if (!lastSync || (now - parseInt(lastSync)) > 10 * 60 * 1000) {
+  //       console.log('[Auto Sync] Performing automatic XP sync...');
 
-        fetch('/api/force-sync', { method: 'POST' })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              console.log('[Auto Sync] XP updated successfully');
-              localStorage.setItem(sessionKey, now.toString());
-              window.location.reload();
-            }
-          })
-          .catch(err => {
-            console.error('[Auto Sync] Failed:', err);
-          });
-      }
-    }
-  }, [session, status]);
+  //       fetch('/api/force-sync', { method: 'POST' })
+  //         .then(res => res.json())
+  //         .then(data => {
+  //           if (data.success) {
+  //             console.log('[Auto Sync] XP updated successfully');
+  //             localStorage.setItem(sessionKey, now.toString());
+  //             window.location.reload();
+  //           }
+  //         })
+  //         .catch(err => {
+  //           console.error('[Auto Sync] Failed:', err);
+  //         });
+  //     }
+  //   }
+  // }, [session, status]);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
