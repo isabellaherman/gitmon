@@ -16,47 +16,99 @@ A critical performance bug has been identified in the GitMon application causing
 
 ## 🔍 Technical Analysis
 
-### Primary Issue Location
-**File**: `/app/api/leaderboard/route.ts`
-**Lines**: 127-131
+### 🚨 TWO DISTINCT CRITICAL PROBLEMS IDENTIFIED
+
+#### PROBLEM #1: Frontend Auto-Sync Loop (MAIN TRIGGER)
+**File**: `/app/page.tsx`
+**Lines**: 38-61
+**Status**: ❌ ACTIVE - CAUSING 400K REQUESTS
+**Impact**: Every authenticated user triggers expensive operations every 10 minutes
 
 ```typescript
-// 🆕 NOVO: Force sync dos top users para ranking semanal
-if (period === 'week') {
-  console.log('[Leaderboard] Iniciando force sync dos top users para ranking semanal');
-  const syncedCount = await forceUpdateTopUsersWeeklyXp(); // ← CRITICAL BUG
-  console.log(`[Leaderboard] Force sync concluído: ${syncedCount} usuários atualizados`);
-}
+// THIS IS THE MAIN TRIGGER OF THE DISASTER
+useEffect(() => {
+  if (session?.user?.email && status === 'authenticated') {
+    if (!lastSync || (now - parseInt(lastSync)) > 10 * 60 * 1000) {
+      fetch('/api/force-sync', { method: 'POST' })  // Expensive GitHub + Prisma
+        .then(data => {
+          if (data.success) {
+            window.location.reload(); // Triggers new leaderboard fetch
+          }
+        });
+    }
+  }
+}, [session, status]);
+```
+
+#### PROBLEM #2: Heavy Operations in Public Endpoint (PARTIALLY FIXED)
+**File**: `/app/api/leaderboard/route.ts`
+**Lines**: 121, 207-237
+**Status**: 🟡 PARTIALLY FIXED (force sync removed, but heavy DB ops remain)
+**Impact**: Expensive database operations on every leaderboard request
+
+```typescript
+// Line 121 - Still active
+await checkAndResetWeeklyXp(); // prisma.user.count() + updateMany() on entire DB
+
+// Lines 207-237 - Still active
+const userRank = await prisma.user.count({ /* complex OR query */ }) + 1;
+```
+
+### 🚨 MAIN TRIGGER IDENTIFIED: Frontend Auto-Sync Loop
+
+**CRITICAL DISCOVERY**: The primary cause of 400k requests/hour is in `/app/page.tsx:38-61`
+
+```typescript
+useEffect(() => {
+  if (session?.user?.email && status === 'authenticated') {
+    const now = Date.now();
+    const sessionKey = `sync_${session.user.email}`;
+    const lastSync = localStorage.getItem(sessionKey);
+
+    // ❗ EVERY authenticated user, EVERY 10 minutes
+    if (!lastSync || (now - parseInt(lastSync)) > 10 * 60 * 1000) {
+      console.log('[Auto Sync] Performing automatic XP sync...');
+
+      fetch('/api/force-sync', { method: 'POST' })  // ← EXPENSIVE GITHUB API CALLS
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            localStorage.setItem(sessionKey, now.toString());
+            window.location.reload();  // ← TRIGGERS PAGE RELOAD = NEW LEADERBOARD FETCH
+          }
+        })
+        .catch(err => {
+          console.error('[Auto Sync] Failed:', err);
+        });
+    }
+  }
+}, [session, status]);
 ```
 
 ### Secondary Issues
 
-1. **Frontend Auto-Sync Loop** (`/app/page.tsx:38-61`)
+1. **Leaderboard Heavy Operations** (`/app/api/leaderboard/route.ts:121`)
    ```typescript
-   useEffect(() => {
-     fetch('/api/force-sync', { method: 'POST' })
-       .then(data => {
-         if (data.success) {
-           window.location.reload(); // Triggers infinite reload cycle
-         }
-       })
-   }, [session, status]);
+   // EVERY leaderboard request executes this:
+   await checkAndResetWeeklyXp(); // ← prisma.user.count() + updateMany()
    ```
 
-2. **Heavy Operations Per Request**
-   - 50 parallel GitHub GraphQL API calls
-   - 50+ Prisma database operations
-   - Complex XP calculations for each user
-   - Weekly reset checks with `prisma.user.count()`
-
-3. **Infinite Loop Pattern**
+2. **User Ranking Calculation** (`/app/api/leaderboard/route.ts:207-237`)
+   ```typescript
+   // Complex prisma.user.count() with OR conditions for EVERY user viewing leaderboard
+   const userRank = await prisma.user.count({
+     where: { /* complex OR query */ }
+   }) + 1;
    ```
-   User visits homepage → fetchLeaderboard()
-   → /api/leaderboard?period=week called
-   → forceUpdateTopUsersWeeklyXp() executes (50 API calls)
-   → Frontend auto-sync triggers /api/force-sync
-   → window.location.reload()
-   → Process repeats infinitely
+
+3. **Multiplicative Loop Pattern**
+   ```
+   1. User visits homepage → Auto-sync check (every 10min)
+   2. fetch('/api/force-sync') → GitHub GraphQL + Prisma writes
+   3. window.location.reload() → Page reloads
+   4. Leaderboard fetch → checkAndResetWeeklyXp() → massive Prisma operations
+   5. Period toggle (Week/All) → New leaderboard fetch → Step 4 repeats
+   6. Multiple users × Multiple requests = 400k requests/hour
    ```
 
 ## 📊 Performance Impact
@@ -73,80 +125,74 @@ if (period === 'week') {
 - Prisma connection pool exhaustion
 - Frontend timeout errors
 
-## 🎯 Immediate Fix Tasks
+## 🎯 Action Plan
 
-### Task 1: Remove Force Sync from Public Endpoint (URGENT - 15 minutes)
-**Priority**: P0 - Critical
-**Assignee**: DevOps/Backend Lead
+### Phase 1: Emergency Fix (10 minutes)
+- **Task 0** - Disable frontend auto-sync (`app/page.tsx:38-61`) → 90% request reduction
+- **Task 1** - Remove heavy DB ops from leaderboard (`route.ts:121, 207-237`) → 95% DB load reduction
 
+### Phase 2: Proper Solution (6 hours)
+- **Task 2** - Implement hourly cron job for weekly sync (2h)
+- **Task 3** - Add Redis caching for leaderboard (4h)
+- **Task 4** - Fix frontend auto-sync without reload (1h)
+
+### Phase 3: Long-term (2 hours)
+- **Task 5** - Add rate limiting (2h)
+
+## 🔧 Task Details
+
+### Task 0: Disable Frontend Auto-Sync (5 min)
+Comment out auto-sync in `/app/page.tsx:38-61`:
 ```typescript
-// REMOVE THIS BLOCK from /app/api/leaderboard/route.ts:127-131
-if (period === 'week') {
-  const syncedCount = await forceUpdateTopUsersWeeklyXp(); // DELETE THIS LINE
-}
+/*
+useEffect(() => {
+  if (session?.user?.email && status === 'authenticated') {
+    // Comment out entire auto-sync block
+  }
+}, [session, status]);
+*/
 ```
 
-**Expected Impact**: 95% reduction in API calls
-
-### Task 2: Implement Hourly Cron Job for Weekly Ranking (HIGH - 2 hours)
-**Priority**: P1 - High
-**Assignee**: Backend Developer
-
-Create separate background job to sync weekly leaderboard data:
-
+### Task 1: Remove Heavy DB Operations (5 min)
+Comment out expensive ops in `/app/api/leaderboard/route.ts`:
 ```typescript
-// New file: /app/api/cron/sync-weekly-leaderboard/route.ts
+// Line 121
+// await checkAndResetWeeklyXp();
+
+// Lines 207-237
+// const userRank = await prisma.user.count({...}) + 1;
+```
+
+### Task 2: Hourly Cron Job (2h)
+New file `/app/api/cron/sync-weekly-leaderboard/route.ts`:
+```typescript
 export async function GET() {
-  // Verify cron authorization (Vercel Cron or API key)
   if (request.headers.get('Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response('Unauthorized', { status: 401 });
   }
-
-  // Execute weekly sync logic (moved from leaderboard endpoint)
   const syncedCount = await forceUpdateTopUsersWeeklyXp();
-
-  return Response.json({
-    success: true,
-    syncedUsers: syncedCount,
-    timestamp: new Date().toISOString()
-  });
+  return Response.json({ success: true, syncedUsers: syncedCount });
 }
 ```
 
-**Cron Schedule**: Every hour `0 * * * *`
-
-### Task 3: Add Redis Caching Layer (MEDIUM - 4 hours)
-**Priority**: P2 - Medium
-**Assignee**: Backend Developer
-
+### Task 3: Redis Caching (4h)
 ```typescript
-// Cache leaderboard data with 15-minute TTL
 const cacheKey = `leaderboard:${period}:${new Date().getHours()}`;
 const cached = await redis.get(cacheKey);
+if (cached) return NextResponse.json(JSON.parse(cached));
 
-if (cached) {
-  return NextResponse.json(JSON.parse(cached));
-}
-
-// Generate fresh data and cache
 const leaderboardData = await generateLeaderboard();
-await redis.setex(cacheKey, 900, JSON.stringify(leaderboardData)); // 15 min cache
+await redis.setex(cacheKey, 900, JSON.stringify(leaderboardData));
 ```
 
-### Task 4: Fix Frontend Auto-Sync Loop (MEDIUM - 1 hour)
-**Priority**: P2 - Medium
-**Assignee**: Frontend Developer
-
+### Task 4: Smart Auto-Sync (1h)
 ```typescript
-// Replace infinite reload with state update
 useEffect(() => {
   if (shouldSync) {
     fetch('/api/force-sync', { method: 'POST' })
-      .then(res => res.json())
       .then(data => {
         if (data.success) {
-          // Update state instead of page reload
-          setUserData(data.userData);
+          setUserData(data.userData); // No reload
           setShouldSync(false);
         }
       });
@@ -154,42 +200,15 @@ useEffect(() => {
 }, [shouldSync]);
 ```
 
-### Task 5: Implement Rate Limiting (LOW - 2 hours)
-**Priority**: P3 - Low
-**Assignee**: DevOps Engineer
-
+### Task 5: Rate Limiting (2h)
 ```typescript
-// Add to middleware.ts
-import { rateLimit } from '@/lib/rate-limit';
-
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/')) {
     const { success } = await rateLimit(request.ip);
-    if (!success) {
-      return new Response('Too Many Requests', { status: 429 });
-    }
+    if (!success) return new Response('Too Many Requests', { status: 429 });
   }
 }
 ```
-
-## 🔧 Implementation Plan
-
-### Phase 1: Emergency Fix (30 minutes)
-1. **Remove force sync** from leaderboard endpoint
-2. **Deploy immediately** to stop the bleeding
-3. **Monitor system recovery**
-
-### Phase 2: Proper Solution (1 day)
-1. **Implement hourly cron job** for weekly leaderboard sync
-2. **Add Redis caching** for leaderboard data
-3. **Fix frontend auto-sync loop**
-4. **Test thoroughly** in staging environment
-
-### Phase 3: Long-term Optimization (3 days)
-1. **Add comprehensive monitoring** and alerting
-2. **Implement rate limiting** across all endpoints
-3. **Database query optimization**
-4. **Performance testing** and load balancing
 
 ## 🚨 Deployment Steps
 

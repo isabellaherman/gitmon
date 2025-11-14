@@ -454,7 +454,7 @@ export default function Home() {
                   </div>
                 ) : leaderboard.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No players yet. Be the first to join!</p>
+                    <p className="text-orange-600">Leaderboard under maintenance</p>
                   </div>
                 ) : (
                   <div className="space-y-4 mt-4">
