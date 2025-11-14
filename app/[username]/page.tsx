@@ -142,6 +142,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     fill
                     className="object-contain"
                     sizes="128px"
+                    quality={100}
                   />
                 </div>
                 <h3 className="text-xl font-bold mb-2">GitMon Not Selected</h3>
