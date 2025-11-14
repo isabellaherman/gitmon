@@ -123,12 +123,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'week';
 
-    // 🆕 NOVO: Force sync dos top users para ranking semanal
-    if (period === 'week') {
-      console.log('[Leaderboard] Iniciando force sync dos top users para ranking semanal');
-      const syncedCount = await forceUpdateTopUsersWeeklyXp();
-      console.log(`[Leaderboard] Force sync concluído: ${syncedCount} usuários atualizados`);
-    }
+    // EMERGENCY FIX: Removed force sync from public endpoint to prevent system overload
+    // TODO: Move this to a separate cron job that runs hourly
 
     const limit = parseInt(searchParams.get('limit') || '50');
     const currentUserId = searchParams.get('userId');
