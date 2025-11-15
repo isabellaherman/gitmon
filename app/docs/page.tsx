@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Zap } from "lucide-react";
@@ -8,40 +9,37 @@ import FloatingBackButton from "@/components/FloatingBackButton";
 
 type DocType = "how-xp-works" | "system-design";
 
+const docs = {
+  "how-xp-works": {
+    title: "How XP Works",
+    file: "/HOW_XP_WORKS.md",
+    description: "Simple guide to All-Time vs Weekly XP",
+    icon: <Zap className="w-4 h-4" />
+  },
+  "system-design": {
+    title: "System Design",
+    file: "/SYSTEM_DESIGN.md",
+    description: "Complete economics design document",
+    icon: <FileText className="w-4 h-4" />
+  }
+};
+
 function DocsContent() {
   const [content, setContent] = useState("");
-  const [currentDoc, setCurrentDoc] = useState<DocType>("how-xp-works");
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const docs = {
-    "how-xp-works": {
-      title: "How XP Works",
-      file: "/HOW_XP_WORKS.md",
-      description: "Simple guide to All-Time vs Weekly XP",
-      icon: <Zap className="w-4 h-4" />
-    },
-    "system-design": {
-      title: "System Design",
-      file: "/SYSTEM_DESIGN.md",
-      description: "Complete economics design document",
-      icon: <FileText className="w-4 h-4" />
-    }
-  };
+  const docSlug = searchParams.get("doc") as DocType in docs
+      ? searchParams.get("doc") as DocType
+      : "how-xp-works";
+  const currentDoc = docs[docSlug];
 
   useEffect(() => {
-    const docParam = searchParams.get('doc') as DocType;
-    if (docParam && docs[docParam]) {
-      setCurrentDoc(docParam);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    fetch(docs[currentDoc].file)
+    fetch(currentDoc.file)
       .then((res) => res.text())
       .then((text) => setContent(text))
       .catch((err) => console.error("Failed to load docs:", err));
-  }, [currentDoc]);
+  }, [searchParams]);
 
   const parseMarkdown = (markdown: string) => {
     return markdown
@@ -101,7 +99,7 @@ function DocsContent() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">GitMon Documentation</h1>
-              <p className="text-gray-600">{docs[currentDoc].description}</p>
+              <p className="text-gray-600">{currentDoc.description}</p>
             </div>
           </div>
           <Button
@@ -116,15 +114,17 @@ function DocsContent() {
 
         <div className="flex gap-4 mb-8">
           {Object.entries(docs).map(([key, doc]) => (
-            <Button
-              key={key}
-              variant={currentDoc === key ? "default" : "outline"}
-              onClick={() => setCurrentDoc(key as DocType)}
-              className="flex items-center gap-2"
-            >
-              {doc.icon}
-              {doc.title}
-            </Button>
+              <Button
+                key={key}
+                variant={docSlug === key ? "default" : "outline"}
+                className="flex items-center gap-2"
+                asChild
+              >
+                <Link href={`?doc=${key}`}>
+                  {doc.icon}
+                  {doc.title}
+                </Link>
+              </Button>
           ))}
         </div>
 
