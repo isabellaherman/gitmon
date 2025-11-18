@@ -33,7 +33,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link href="https://fonts.cdnfonts.com/css/minecraftia" rel="stylesheet" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
       </head>
