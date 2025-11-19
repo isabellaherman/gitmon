@@ -85,6 +85,7 @@ export default function MonsterDetails({ monster }: MonsterDetailsProps) {
             fill
             className="object-contain relative z-10 scale-110"
             sizes="192px"
+            quality={100}
           />
         </div>
 
