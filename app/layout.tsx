@@ -3,6 +3,7 @@ import { Silkscreen, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import SupportCard from "@/components/SupportCard";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const silkscreen = Silkscreen({
   variable: "--font-silkscreen",
@@ -25,13 +26,27 @@ export const metadata: Metadata = {
   },
 };
 
+const themeInitializer = `(() => {
+  try {
+    const storageKey = "gitmon-theme";
+    const stored = window.localStorage.getItem(storageKey);
+    const supportsMatchMedia = typeof window.matchMedia === "function";
+    const prefersDark = supportsMatchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (stored === "dark" || (!stored && prefersDark)) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  } catch (error) {}
+})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preload" href="/fonts/Minecraftia.ttf" as="font" type="font/ttf" crossOrigin="" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -40,7 +55,9 @@ export default function RootLayout({
       <body
         className={`${silkscreen.variable} ${inter.variable} antialiased`}
       >
+        <script dangerouslySetInnerHTML={{ __html: themeInitializer }} />
         <Providers>
+          <ThemeToggle className="fixed right-4 top-4 z-50 shadow-sm" />
           {children}
           {/* Global SupportCard for modal trigger - only modal shows, not the card content */}
           <SupportCard hideCard={true} />
