@@ -20,7 +20,9 @@ interface DashboardProps {
     user?: {
       level?: number;
       xp?: number;
-      email?: string;
+      email?: string | null;
+      name?: string | null;
+      image?: string | null;
       githubUsername?: string;
     };
   };
@@ -63,7 +65,7 @@ export default function Dashboard({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
-              Hello {currentUserInLeaderboard?.githubUsername || session?.user?.email?.split('@')[0] || 'Trainer'}
+              Hello {currentUserInLeaderboard?.githubUsername || (session?.user?.email ? session.user.email.split('@')[0] : 'Trainer')}
             </h2>
             <p className="text-muted-foreground">
               Welcome back to your GitMon adventure
