@@ -8,6 +8,7 @@ import Image from "next/image";
 import SponsorBar from "@/components/SponsorBar";
 import FloatingBackButton from "@/components/FloatingBackButton";
 import MadMonkeyHealthBar from "@/components/MadMonkeyHealthBar";
+import { useEventStream } from "@/hooks/useEventStream";
 
 export default function EventPage() {
   const { data: session, status } = useSession();
@@ -17,28 +18,19 @@ export default function EventPage() {
   const [isCheckingParticipation, setIsCheckingParticipation] = useState(false);
   const [participantCount, setParticipantCount] = useState<number>(0);
   const [isLoadingCount, setIsLoadingCount] = useState(true);
-  const [commits, setCommits] = useState<
-    Array<{
-      username: string;
-      sha: string;
-      message: string;
-      repoName: string;
-      committedAt: string;
-      createdAt: string;
-    }>
-  >([]);
   const [isCommitsOpen, setIsCommitsOpen] = useState(true);
   const [isBattleLogOpen, setIsBattleLogOpen] = useState(true);
-  // DISABLED: const [isSyncing, setIsSyncing] = useState(false);
-  const [stats, setStats] = useState({
-    totalParticipants: 0,
-    totalCommits: 0,
-    commitsLast24h: 0,
-    lastSyncAt: null as string | null,
-    eventStartDate: "",
-    eventEndDate: "",
-    currentDate: "",
-  });
+
+  // Real-time event stream hook
+  const {
+    stats,
+    commits,
+    isConnected,
+    connectionError,
+    lastUpdate,
+    retryConnection,
+    fallbackToPolling
+  } = useEventStream();
 
   // Check if user already joined when session loads
   useEffect(() => {
@@ -89,26 +81,23 @@ export default function EventPage() {
     fetchParticipantCount();
   }, [hasJoined]); // Refetch when user joins
 
-  // Fetch commits from database
-  const fetchCommits = async () => {
-    try {
-      const response = await fetch("/api/event-commits");
-      const data = await response.json();
-
-      if (data.success) {
-        setCommits(data.commits || []);
-        setStats(data.stats || {});
-        console.log("Commits loaded:", data.total);
-        console.log("Stats:", data.stats);
-      }
-    } catch (error) {
-      console.error("Error fetching commits:", error);
-    }
-  };
-
+  // Fallback to load initial data if real-time connection fails
   useEffect(() => {
-    fetchCommits();
-  }, []);
+    if (!stats && !isConnected && !fallbackToPolling) {
+      const fetchInitialData = async () => {
+        try {
+          const response = await fetch("/api/event-commits");
+          await response.json();
+          console.log("Fallback: Initial data loaded");
+        } catch (error) {
+          console.error("Error fetching initial data:", error);
+        }
+      };
+
+      const timeout = setTimeout(fetchInitialData, 5000); // Wait 5 seconds for SSE
+      return () => clearTimeout(timeout);
+    }
+  }, [stats, isConnected, fallbackToPolling]);
 
   // DISABLED: Sync function commented out to prevent rate limiting attacks
   /*
@@ -237,9 +226,9 @@ export default function EventPage() {
             {/* Mad Monkey Health Bar */}
             <div className="mb-8">
               <MadMonkeyHealthBar
-                totalDamage={stats.totalCommits * 20}
-                totalCommits={stats.totalCommits}
-                maxHp={10000}
+                totalDamage={(stats?.totalCommits || 0) * 20}
+                totalCommits={stats?.totalCommits || 0}
+                maxHp={25000}
               />
             </div>
           </div>
@@ -283,16 +272,34 @@ export default function EventPage() {
                         </span>
                         BATTLE LOG
                       </button>
-                      {/* TEMPORARILY DISABLED: Button causing rate limit issues */}
-                      {/* <Button
-                        onClick={handleSyncCommits}
-                        disabled={isSyncing}
-                        variant="default"
-                        size="sm"
-                        className="text-xs"
-                      >
-                        {isSyncing ? "SYNCING..." : "SYNC ALL"}
-                      </Button> */}
+
+                      {/* Connection Status */}
+                      <div className="flex items-center gap-2">
+                        {connectionError && (
+                          <Button
+                            onClick={retryConnection}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                          >
+                            RETRY
+                          </Button>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              isConnected ? 'bg-green-500' :
+                              fallbackToPolling ? 'bg-yellow-500' :
+                              'bg-red-500'
+                            }`}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {isConnected ? 'LIVE' :
+                             fallbackToPolling ? 'POLLING' :
+                             'OFFLINE'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     {isBattleLogOpen && (
@@ -333,9 +340,16 @@ export default function EventPage() {
                       ) : (
                         <div className="text-center text-muted-foreground py-8 text-xs">
                           <div>No battle activity yet</div>
-                          <div className="mt-2">
-                            Sync functionality temporarily disabled for rate limiting protection
-                          </div>
+                          {connectionError && (
+                            <div className="mt-2 text-red-500">
+                              Connection error: {connectionError}
+                            </div>
+                          )}
+                          {!isConnected && !fallbackToPolling && (
+                            <div className="mt-2">
+                              Connecting to real-time updates...
+                            </div>
+                          )}
                         </div>
                         )}
                       </div>
@@ -480,25 +494,36 @@ export default function EventPage() {
                   {/* Debug Info */}
                   <div className="p-3 bg-red-100 border border-red-300 rounded text-red-800 text-xs">
                     <div className="font-bold">
-                      🔴 DEBUG - EVENT DATE RANGE:
+                      🔴 DEBUG - EVENT DATE RANGE & CONNECTION:
                     </div>
                     <div className="mt-1">
                       <strong>Current Time:</strong>{" "}
-                      {stats.currentDate || new Date().toISOString()}
+                      {stats?.currentDate || new Date().toISOString()}
                     </div>
                     <div>
                       <strong>Event Start (Nov 12, 2025):</strong>{" "}
-                      {stats.eventStartDate || "2025-11-12T00:00:00.000Z"}
+                      {stats?.eventStartDate || "2025-11-12T00:00:00.000Z"}
                     </div>
                     <div>
                       <strong>Event End (Nov 30, 2025):</strong>{" "}
-                      {stats.eventEndDate || "2025-11-30T23:59:59.999Z"}
+                      {stats?.eventEndDate || "2025-11-30T23:59:59.999Z"}
                     </div>
-                    {stats.lastSyncAt && (
+                    {stats?.lastSyncAt && (
                       <div>
                         <strong>Last Sync:</strong> {stats.lastSyncAt}
                       </div>
                     )}
+                    {lastUpdate && (
+                      <div>
+                        <strong>Last Update:</strong> {lastUpdate.toISOString()}
+                      </div>
+                    )}
+                    <div className="mt-2">
+                      <strong>Connection Status:</strong>{" "}
+                      {isConnected ? "🟢 Live SSE" :
+                       fallbackToPolling ? "🟡 Polling" :
+                       "🔴 Disconnected"}
+                    </div>
                     <div className="mt-2 text-xs text-red-600">
                       <strong>Search Query Format:</strong> author:username
                       committer-date:2025-11-12..2025-11-30
@@ -509,7 +534,7 @@ export default function EventPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-2 bg-muted/50 rounded">
                       <div className="text-lg font-bold text-green-600">
-                        {stats.totalParticipants}
+                        {stats?.totalParticipants || 0}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Participants
@@ -517,7 +542,7 @@ export default function EventPage() {
                     </div>
                     <div className="text-center p-2 bg-muted/50 rounded">
                       <div className="text-lg font-bold text-blue-600">
-                        {stats.totalCommits}
+                        {stats?.totalCommits || 0}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Total Commits
@@ -525,7 +550,7 @@ export default function EventPage() {
                     </div>
                     <div className="text-center p-2 bg-muted/50 rounded">
                       <div className="text-lg font-bold text-purple-600">
-                        {stats.commitsLast24h}
+                        {stats?.commitsLast24h || 0}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Last 24h
@@ -533,10 +558,12 @@ export default function EventPage() {
                     </div>
                     <div className="text-center p-2 bg-muted/50 rounded">
                       <div className="text-xs text-muted-foreground">
-                        Last Sync
+                        Last Update
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {stats.lastSyncAt
+                        {lastUpdate
+                          ? lastUpdate.toLocaleTimeString()
+                          : stats?.lastSyncAt
                           ? new Date(stats.lastSyncAt).toLocaleTimeString()
                           : "Never"}
                       </div>
