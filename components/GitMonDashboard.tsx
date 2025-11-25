@@ -20,6 +20,9 @@ interface GitMonDashboardProps {
     user?: {
       level?: number;
       xp?: number;
+      email?: string | null;
+      name?: string | null;
+      image?: string | null;
       currentStreak?: number;
       longestStreak?: number;
     };
