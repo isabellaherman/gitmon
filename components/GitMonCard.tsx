@@ -16,6 +16,9 @@ interface GitMonCardProps {
     user?: {
       level?: number;
       xp?: number;
+      email?: string | null;
+      name?: string | null;
+      image?: string | null;
     };
   };
   gitmonSelectedAt: Date;
@@ -28,7 +31,7 @@ export default function GitMonCard({
   session,
   gitmonSelectedAt,
   leaderboardPeriod
-}: TrainerProfileProps) {
+}: GitMonCardProps) {
   return (
     <div className="text-center mb-6">
       <div className="w-48 h-48 mx-auto mb-4 relative">
