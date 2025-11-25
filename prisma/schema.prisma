@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -23,8 +20,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -38,85 +34,72 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-
-  // GitHub info
-  githubUsername    String?
-  githubId          Int?
-  githubBio         String?
-  githubLocation    String?
-  githubCompany     String?
-  githubBlog        String?
-  githubTwitter     String?
-  githubFollowers   Int      @default(0)
-  githubFollowing   Int      @default(0)
-  githubCreatedAt   DateTime?
-  avgCommitsPerWeek Float    @default(0)
-
-  // GitMon specific fields
-  selectedMonsterId Int?
-  gitmonSelectedAt  DateTime?
-  guildId           String? // Guild membership
-  isGitMonContributor Boolean @default(false) // Contributed to GitMon repository
-  level             Int     @default(1)
-  xp                Int     @default(0)
-  onboardingCompleted Boolean @default(false)
-
-  // XP tracking
-  lastXpUpdate      DateTime @default(now())
-  dailyXp           Int      @default(0)
-  weeklyXp          Int      @default(0)
-  weekStartDate     DateTime? // Início da semana atual para reset automático
-  currentStreak     Int      @default(0)
-  longestStreak     Int      @default(0)
-
-  // GitHub stats cache
-  totalCommits      Int      @default(0)
-  totalPRs          Int      @default(0)
-  totalStars        Int      @default(0)
-  totalRepos        Int      @default(0)
-  languagesUsed     String?  // JSON string of languages array
-
-  // Ranking cache
-  allTimeRank       Int?     // Cached all-time ranking position
-  weeklyRank        Int?     // Cached weekly ranking position
-  rankUpdatedAt     DateTime? // When rankings were last calculated
-
-  accounts Account[]
-  sessions Session[]
-  activities XpActivity[]
+  id                  String             @id @default(cuid())
+  name                String?
+  email               String?            @unique
+  emailVerified       DateTime?
+  image               String?
+  githubUsername      String?
+  githubId            Int?
+  githubBio           String?
+  githubLocation      String?
+  githubCompany       String?
+  githubBlog          String?
+  githubTwitter       String?
+  githubFollowers     Int                @default(0)
+  githubFollowing     Int                @default(0)
+  githubCreatedAt     DateTime?
+  avgCommitsPerWeek   Float              @default(0)
+  selectedMonsterId   Int?
+  gitmonSelectedAt    DateTime?
+  level               Int                @default(1)
+  xp                  Int                @default(0)
+  onboardingCompleted Boolean            @default(false)
+  lastXpUpdate        DateTime           @default(now())
+  dailyXp             Int                @default(0)
+  weeklyXp            Int                @default(0)
+  currentStreak       Int                @default(0)
+  longestStreak       Int                @default(0)
+  totalCommits        Int                @default(0)
+  totalPRs            Int                @default(0)
+  totalStars          Int                @default(0)
+  totalRepos          Int                @default(0)
+  languagesUsed       String?
+  guildId             String?
+  isGitMonContributor Boolean            @default(false)
+  weekStartDate       DateTime?
+  allTimeRank         Int?
+  rankUpdatedAt       DateTime?
+  weeklyRank          Int?
+  accounts            Account[]
+  sessions            Session[]
   eventParticipations EventParticipant[]
+  activities          XpActivity[]
 
   @@map("users")
 }
 
 model XpActivity {
-  id          String   @id @default(cuid())
-  userId      String
-  type        String   // "commit", "pr", "star", "fork", etc.
-  amount      Int      // XP earned
-  source      String?  // repo name or source
-  metadata    Json?    // additional data
-  earnedAt    DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  userId   String
+  type     String
+  amount   Int
+  source   String?
+  metadata Json?
+  earnedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("xp_activities")
 }
 
 model EventParticipant {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   eventId        String
   githubUsername String?
-  joinedAt       DateTime @default(now())
-  lastSyncAt     DateTime? // Track when we last checked this user's commits
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime  @default(now())
+  lastSyncAt     DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, eventId])
   @@map("event_participants")
@@ -126,17 +109,16 @@ model EventCommit {
   id          String   @id @default(cuid())
   eventId     String
   username    String
-  sha         String   // GitHub commit SHA (unique identifier)
+  sha         String
   message     String
   repoName    String
-  committedAt DateTime // When the commit was actually made
-  createdAt   DateTime @default(now()) // When we discovered it
+  committedAt DateTime
+  createdAt   DateTime @default(now())
 
-  @@unique([eventId, sha]) // Prevent duplicates
-  @@index([eventId, committedAt]) // For efficient querying
+  @@unique([eventId, sha])
+  @@index([eventId, committedAt])
   @@map("event_commits")
 }
-
 
 model VerificationToken {
   identifier String

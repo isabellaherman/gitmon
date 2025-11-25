@@ -147,4 +147,10 @@
   .docs-page h1, .docs-page h2, .docs-page h3 {
     font-family: 'Minecraftia', monospace !important;
   }
+
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
 }

@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import SupportCard from "@/components/SupportCard";
 import SponsorBar from "@/components/SponsorBar";
+import Leaderboard from "@/components/Leaderboard";
+import Dashboard from "@/components/Dashboard";
+import GitMonCard from "@/components/GitMonCard";
 
 import { monsters, getTypeColor, formatBirthdate, getMonsterById } from "@/lib/monsters";
 
@@ -34,6 +37,7 @@ export default function Home() {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
   const [totalTrainers, setTotalTrainers] = useState<number>(0);
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'leaderboard'>('dashboard');
 
   // EMERGENCY FIX: Disabled auto-sync loop that was causing 400k requests/hour
   // useEffect(() => {
@@ -216,101 +220,41 @@ export default function Home() {
                       </svg>
                     </button>
                   </div>
-
-                  {/* Mad Monkey Event Banner */}
-                  <div className="relative p-0.5 rounded-2xl cursor-pointer hover:scale-105 transition-all duration-300 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 mb-6">
-                    <div
-                      className="bg-white rounded-2xl p-3 flex items-center gap-3"
-                      onClick={() => router.push('/event')}
-                    >
-                    {/* Mad Monkey Image - Left side */}
-                    <div className="w-16 h-16 relative flex-shrink-0">
-                      <Image
-                        src="/events/MadMonkey.png"
-                        alt="Mad Monkey"
-                        fill
-                        className="object-contain"
-                        sizes="64px"
-                      />
-                    </div>
-
-                    {/* Banner Content - Right side */}
-                    <div className="flex-1">
-                      <div className="mb-1">
-                        <span className="text-red-600 text-xs font-bold uppercase" style={{ fontFamily: 'Minecraftia, monospace' }}>
-                          🚨 NEW EVENT
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-800 font-bold">
-                        Mad Monkey is bringing chaos!
-                      </p>
-                    </div>
-
-                    {/* Arrow indicator */}
-                    <div className="text-orange-500 text-lg">
-                      →
-                    </div>
-                    </div>
-                  </div>
                 </div>
 
                 {selectedMonster ? (
                   <>
-                    <div className="text-center mb-6">
-                      <div className="w-48 h-48 mx-auto mb-4 relative">
-                        <div className="absolute inset-4 rounded-full" style={{
-                          background: `radial-gradient(circle, #000 1px, transparent 1px)`,
-                          backgroundSize: '8px 8px',
-                          maskImage: 'radial-gradient(circle, black 40%, transparent 70%)',
-                          WebkitMaskImage: 'radial-gradient(circle, black 40%, transparent 70%)'
-                        }}></div>
-                        <Image
-                          src={selectedMonster.src}
-                          alt={selectedMonster.name}
-                          fill
-                          className="object-contain relative z-10 scale-110"
-                          sizes="128px"
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-center gap-2 mb-3">
-                        <h4 className="text-xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>{selectedMonster.name}</h4>
-                        <span className="text-lg font-bold text-primary border border-primary/30 bg-primary/10 rounded-full px-2 py-1" style={{ fontFamily: 'Minecraftia, monospace' }}>
-                          Lv.{currentUserInLeaderboard?.level || (session?.user as Record<string, unknown>)?.level as number || 1}
-                        </span>
-                      </div>
-
-                      <div className="flex gap-2 justify-center mb-4">
-                        <span className={`px-3 py-1 rounded-full text-white text-xs font-medium uppercase ${getTypeColor(selectedMonster.type)}`}>
-                          {selectedMonster.type}
-                        </span>
-                        <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
-                          Born {formatBirthdate(gitmonSelectedAt)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 mb-6">
-
-                      <div className="bg-muted rounded-lg p-3 text-center">
-                        <p className="text-2xl font-bold text-primary">
-                          {currentUserInLeaderboard?.xp?.toLocaleString() || ((session?.user as Record<string, unknown>)?.xp as number)?.toLocaleString() || 0} XP
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {leaderboardPeriod === 'week' ? 'This week' : 'All time'}
-                        </p>
-                      </div>
-
-                      <div className="bg-muted rounded-lg p-3 text-center">
-                        <p className="text-2xl font-bold text-primary">
-                          #{currentUserInLeaderboard?.rank || '???'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Your rank</p>
-                      </div>
-                    </div>
+                    {activeSection === 'leaderboard' && (
+                      <GitMonCard
+                        selectedMonster={selectedMonster}
+                        currentUserInLeaderboard={currentUserInLeaderboard}
+                        session={session}
+                        gitmonSelectedAt={gitmonSelectedAt}
+                        leaderboardPeriod={leaderboardPeriod}
+                      />
+                    )}
 
 
                     <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        <Button
+                          variant={activeSection === 'dashboard' ? 'default' : 'outline'}
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setActiveSection('dashboard')}
+                        >
+                          🏠 Dashboard
+                        </Button>
+                        <Button
+                          variant={activeSection === 'leaderboard' ? 'default' : 'outline'}
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setActiveSection('leaderboard')}
+                        >
+                          🏆 Leaderboard
+                        </Button>
+                      </div>
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -370,179 +314,23 @@ export default function Home() {
           </div>
 
           <div className="lg:col-span-2">
-            <div className="bg-card rounded-xl overflow-hidden">
-              <div className="p-6 border-b">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-2xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>Top Trainers</h2>
-                    <p className="text-muted-foreground">
-                      {leaderboardPeriod === 'week' ? "This week's coding champions" : "All-time coding legends"}
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setLeaderboardPeriod('week')}
-                      className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
-                        leaderboardPeriod === 'week'
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-background text-muted-foreground hover:bg-muted/80 border-muted'
-                      }`}
-                    >
-                      This Week
-                    </button>
-                    <button
-                      onClick={() => setLeaderboardPeriod('all')}
-                      className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
-                        leaderboardPeriod === 'all'
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-background text-muted-foreground hover:bg-muted/80 border-muted'
-                      }`}
-                    >
-                      All Time
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-6 py-3 border-b">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => router.push('/gitdex')}
-                      className="rounded-full text-xs shadow-green-500/30 hover:shadow-green-500/50 transition-shadow drop-shadow-none"
-                      style={{ boxShadow: '0 0 15px rgba(34, 197, 94, 0.3)' }}
-                    >
-                      📚 GITDEX
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open('https://github.com/isabellaherman/gitmon', '_blank')}
-                      className="rounded-full text-xs"
-                    >
-                      ⭐ Star Project
-                    </Button>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    created by{" "}
-                    <a
-                      href="https://x.com/IsabellaHermn"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Isabella Herman
-                    </a>
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-0 md:p-6">
-                {/* Total trainers count - only on desktop - always visible */}
-                <div className="hidden md:flex items-center gap-4 bg-muted/30">
-                  <div className="flex-1 text-right">
-                    <p className="text-xs text-muted-foreground">
-                      {totalTrainers.toLocaleString()} TRAINERS
-                    </p>
-                  </div>
-                </div>
-                {isLoadingLeaderboard ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Loading leaderboard...</p>
-                  </div>
-                ) : leaderboard.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-orange-600">Leaderboard under maintenance</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4 mt-4">
-                    {leaderboard.map((user) => (
-                    <div
-                      key={user.rank}
-                      className={`flex items-center gap-4 px-4 py-2 rounded-full transition-colors ${
-                        user.rank <= 3
-                          ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
-                          : 'isCurrentUser' in user && user.isCurrentUser
-                          ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20'
-                          : 'bg-muted/50 hover:bg-muted'
-                      }`}
-                    >
-                      <div className="min-w-8 flex items-center justify-center font-bold text-sm text-muted-foreground">
-                        #{user.rank}
-                      </div>
-
-                      <div className="flex-1">
-                        {/* Desktop layout */}
-                        <div className="hidden md:flex items-center gap-2">
-                          <a
-                            href={`https://github.com/${user.githubUsername || user.name}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline"
-                          >
-                            @{user.githubUsername || user.name}
-                          </a>
-                          <button
-                            onClick={() => router.push(`/gitdex?monster=${user.selectedMonsterId}`)}
-                            className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
-                          >
-                            {monsters[user.selectedMonsterId]?.name || 'Unknown'}
-                          </button>
-                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            <span className="hidden md:inline">Level {user.level}</span>
-                            <span className="md:hidden">Lv. {user.level}</span>
-                          </span>
-                        </div>
-                        {/* Mobile layout - stacked */}
-                        <div className="md:hidden space-y-1">
-                          <a
-                            href={`https://github.com/${user.githubUsername || user.name}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline block"
-                          >
-                            @{user.githubUsername || user.name}
-                          </a>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">
-                              {monsters[user.selectedMonsterId]?.name || 'Unknown'}
-                            </span>
-                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                              <span className="hidden md:inline">Level {user.level}</span>
-                              <span className="md:hidden">Lv. {user.level}</span>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
-                          {/* Hide commit/PR info on mobile */}
-                          <p className="text-xs text-muted-foreground hidden md:block">
-                            {user.stats.commits} commits • {user.stats.prs} PRs
-                          </p>
-                        </div>
-
-                        <div className="w-16 h-16 relative">
-                          <Image
-                            src={monsters[user.selectedMonsterId]?.src || monsters[0].src}
-                            alt={monsters[user.selectedMonsterId]?.name || 'GitMon'}
-                            fill
-                            className="object-contain"
-                            sizes="64px"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  </div>
-                )}
-              </div>
-            </div>
+            {session && activeSection === 'dashboard' ? (
+              <Dashboard
+                selectedMonster={selectedMonster}
+                currentUserInLeaderboard={currentUserInLeaderboard}
+                session={session}
+                gitmonSelectedAt={gitmonSelectedAt}
+                leaderboardPeriod={leaderboardPeriod}
+              />
+            ) : (
+              <Leaderboard
+                leaderboard={leaderboard}
+                isLoadingLeaderboard={isLoadingLeaderboard}
+                leaderboardPeriod={leaderboardPeriod}
+                setLeaderboardPeriod={setLeaderboardPeriod}
+                totalTrainers={totalTrainers}
+              />
+            )}
           </div>
         </div>
       </div>

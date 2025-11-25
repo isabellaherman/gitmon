@@ -129,8 +129,13 @@ export async function POST(request: Request) {
         console.log(`  TOTAL LIFETIME XP: ${lifetimeXp}`);
       }
 
-      const newTotalXp = isFirstSync ? lifetimeXp : user.xp;
-      const totalNewXp = isFirstSync ? lifetimeXp : weeklyXp;
+      // Apply streak multiplier to XP gains
+      const streakMultiplier = calculateStreakMultiplier(user.currentStreak);
+      const multipliedWeeklyXp = Math.floor(weeklyXp * streakMultiplier);
+      const multipliedLifetimeXp = isFirstSync ? Math.floor(lifetimeXp * streakMultiplier) : lifetimeXp;
+
+      const newTotalXp = isFirstSync ? multipliedLifetimeXp : user.xp + (multipliedWeeklyXp - user.weeklyXp);
+      const totalNewXp = isFirstSync ? multipliedLifetimeXp : multipliedWeeklyXp;
       const newLevel = calculateLevel(newTotalXp);
       const newRank = getUserRank(newLevel);
 
@@ -149,8 +154,8 @@ export async function POST(request: Request) {
           avgCommitsPerWeek: githubStats.avgCommitsPerWeek,
           xp: newTotalXp,
           level: newLevel,
-          weeklyXp: weeklyXp,
-          dailyXp: isFirstSync ? 0 : user.dailyXp + weeklyXp,
+          weeklyXp: multipliedWeeklyXp,
+          dailyXp: isFirstSync ? 0 : user.dailyXp + multipliedWeeklyXp,
           totalCommits: githubStats.totalCommits,
           totalPRs: githubStats.totalPRs,
           totalStars: githubStats.totalStars,
@@ -166,7 +171,9 @@ export async function POST(request: Request) {
           ...updatedUser,
           rank: newRank,
           xpGained: totalNewXp,
-          weeklyXpCalculated: weeklyXp
+          weeklyXpCalculated: multipliedWeeklyXp,
+          streakMultiplier: streakMultiplier,
+          currentStreak: user.currentStreak
         }
       });
 
