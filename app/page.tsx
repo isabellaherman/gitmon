@@ -220,6 +220,26 @@ export default function Home() {
                       </svg>
                     </button>
                   </div>
+
+                  {/* Dashboard/Leaderboard buttons - always below Trainer Profile */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <Button
+                      variant={activeSection === 'dashboard' ? 'default' : 'outline'}
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setActiveSection('dashboard')}
+                    >
+                      Dashboard
+                    </Button>
+                    <Button
+                      variant={activeSection === 'leaderboard' ? 'default' : 'outline'}
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setActiveSection('leaderboard')}
+                    >
+                      Leaderboard
+                    </Button>
+                  </div>
                 </div>
 
                 {selectedMonster ? (
@@ -235,35 +255,22 @@ export default function Home() {
                     )}
 
 
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-2 mb-4">
+                    {activeSection === 'leaderboard' && (
+                      <div className="space-y-2">
                         <Button
-                          variant={activeSection === 'dashboard' ? 'default' : 'outline'}
+                          variant="outline"
                           size="sm"
-                          className="text-xs"
-                          onClick={() => setActiveSection('dashboard')}
+                          className="w-full mb-3"
+                          onClick={() => router.push('/docs')}
                         >
-                          🏠 Dashboard
-                        </Button>
-                        <Button
-                          variant={activeSection === 'leaderboard' ? 'default' : 'outline'}
-                          size="sm"
-                          className="text-xs"
-                          onClick={() => setActiveSection('leaderboard')}
-                        >
-                          🏆 Leaderboard
+                          📋 How it Works
                         </Button>
                       </div>
+                    )}
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full mb-3"
-                        onClick={() => router.push('/docs')}
-                      >
-                        📋 How it Works
-                      </Button>
+                    <SupportCard />
 
+                    <div className="mt-4 pt-4 border-t">
                       <Button
                         onClick={() => signOut()}
                         variant="outline"
@@ -273,8 +280,6 @@ export default function Home() {
                         Sign Out
                       </Button>
                     </div>
-
-                    <SupportCard />
                   </>
                 ) : (
                   <div className="text-center">
