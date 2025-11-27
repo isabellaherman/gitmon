@@ -166,8 +166,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
 
       {/* Daily Progress */}
       <div className="text-center text-xs text-muted-foreground">
-        {anyInteractionDone && <span className="text-blue-600">Streak active!</span>}
-        {allInteractionsComplete && <span className="text-green-600">All interactions complete!</span>}
+        {allInteractionsComplete && <span className="text-green-600">{monsterName} will be waiting for you tomorrow.</span>}
       </div>
 
       {/* Interaction Buttons */}
