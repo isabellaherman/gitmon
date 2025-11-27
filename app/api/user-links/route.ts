@@ -9,16 +9,20 @@ interface LinkData {
   order: number;
 }
 
-function validateLink(link: any): link is LinkData {
+function validateLink(link: unknown): link is LinkData {
+  if (link === null || typeof link !== 'object') return false;
+
+  const obj = link as Record<string, unknown>;
+
   return (
-    typeof link.title === 'string' &&
-    link.title.length >= 3 &&
-    link.title.length <= 50 &&
-    typeof link.url === 'string' &&
-    isValidUrl(link.url) &&
-    typeof link.order === 'number' &&
-    link.order >= 1 &&
-    link.order <= 3
+    typeof obj.title === 'string' &&
+    obj.title.length >= 3 &&
+    obj.title.length <= 50 &&
+    typeof obj.url === 'string' &&
+    isValidUrl(obj.url) &&
+    typeof obj.order === 'number' &&
+    obj.order >= 1 &&
+    obj.order <= 3
   );
 }
 
@@ -31,7 +35,7 @@ function isValidUrl(str: string): boolean {
   }
 }
 
-function validateLinksArray(links: any[]): links is LinkData[] {
+function validateLinksArray(links: unknown[]): links is LinkData[] {
   return Array.isArray(links) && links.length <= 3 && links.every(validateLink);
 }
 
@@ -113,7 +117,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create new links
-    const userLinks = await prisma.userLink.createMany({
+    await prisma.userLink.createMany({
       data: validatedData.map(link => ({
         userId: user.id,
         title: link.title,

@@ -1,8 +1,6 @@
 import Image from "next/image";
-import { getTypeColor, formatBirthdate } from "@/lib/monsters";
 import PetInteraction from "@/components/PetInteraction";
 import LinkManager from "@/components/LinkManager";
-import { useEffect, useState } from "react";
 
 interface GitMonDashboardProps {
   selectedMonster: {
@@ -35,37 +33,8 @@ interface GitMonDashboardProps {
 
 export default function GitMonDashboard({
   selectedMonster,
-  currentUserInLeaderboard,
-  session,
-  gitmonSelectedAt,
-  leaderboardPeriod,
   onStreakUpdate
 }: GitMonDashboardProps) {
-  const [streakData, setStreakData] = useState({
-    currentStreak: 0,
-    longestStreak: 0,
-    chromaticPoints: 0,
-    orbs: 0
-  });
-
-  // Fetch streak data
-  useEffect(() => {
-    const fetchStreakData = async () => {
-      try {
-        const response = await fetch('/api/streak');
-        if (response.ok) {
-          const data = await response.json();
-          setStreakData(data);
-        }
-      } catch (error) {
-        console.error('Failed to load streak data:', error);
-      }
-    };
-
-    if (session?.user?.email) {
-      fetchStreakData();
-    }
-  }, [session]);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Left Column - GitMon Display */}
