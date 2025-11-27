@@ -7,6 +7,7 @@ import { checkAndUpdateContributorStatus } from "@/lib/contributor-checker";
 import MonsterDisplay from "@/components/MonsterDisplay";
 import UserStats from "@/components/UserStats";
 import BadgeWall from "@/components/BadgeSystem";
+import UserLinksDisplay from "@/components/UserLinksDisplay";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -30,6 +31,11 @@ async function getUserByUsername(username: string) {
         take: 5,
       },
       eventParticipations: true,
+      userLinks: {
+        orderBy: {
+          order: "asc",
+        },
+      },
     },
   });
 
@@ -152,12 +158,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             )}
           </div>
 
-          {/* Right Column - Badges */}
-          <div className="bg-card rounded-xl p-6">
-            <h3 className="text-xl font-bold mb-6 text-center" style={{ fontFamily: 'Minecraftia, monospace' }}>
-              Badges & Achievements
-            </h3>
-            <BadgeWall userData={user} />
+          {/* Right Column - Links & Badges */}
+          <div className="space-y-8">
+            {/* User Links Section */}
+            {user.userLinks && user.userLinks.length > 0 && (
+              <div className="bg-card rounded-xl p-6">
+                <UserLinksDisplay userLinks={user.userLinks} />
+              </div>
+            )}
+
+            {/* Badges Section */}
+            <div className="bg-card rounded-xl p-6">
+              <h3 className="text-xl font-bold mb-6 text-center" style={{ fontFamily: 'Minecraftia, monospace' }}>
+                Badges & Achievements
+              </h3>
+              <BadgeWall userData={user} />
+            </div>
           </div>
         </div>
       </div>

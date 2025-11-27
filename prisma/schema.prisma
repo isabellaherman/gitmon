@@ -75,6 +75,7 @@ model User {
   sessions            Session[]
   eventParticipations EventParticipant[]
   activities          XpActivity[]
+  userLinks           UserLink[]
 
   @@map("users")
 }
@@ -118,6 +119,20 @@ model EventCommit {
   @@unique([eventId, sha])
   @@index([eventId, committedAt])
   @@map("event_commits")
+}
+
+model UserLink {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @db.VarChar(50)
+  url       String   @db.VarChar(500)
+  order     Int      @db.SmallInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, order])
+  @@map("user_links")
 }
 
 model VerificationToken {

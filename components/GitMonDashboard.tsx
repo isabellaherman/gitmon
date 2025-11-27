@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getTypeColor, formatBirthdate } from "@/lib/monsters";
 import PetInteraction from "@/components/PetInteraction";
+import LinkManager from "@/components/LinkManager";
 import { useEffect, useState } from "react";
 
 interface GitMonDashboardProps {
@@ -110,11 +111,8 @@ export default function GitMonDashboard({
 
       {/* Right Column - Stats and Info */}
       <div className="space-y-4">
-        {/* Additional dashboard content */}
-        <div className="bg-muted/50 rounded-lg p-4">
-          <h4 className="font-semibold mb-2">Recent Activity</h4>
-          <p className="text-sm text-muted-foreground">Dashboard features coming soon...</p>
-        </div>
+        {/* Link Manager */}
+        <LinkManager />
       </div>
     </div>
   );
