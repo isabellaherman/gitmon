@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getMonsterById } from "@/lib/monsters";
+import fs from 'fs';
+import path from 'path';
 
 interface EmbedParams {
   params: Promise<{
@@ -22,6 +24,20 @@ interface MonsterData {
   type?: string;
 }
 
+function getImageAsBase64(imagePath: string): string {
+  try {
+    const fullPath = path.join(process.cwd(), 'public', imagePath);
+    const imageBuffer = fs.readFileSync(fullPath);
+    const base64Image = imageBuffer.toString('base64');
+    const mimeType = imagePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+    return `data:${mimeType};base64,${base64Image}`;
+  } catch (error) {
+    console.error('Error reading image:', error);
+    // Return a placeholder or empty data URI
+    return 'data:image/png;base64,';
+  }
+}
+
 
 function generateCardSVG(user: UserData, monster: MonsterData | null) {
   const username = user.githubUsername || 'Unknown';
@@ -29,7 +45,8 @@ function generateCardSVG(user: UserData, monster: MonsterData | null) {
   const xp = user.xp || 0;
   const streak = user.currentStreak || 0;
   const commits = user.totalCommits || 0;
-  const monsterSrc = monster?.src ? `https://gitmon.xyz${monster.src}` : 'https://gitmon.xyz/monsters/monster-000.png';
+  const monsterPath = monster?.src || '/monsters/monster-000.png';
+  const monsterSrc = getImageAsBase64(monsterPath);
 
   return `
     <svg width="320" height="180" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -102,7 +119,8 @@ function generateCharacterSVG(user: UserData, monster: MonsterData | null) {
   const username = user.githubUsername || 'Unknown';
   const level = user.level || 1;
   const commits = user.totalCommits || 0;
-  const monsterSrc = monster?.src ? `https://gitmon.xyz${monster.src}` : 'https://gitmon.xyz/monsters/monster-000.png';
+  const monsterPath = monster?.src || '/monsters/monster-000.png';
+  const monsterSrc = getImageAsBase64(monsterPath);
 
   return `
     <svg width="180" height="220" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -135,7 +153,8 @@ function generateCharacterSVG(user: UserData, monster: MonsterData | null) {
 function generateMonsterSVG(user: UserData, monster: MonsterData | null) {
   const monsterName = monster?.name || 'Unknown';
   const monsterType = monster?.type || 'normal';
-  const monsterSrc = monster?.src ? `https://gitmon.xyz${monster.src}` : 'https://gitmon.xyz/monsters/monster-000.png';
+  const monsterPath = monster?.src || '/monsters/monster-000.png';
+  const monsterSrc = getImageAsBase64(monsterPath);
 
   const getTypeColor = (type: string) => {
     const colors = {
