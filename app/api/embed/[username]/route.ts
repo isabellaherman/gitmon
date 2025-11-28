@@ -133,7 +133,7 @@ function generateCharacterSVG(user: UserData, monster: MonsterData | null) {
       </defs>
 
       <!-- Monster Image - 2x bigger -->
-      <image x="42" y="15" width="96" height="96" href="${monsterSrc}" preserveAspectRatio="xMidYMid slice"/>
+      <image x="42" y="15" width="96" height="96" xlink:href="${monsterSrc}" preserveAspectRatio="xMidYMid slice"/>
 
       <!-- Username -->
       <text x="90" y="130" text-anchor="middle" class="username">${username}</text>
@@ -182,7 +182,7 @@ function generateMonsterSVG(user: UserData, monster: MonsterData | null) {
       </defs>
 
       <!-- Monster Image -->
-      <image x="35" y="10" width="80" height="80" href="${monsterSrc}" preserveAspectRatio="xMidYMid slice"/>
+      <image x="35" y="10" width="80" height="80" xlink:href="${monsterSrc}" preserveAspectRatio="xMidYMid slice"/>
 
       <!-- Monster Name -->
       <text x="75" y="105" text-anchor="middle" class="monster-name">${monsterName}</text>
