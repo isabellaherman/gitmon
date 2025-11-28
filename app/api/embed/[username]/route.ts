@@ -132,6 +132,9 @@ function generateCharacterSVG(user: UserData, monster: MonsterData | null) {
         </style>
       </defs>
 
+      <!-- White Background -->
+      <rect width="180" height="220" rx="8" fill="white"/>
+
       <!-- Monster Image - 2x bigger -->
       <image x="42" y="15" width="96" height="96" xlink:href="${monsterSrc}" preserveAspectRatio="xMidYMid slice"/>
 
@@ -180,6 +183,9 @@ function generateMonsterSVG(user: UserData, monster: MonsterData | null) {
           .type-label { font-family: 'Press Start 2P', 'Minecraftia', monospace; font-size: 8px; font-weight: normal; fill: white; text-transform: uppercase; }
         </style>
       </defs>
+
+      <!-- White Background -->
+      <rect width="150" height="160" rx="8" fill="white"/>
 
       <!-- Monster Image -->
       <image x="35" y="10" width="80" height="80" xlink:href="${monsterSrc}" preserveAspectRatio="xMidYMid slice"/>
