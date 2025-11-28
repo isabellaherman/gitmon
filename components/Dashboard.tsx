@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import GitMonDashboard from "@/components/GitMonDashboard";
 import StreakDisplay from "@/components/StreakDisplay";
+import EmbedGenerator from "@/components/EmbedGenerator";
 import { useEffect, useState } from "react";
 
 interface DashboardProps {
@@ -107,6 +108,20 @@ export default function Dashboard({
             >
               ⭐ Star Project
             </Button>
+            {selectedMonster && (
+              <EmbedGenerator
+                userData={{
+                  githubUsername: currentUserInLeaderboard?.githubUsername || session?.user?.email?.split('@')[0],
+                  selectedMonsterId: selectedMonster ? parseInt(selectedMonster.src.match(/\d+/)?.[0] || '0') : undefined,
+                  level: currentUserInLeaderboard?.level || session?.user?.level,
+                  xp: currentUserInLeaderboard?.xp || session?.user?.xp,
+                  currentStreak: currentStreak,
+                  totalCommits: 0, // Placeholder - preview will fetch from embed API
+                  totalStars: 0,
+                }}
+                selectedMonster={selectedMonster}
+              />
+            )}
           </div>
           {session?.user?.email ? (
             <StreakDisplay streak={currentStreak} />
