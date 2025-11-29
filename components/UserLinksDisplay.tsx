@@ -1,3 +1,5 @@
+'use client';
+
 interface UserLink {
   id: string;
   title: string;
@@ -13,6 +15,38 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
   if (!userLinks || userLinks.length === 0) {
     return null;
   }
+
+  // Build an augmented URL with UTM params and a `ref` identifying the profile
+  // This runs only when the user clicks (client-side) to avoid SSR/window access.
+  const buildAugmentedUrl = (originalUrl: string) => {
+    try {
+      // Only augment http(s) URLs
+      if (!/^https?:\/\//i.test(originalUrl)) return originalUrl;
+
+      const u = new URL(originalUrl);
+      const params = u.searchParams;
+
+      // UTM params (adjust values if you want different campaign/source/medium)
+      params.set('utm_source', 'gitmon');
+      params.set('utm_medium', 'profile_link');
+      params.set('utm_campaign', 'profile');
+
+      // Attempt to get username from current path (client-side only)
+      try {
+        const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+        const parts = pathname.split('/').filter(Boolean);
+        const ref = parts.length > 0 ? parts[0] : 'gitmon';
+        params.set('ref', encodeURIComponent(ref));
+      } catch {
+        params.set('ref', 'gitmon');
+      }
+
+      u.search = params.toString();
+      return u.toString();
+    } catch {
+      return originalUrl;
+    }
+  };
 
   const getIconForUrl = (url: string) => {
     const domain = new URL(url).hostname.toLowerCase();
@@ -100,6 +134,20 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted/80 transition-colors group"
+            onClick={e => {
+              try {
+                e.preventDefault();
+                const url = buildAugmentedUrl(link.url);
+                if (typeof window !== 'undefined') {
+                  window.open(url, '_blank', 'noopener,noreferrer');
+                } else {
+                  // Fallback: navigate if window isn't available
+                  (e.currentTarget as HTMLAnchorElement).href = url;
+                }
+              } catch {
+                // If anything fails, allow normal navigation
+              }
+            }}
           >
             <div className="text-muted-foreground group-hover:text-primary transition-colors">
               {getIconForUrl(link.url)}
