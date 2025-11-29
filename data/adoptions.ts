@@ -3,13 +3,13 @@
 // To remove an adoption, just delete or comment out the entry
 
 export const adoptionData = {
-  "Infernus": {
-    sponsorName: "REAL OFICIAL",
-    sponsorUrl: "https://realoficial.com.br/?utm_source=GITMON"
+  Infernus: {
+    sponsorName: 'REAL OFICIAL',
+    sponsorUrl: 'https://realoficial.com.br/?utm_source=GITMON',
   },
-  "Spectra": {
-    sponsorName: "KODUS",
-    sponsorUrl: "https://t.co/4E8Ciww11J"
+  Spectra: {
+    sponsorName: 'KODUS',
+    sponsorUrl: 'https://t.co/4E8Ciww11J',
   },
   // "Volterra": {
   //   sponsorName: "Your Company Name",

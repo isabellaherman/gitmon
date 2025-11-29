@@ -1,24 +1,24 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
-import { syncUserData } from "@/lib/xp-calculator";
-import { getUserRank } from "@/lib/xp-system";
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import { syncUserData } from '@/lib/xp-calculator';
+import { getUserRank } from '@/lib/xp-system';
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    console.log("Onboarding - Session:", session?.user?.email);
+    console.log('Onboarding - Session:', session?.user?.email);
 
     if (!session?.user?.email) {
-      console.log("Onboarding - No session found");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.log('Onboarding - No session found');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { selectedMonsterId } = await request.json();
 
-    if (typeof selectedMonsterId !== "number" || selectedMonsterId < 0 || selectedMonsterId > 8) {
-      return NextResponse.json({ error: "Invalid monster ID" }, { status: 400 });
+    if (typeof selectedMonsterId !== 'number' || selectedMonsterId < 0 || selectedMonsterId > 8) {
+      return NextResponse.json({ error: 'Invalid monster ID' }, { status: 400 });
     }
 
     // First update user with onboarding completion
@@ -31,9 +31,9 @@ export async function POST(request: Request) {
       },
       include: {
         accounts: {
-          where: { provider: 'github' }
-        }
-      }
+          where: { provider: 'github' },
+        },
+      },
     });
 
     console.log(`[Onboarding] User completed onboarding: ${updatedUser.email}`);
@@ -49,10 +49,12 @@ export async function POST(request: Request) {
 
         // Get the updated user data
         const finalUser = await prisma.user.findUnique({
-          where: { id: updatedUser.id }
+          where: { id: updatedUser.id },
         });
 
-        console.log(`[Onboarding] XP sync completed for ${syncResult.username}: ${syncResult.newXp} XP, Level ${syncResult.level}`);
+        console.log(
+          `[Onboarding] XP sync completed for ${syncResult.username}: ${syncResult.newXp} XP, Level ${syncResult.level}`,
+        );
 
         return NextResponse.json({
           success: true,
@@ -63,20 +65,18 @@ export async function POST(request: Request) {
             weeklyXp: syncResult.newWeeklyXp,
             level: syncResult.level,
             rank: newRank,
-            username: syncResult.username
-          }
+            username: syncResult.username,
+          },
         });
-
       } else {
         console.log('[Onboarding] XP sync returned null, likely no GitHub username found');
         return NextResponse.json({
           success: true,
           user: updatedUser,
           xpSynced: false,
-          message: "Onboarding completed but XP sync skipped (no GitHub username or sync failed)"
+          message: 'Onboarding completed but XP sync skipped (no GitHub username or sync failed)',
         });
       }
-
     } catch (xpError) {
       console.error('[Onboarding] XP sync failed:', xpError);
       // Still return success for onboarding, but note XP sync failed
@@ -84,11 +84,11 @@ export async function POST(request: Request) {
         success: true,
         user: updatedUser,
         xpSynced: false,
-        xpError: xpError instanceof Error ? xpError.message : 'Unknown XP sync error'
+        xpError: xpError instanceof Error ? xpError.message : 'Unknown XP sync error',
       });
     }
   } catch (error) {
-    console.error("Onboarding error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Onboarding error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -1,13 +1,13 @@
-import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import Image from "next/image";
-import { monsters, getMonsterById, getTypeTextColor } from "@/lib/monsters";
-import { getGuildById, getGuildTextColor } from "@/data/guilds";
-import { checkAndUpdateContributorStatus } from "@/lib/contributor-checker";
-import MonsterDisplay from "@/components/MonsterDisplay";
-import UserStats from "@/components/UserStats";
-import BadgeWall from "@/components/BadgeSystem";
-import UserLinksDisplay from "@/components/UserLinksDisplay";
+import { notFound } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import Image from 'next/image';
+import { monsters, getMonsterById, getTypeTextColor } from '@/lib/monsters';
+import { getGuildById, getGuildTextColor } from '@/data/guilds';
+import { checkAndUpdateContributorStatus } from '@/lib/contributor-checker';
+import MonsterDisplay from '@/components/MonsterDisplay';
+import UserStats from '@/components/UserStats';
+import BadgeWall from '@/components/BadgeSystem';
+import UserLinksDisplay from '@/components/UserLinksDisplay';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -20,20 +20,20 @@ async function getUserByUsername(username: string) {
     where: {
       githubUsername: {
         equals: username,
-        mode: "insensitive",
+        mode: 'insensitive',
       },
     },
     include: {
       activities: {
         orderBy: {
-          earnedAt: "desc",
+          earnedAt: 'desc',
         },
         take: 5,
       },
       eventParticipations: true,
       userLinks: {
         orderBy: {
-          order: "asc",
+          order: 'asc',
         },
       },
     },
@@ -64,7 +64,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         <div className="text-center mb-8">
           <div className="relative mb-4">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-600 to-transparent opacity-80 rounded-lg"></div>
-            <h1 className="relative text-4xl font-bold text-white py-4 px-8" style={{ fontFamily: 'Minecraftia, monospace' }}>
+            <h1
+              className="relative text-4xl font-bold text-white py-4 px-8"
+              style={{ fontFamily: 'Minecraftia, monospace' }}
+            >
               TRAINER PROFILE
             </h1>
           </div>
@@ -124,14 +127,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   <div className="space-y-3">
                     <h5 className="font-medium text-center">Recent Activity</h5>
                     <div className="space-y-2">
-                      {user.activities.slice(0, 3).map((activity) => (
+                      {user.activities.slice(0, 3).map(activity => (
                         <div key={activity.id} className="bg-muted/50 rounded-lg p-3 text-sm">
                           <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">{activity.type}</span>
                             <span className="font-bold text-primary">+{activity.amount} XP</span>
                           </div>
                           {activity.source && (
-                            <div className="text-xs text-muted-foreground mt-1">{activity.source}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {activity.source}
+                            </div>
                           )}
                         </div>
                       ))}
@@ -169,7 +174,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
             {/* Badges Section */}
             <div className="bg-card rounded-xl p-6">
-              <h3 className="text-xl font-bold mb-6 text-center" style={{ fontFamily: 'Minecraftia, monospace' }}>
+              <h3
+                className="text-xl font-bold mb-6 text-center"
+                style={{ fontFamily: 'Minecraftia, monospace' }}
+              >
                 Badges & Achievements
               </h3>
               <BadgeWall userData={user} />
@@ -187,7 +195,7 @@ export async function generateMetadata({ params }: ProfilePageProps) {
 
   if (!user) {
     return {
-      title: "Trainer not found - GitMon",
+      title: 'Trainer not found - GitMon',
     };
   }
 

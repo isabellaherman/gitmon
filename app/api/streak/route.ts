@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
 
 // Rate limiting for streak updates (much more restrictive)
 const streakUpdateMap = new Map();
@@ -54,28 +54,31 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check rate limit for streak updates (very restrictive)
     if (!checkUpdateRateLimit(session.user.email)) {
-      return NextResponse.json({
-        error: "Rate limit exceeded. You can only update your streak twice per day."
-      }, { status: 429 });
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded. You can only update your streak twice per day.',
+        },
+        { status: 429 },
+      );
     }
 
     const { currentStreak, allInteractionsComplete } = await request.json();
 
     if (typeof currentStreak !== 'number' || typeof allInteractionsComplete !== 'boolean') {
-      return NextResponse.json({ error: "Invalid streak data" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid streak data' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Award chromatic points for new streak milestones
@@ -84,12 +87,17 @@ export async function POST(request: Request) {
 
     // Award chromatic points for reaching new streak milestones
     if (currentStreak > oldStreak) {
-      if (currentStreak === 1) chromaticPointsToAdd += 5;       // 1st day
-      else if (currentStreak === 2) chromaticPointsToAdd += 6;  // 2nd day
-      else if (currentStreak === 3) chromaticPointsToAdd += 7;  // 3rd day
-      else if (currentStreak === 4) chromaticPointsToAdd += 8;  // 4th day
-      else if (currentStreak === 5) chromaticPointsToAdd += 9;  // 5th day
-      else if (currentStreak >= 6) chromaticPointsToAdd += 10;  // 6+ days (daily reward)
+      if (currentStreak === 1)
+        chromaticPointsToAdd += 5; // 1st day
+      else if (currentStreak === 2)
+        chromaticPointsToAdd += 6; // 2nd day
+      else if (currentStreak === 3)
+        chromaticPointsToAdd += 7; // 3rd day
+      else if (currentStreak === 4)
+        chromaticPointsToAdd += 8; // 4th day
+      else if (currentStreak === 5)
+        chromaticPointsToAdd += 9; // 5th day
+      else if (currentStreak >= 6) chromaticPointsToAdd += 10; // 6+ days (daily reward)
     }
 
     // Update streaks in database
@@ -97,8 +105,8 @@ export async function POST(request: Request) {
       where: { id: user.id },
       data: {
         currentStreak: currentStreak,
-        longestStreak: Math.max(user.longestStreak, currentStreak)
-      }
+        longestStreak: Math.max(user.longestStreak, currentStreak),
+      },
     });
 
     return NextResponse.json({
@@ -106,12 +114,11 @@ export async function POST(request: Request) {
       currentStreak: updatedUser.currentStreak,
       longestStreak: updatedUser.longestStreak,
       chromaticPointsEarned: chromaticPointsToAdd,
-      totalChromaticPoints: 0 // Temporary until migration
+      totalChromaticPoints: 0, // Temporary until migration
     });
-
   } catch (error) {
-    console.error("Streak sync error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Streak sync error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -120,37 +127,39 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check rate limit for read requests (more lenient)
     if (!checkReadRateLimit(session.user.email)) {
-      return NextResponse.json({
-        error: "Rate limit exceeded. Too many requests."
-      }, { status: 429 });
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded. Too many requests.',
+        },
+        { status: 429 },
+      );
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
         currentStreak: true,
-        longestStreak: true
-      }
+        longestStreak: true,
+      },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     return NextResponse.json({
       currentStreak: user.currentStreak,
       longestStreak: user.longestStreak,
       chromaticPoints: 0, // Temporary until migration
-      orbs: 0 // Temporary until migration
+      orbs: 0, // Temporary until migration
     });
-
   } catch (error) {
-    console.error("Streak fetch error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Streak fetch error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

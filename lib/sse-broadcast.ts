@@ -1,10 +1,13 @@
 // Enhanced connection tracking with rate limiting
-const connections = new Map<string, {
-  controller: ReadableStreamDefaultController;
-  connectedAt: number;
-  lastActivity: number;
-  ip: string;
-}>();
+const connections = new Map<
+  string,
+  {
+    controller: ReadableStreamDefaultController;
+    connectedAt: number;
+    lastActivity: number;
+    ip: string;
+  }
+>();
 
 const ipConnections = new Map<string, number>();
 const MAX_CONNECTIONS = 100;
@@ -35,7 +38,11 @@ function cleanupStaleConnections() {
 }
 
 // Add a new connection
-export function addConnection(connectionId: string, controller: ReadableStreamDefaultController, ip: string): boolean {
+export function addConnection(
+  connectionId: string,
+  controller: ReadableStreamDefaultController,
+  ip: string,
+): boolean {
   cleanupStaleConnections();
 
   // Check limits
@@ -54,7 +61,7 @@ export function addConnection(connectionId: string, controller: ReadableStreamDe
     controller,
     connectedAt: now,
     lastActivity: now,
-    ip
+    ip,
   });
 
   // Update IP counter
@@ -117,7 +124,9 @@ export function broadcastDamageUpdate(data: {
     removeConnection(connectionId);
   });
 
-  console.log(`🔴 [SSE] Broadcasted to ${connections.size} connections, cleaned up ${deadConnections.length} dead connections`);
+  console.log(
+    `🔴 [SSE] Broadcasted to ${connections.size} connections, cleaned up ${deadConnections.length} dead connections`,
+  );
 }
 
 // Health check for monitoring
@@ -129,12 +138,16 @@ export function getConnectionStats() {
     maxConnections: MAX_CONNECTIONS,
     utilizationPercentage: (connections.size / MAX_CONNECTIONS) * 100,
     connectionsPerIp: Object.fromEntries(ipConnections),
-    maxConnectionsPerIp: MAX_CONNECTIONS_PER_IP
+    maxConnectionsPerIp: MAX_CONNECTIONS_PER_IP,
   };
 }
 
 // Send event to specific connection
-export function sendEventToConnection(connectionId: string, eventType: string, data: unknown): boolean {
+export function sendEventToConnection(
+  connectionId: string,
+  eventType: string,
+  data: unknown,
+): boolean {
   const connection = connections.get(connectionId);
   if (!connection) {
     return false;

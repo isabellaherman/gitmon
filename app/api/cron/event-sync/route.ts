@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getConnectionStats } from "@/lib/sse-broadcast";
+import { NextResponse } from 'next/server';
+import { getConnectionStats } from '@/lib/sse-broadcast';
 
 export async function GET(request: Request) {
   const startTime = Date.now();
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const syncResponse = await fetch(`${request.url.split('/api/')[0]}/api/events/quick-sync`, {
       method: 'POST',
       headers: {
-        'Authorization': authHeader, // Pass through auth
+        Authorization: authHeader, // Pass through auth
       },
     });
 
@@ -40,29 +40,31 @@ export async function GET(request: Request) {
         sseConnections: connectionStats.activeConnections,
         connectionUtilization: connectionStats.utilizationPercentage,
         syncStats: syncResult.stats || null,
-        newCommits: syncResult.stats?.newCommits || 0
+        newCommits: syncResult.stats?.newCommits || 0,
       },
-      message: syncResult.message
+      message: syncResult.message,
     };
 
     console.log('[Event Sync] Completed:', {
       duration: `${duration}ms`,
       newCommits: syncResult.stats?.newCommits || 0,
-      connections: connectionStats.activeConnections
+      connections: connectionStats.activeConnections,
     });
 
     return NextResponse.json(response);
-
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error('[Event Sync] Critical error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error during event sync',
-      timestamp: new Date().toISOString(),
-      duration: `${duration}ms`,
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Internal server error during event sync',
+        timestamp: new Date().toISOString(),
+        duration: `${duration}ms`,
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

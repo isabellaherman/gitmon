@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
 
 interface UserLink {
   id: string;
@@ -43,11 +43,13 @@ export default function LinkManager() {
       if (response.ok) {
         const data = await response.json();
         setLinks(data.links || []);
-        setEditingLinks(data.links?.map((link: UserLink) => ({
-          title: link.title,
-          url: link.url,
-          order: link.order
-        })) || []);
+        setEditingLinks(
+          data.links?.map((link: UserLink) => ({
+            title: link.title,
+            url: link.url,
+            order: link.order,
+          })) || [],
+        );
       }
     } catch (error) {
       console.error('Failed to fetch links:', error);
@@ -64,9 +66,9 @@ export default function LinkManager() {
     }
 
     const newLink: LinkFormData = {
-      title: "",
-      url: "",
-      order: editingLinks.length + 1
+      title: '',
+      url: '',
+      order: editingLinks.length + 1,
     };
     setEditingLinks([...editingLinks, newLink]);
   };
@@ -95,8 +97,8 @@ export default function LinkManager() {
 
   const saveLinks = async () => {
     // Validate all links
-    const validLinks = editingLinks.filter(link =>
-      link.title.trim() !== '' && link.url.trim() !== ''
+    const validLinks = editingLinks.filter(
+      link => link.title.trim() !== '' && link.url.trim() !== '',
     );
 
     for (const link of validLinks) {
@@ -154,8 +156,7 @@ export default function LinkManager() {
       const originalLink = links[index];
       if (!originalLink) return true;
 
-      return editingLink.title !== originalLink.title ||
-             editingLink.url !== originalLink.url;
+      return editingLink.title !== originalLink.title || editingLink.url !== originalLink.url;
     });
   };
 
@@ -172,9 +173,7 @@ export default function LinkManager() {
     <div className="bg-muted/50 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <h4 className="font-semibold">Your Links</h4>
-        <span className="text-xs text-muted-foreground">
-          {editingLinks.length}/3 links
-        </span>
+        <span className="text-xs text-muted-foreground">{editingLinks.length}/3 links</span>
       </div>
 
       <div className="space-y-3">
@@ -195,7 +194,7 @@ export default function LinkManager() {
             <Input
               placeholder="Link title (e.g., Portfolio)"
               value={link.title}
-              onChange={(e) => updateLink(index, 'title', e.target.value)}
+              onChange={e => updateLink(index, 'title', e.target.value)}
               className="text-sm"
               maxLength={50}
             />
@@ -203,7 +202,7 @@ export default function LinkManager() {
             <Input
               placeholder="https://example.com"
               value={link.url}
-              onChange={(e) => updateLink(index, 'url', e.target.value)}
+              onChange={e => updateLink(index, 'url', e.target.value)}
               className="text-sm"
               type="url"
             />
@@ -218,24 +217,14 @@ export default function LinkManager() {
 
         <div className="flex gap-2 pt-2">
           {editingLinks.length < 3 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addEmptyLink}
-              className="flex-1"
-            >
+            <Button variant="outline" size="sm" onClick={addEmptyLink} className="flex-1">
               + Add Link
             </Button>
           )}
 
           {editingLinks.length > 0 && hasChanges() && (
-            <Button
-              size="sm"
-              onClick={saveLinks}
-              disabled={isSaving}
-              className="flex-1"
-            >
-              {isSaving ? "Saving..." : "Save Changes"}
+            <Button size="sm" onClick={saveLinks} disabled={isSaving} className="flex-1">
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           )}
         </div>
@@ -247,9 +236,11 @@ export default function LinkManager() {
         )}
 
         {message && (
-          <div className={`text-xs text-center pt-2 ${
-            message.type === 'success' ? 'text-green-600' : 'text-red-600'
-          }`}>
+          <div
+            className={`text-xs text-center pt-2 ${
+              message.type === 'success' ? 'text-green-600' : 'text-red-600'
+            }`}
+          >
             {message.text}
           </div>
         )}

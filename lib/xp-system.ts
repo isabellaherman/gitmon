@@ -1,4 +1,3 @@
-
 export interface GitHubStats {
   commits: number;
   pullRequests: number;
@@ -32,12 +31,7 @@ export function calculateLevel(totalXp: number): number {
 export function calculateXpForLevel(level: number): number {
   if (level <= 1) return 0;
 
-  const xp = Math.floor(
-    Math.pow(level, 3) * 4 -
-    15 * Math.pow(level, 2) +
-    100 * level -
-    140
-  );
+  const xp = Math.floor(Math.pow(level, 3) * 4 - 15 * Math.pow(level, 2) + 100 * level - 140);
 
   return Math.max(0, xp);
 }
@@ -72,7 +66,7 @@ export function calculatePullRequestXp(
   isOpened: boolean,
   isMerged: boolean,
   targetRepoStars: number,
-  isOwnRepo: boolean
+  isOwnRepo: boolean,
 ): number {
   let baseXp = 0;
 
@@ -95,7 +89,7 @@ export function calculatePullRequestXp(
 export function calculateStarXp(
   isFirstStar: boolean,
   repoStars: number,
-  isFromVerifiedDev: boolean
+  isFromVerifiedDev: boolean,
 ): number {
   let xp = isFirstStar ? 50 : 10;
 
@@ -114,12 +108,14 @@ export function calculateForkXp(isFirstFork: boolean): number {
   return isFirstFork ? 30 : 5;
 }
 
-export function calculateIssueXp(type: 'created' | 'resolved_by_author' | 'resolved_by_community' | 'bug_report'): number {
+export function calculateIssueXp(
+  type: 'created' | 'resolved_by_author' | 'resolved_by_community' | 'bug_report',
+): number {
   const xpMap = {
     created: 10,
     resolved_by_author: 20,
     resolved_by_community: 30,
-    bug_report: 40
+    bug_report: 40,
   };
 
   return xpMap[type] || 0;
@@ -140,7 +136,7 @@ export function calculateReleaseXp(versionType: 'major' | 'minor' | 'patch' | 'f
     first: 100,
     major: 75,
     minor: 50,
-    patch: 25
+    patch: 25,
   };
 
   return xpMap[versionType] || 0;
@@ -208,5 +204,5 @@ export default {
   calculateStreakMultiplier,
   applyDailyCap,
   getGitMonEvolution,
-  getUserRank
+  getUserRank,
 };

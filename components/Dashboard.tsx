@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import GitMonDashboard from "@/components/GitMonDashboard";
-import StreakDisplay from "@/components/StreakDisplay";
-import EmbedGenerator from "@/components/EmbedGenerator";
-import { useEffect, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import GitMonDashboard from '@/components/GitMonDashboard';
+import StreakDisplay from '@/components/StreakDisplay';
+import EmbedGenerator from '@/components/EmbedGenerator';
+import { useEffect, useState } from 'react';
 
 interface DashboardProps {
   selectedMonster?: {
@@ -36,7 +36,7 @@ export default function Dashboard({
   currentUserInLeaderboard,
   session,
   gitmonSelectedAt,
-  leaderboardPeriod
+  leaderboardPeriod,
 }: DashboardProps) {
   const router = useRouter();
   const [currentStreak, setCurrentStreak] = useState(0);
@@ -66,11 +66,11 @@ export default function Dashboard({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
-              Hello {currentUserInLeaderboard?.githubUsername || (session?.user?.email ? session.user.email.split('@')[0] : 'Trainer')}
+              Hello{' '}
+              {currentUserInLeaderboard?.githubUsername ||
+                (session?.user?.email ? session.user.email.split('@')[0] : 'Trainer')}
             </h2>
-            <p className="text-muted-foreground">
-              Welcome back to your GitMon adventure
-            </p>
+            <p className="text-muted-foreground">Welcome back to your GitMon adventure</p>
           </div>
 
           {/* <div className="flex gap-2">
@@ -111,8 +111,11 @@ export default function Dashboard({
             {selectedMonster && (
               <EmbedGenerator
                 userData={{
-                  githubUsername: currentUserInLeaderboard?.githubUsername || session?.user?.email?.split('@')[0],
-                  selectedMonsterId: selectedMonster ? parseInt(selectedMonster.src.match(/\d+/)?.[0] || '0') : undefined,
+                  githubUsername:
+                    currentUserInLeaderboard?.githubUsername || session?.user?.email?.split('@')[0],
+                  selectedMonsterId: selectedMonster
+                    ? parseInt(selectedMonster.src.match(/\d+/)?.[0] || '0')
+                    : undefined,
                   level: currentUserInLeaderboard?.level || session?.user?.level,
                   xp: currentUserInLeaderboard?.xp || session?.user?.xp,
                   currentStreak: currentStreak,
@@ -127,7 +130,7 @@ export default function Dashboard({
             <StreakDisplay streak={currentStreak} />
           ) : (
             <span className="text-xs text-muted-foreground">
-              created by{" "}
+              created by{' '}
               <a
                 href="https://x.com/IsabellaHermn"
                 target="_blank"

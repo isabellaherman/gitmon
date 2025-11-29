@@ -22,3 +22,27 @@ Either way, you get a lifetime IP license for that character and its name.
 
 Only 9 GitMon slots will be available for ownership and project support — released one at a time.
 Get in touch if you’re interested, or just keep an eye on the website for updates.
+
+## Contributing
+
+- **Report issues:** Open an issue for bugs or feature requests. Include steps to reproduce, expected vs actual behavior, environment (browser/node), and screenshots or logs when helpful.
+- **Develop locally:** Fork the repo, clone your fork, then:
+
+```bash
+npm install
+cp .env.example .env
+# Fill `.env` values (see `.env.example`)
+npm run dev
+```
+
+- **Branch & PR:** Create a descriptive branch name like `feature/add-x` or `fix/typo-x`. Open a pull request against `main` with a short description, list of changes, and link to any related issue.
+- **Code style & checks:** Follow existing TypeScript and formatting patterns. Run lint/format before opening a PR:
+
+```bash
+npm run lint
+npm run format
+```
+
+- **Tests:** If you add behavior that can be unit-tested, include tests and instructions to run them (e.g. `npm test`).
+- **Secrets & sensitive data:** Never commit secrets or `.env` files. Use `.env.example` for placeholders only.
+- **Contact:** For ownership, sponsorship, or other non-standard contributions, contact the project owner via the repo or website.

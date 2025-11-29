@@ -7,6 +7,7 @@ The Boss Battle module adds a gamification layer to GitMon events, converting pa
 ## How It Works
 
 ### 1. Damage System
+
 - **Commits = Damage**: Each commit made during an event is converted to damage points
 - **Damage Formula**: Based on existing XP system (5 XP per commit)
   ```
@@ -15,6 +16,7 @@ The Boss Battle module adds a gamification layer to GitMon events, converting pa
   ```
 
 ### 2. Boss Health System
+
 - **Boss HP**: Dynamically calculated based on number of participants
   ```
   Total HP = (Number of Participants × 1000) + Boss Base HP
@@ -23,6 +25,7 @@ The Boss Battle module adds a gamification layer to GitMon events, converting pa
 - **Phases**: Boss can have multiple phases as HP decreases
 
 ### 3. Collaborative Participation
+
 - **All event participants** contribute to defeating the boss
 - **Damage Ranking**: Specific leaderboard showing who dealt the most damage
 - **Special Badges**: Rewards for different types of participation
@@ -58,6 +61,7 @@ modules/boss-battle/
 ## Database Schema
 
 ### New Table: BossEvent
+
 ```prisma
 model BossEvent {
   id              String   @id @default(cuid())
@@ -81,6 +85,7 @@ model BossEvent {
 ```
 
 ### New Table: DamageDealt
+
 ```prisma
 model DamageDealt {
   id            String   @id @default(cuid())
@@ -101,6 +106,7 @@ model DamageDealt {
 ## API Endpoints
 
 ### 1. Boss Health API
+
 ```typescript
 // GET /api/boss-battle/health?eventId=first-community-event
 {
@@ -117,6 +123,7 @@ model DamageDealt {
 ```
 
 ### 2. Damage Leaderboard API
+
 ```typescript
 // GET /api/boss-battle/damage?eventId=first-community-event&limit=10
 {
@@ -136,6 +143,7 @@ model DamageDealt {
 ```
 
 ### 3. Calculate Damage API
+
 ```typescript
 // POST /api/boss-battle/calculate-damage
 {
@@ -155,7 +163,9 @@ model DamageDealt {
 ## Componentes UI
 
 ### 1. BossHealthBar
+
 Barra de vida visual do boss que aparece na página do evento:
+
 ```tsx
 <BossHealthBar
   currentHp={boss.currentHp}
@@ -166,38 +176,37 @@ Barra de vida visual do boss que aparece na página do evento:
 ```
 
 ### 2. DamageLeaderboard
+
 Ranking dos participantes por dano causado:
+
 ```tsx
-<DamageLeaderboard
-  eventId="first-community-event"
-  limit={10}
-  currentUserId={session?.user?.id}
-/>
+<DamageLeaderboard eventId="first-community-event" limit={10} currentUserId={session?.user?.id} />
 ```
 
 ### 3. BossDisplay
+
 Visual do boss com animações baseadas no HP:
+
 ```tsx
-<BossDisplay
-  boss={boss}
-  isUnderAttack={recentDamage > 0}
-  showDamageNumbers={true}
-/>
+<BossDisplay boss={boss} isUnderAttack={recentDamage > 0} showDamageNumbers={true} />
 ```
 
 ## Integration with Existing System
 
 ### 1. XP Activities
+
 - Uses existing `XpActivity` table to track commits and PRs
 - Damage system calculated in real-time based on XP activities
 - Maintains compatibility with current ranking system
 
 ### 2. Event Participants
+
 - Uses existing `EventParticipant` table
 - Adds damage system as extra layer
 - Does not interfere with current participation system
 
 ### 3. Leaderboard Integration
+
 - Damage system runs parallel to XP leaderboard
 - Possibility to show both: XP ranking and damage ranking
 - Keeps existing functionality intact
@@ -205,24 +214,28 @@ Visual do boss com animações baseadas no HP:
 ## Implementation Phases
 
 ### Phase 1: Base Infrastructure
+
 1. Create database schema
 2. Implement basic APIs
 3. Create health bar component
 4. Integrate into event page
 
 ### Phase 2: Damage System
+
 1. Implement damage calculation
 2. Create real-time tracking system
 3. Add damage leaderboard
 4. Animations and visual feedback
 
 ### Phase 3: Advanced Features
+
 1. Boss phases system
 2. Special effects and animations
 3. Special badges and rewards
 4. Boss regeneration system
 
 ### Phase 4: Polish & Enhancement
+
 1. Performance optimizations
 2. Advanced animations
 3. Notification system
@@ -234,16 +247,16 @@ To activate boss battle in an event:
 
 ```typescript
 const bossConfig = {
-  eventId: "first-community-event",
-  bossName: "Mad Monkey",
-  bossImage: "/events/MadMonkey.png",
+  eventId: 'first-community-event',
+  bossName: 'Mad Monkey',
+  bossImage: '/events/MadMonkey.png',
   baseHp: 10000, // HP base + (participantes × 1000)
   damagePerCommit: 5,
   damagePerPr: 40,
   phases: [
-    { threshold: 0.75, name: "Enraged", effects: ["increased_defense"] },
-    { threshold: 0.25, name: "Desperate", effects: ["regeneration"] }
-  ]
+    { threshold: 0.75, name: 'Enraged', effects: ['increased_defense'] },
+    { threshold: 0.25, name: 'Desperate', effects: ['regeneration'] },
+  ],
 };
 ```
 
@@ -258,16 +271,19 @@ const bossConfig = {
 ## Technical Considerations
 
 ### Performance
+
 - Boss HP cache to reduce queries
 - Batch updates for mass damage
 - Leaderboard query optimization
 
 ### Scalability
+
 - System must support thousands of participants
 - Optimized damage calculations
 - Smart caching to reduce database load
 
 ### Real-time Updates
+
 - WebSockets or polling for real-time updates
 - Synchronization between multiple clients
 - Instant feedback for user actions

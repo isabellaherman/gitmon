@@ -1,23 +1,24 @@
-import type { Metadata } from "next";
-import { Silkscreen, Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "@/components/providers";
-import SupportCard from "@/components/SupportCard";
+import type { Metadata } from 'next';
+import { Silkscreen, Inter } from 'next/font/google';
+import './globals.css';
+import { Providers } from '@/components/providers';
+import SupportCard from '@/components/SupportCard';
 
 const silkscreen = Silkscreen({
-  variable: "--font-silkscreen",
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  variable: '--font-silkscreen',
+  subsets: ['latin'],
+  weight: ['400', '700'],
 });
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+  variable: '--font-inter',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "GitMon - Open Source Coding Leaderboard",
-  description: "GitMon transforms your GitHub activity into an open source game. Climb the leaderboard, evolve your GitMons, and compete to become the ultimate developer!",
+  title: 'GitMon - Open Source Coding Leaderboard',
+  description:
+    'GitMon transforms your GitHub activity into an open source game. Climb the leaderboard, evolve your GitMons, and compete to become the ultimate developer!',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -33,13 +34,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preload" href="/fonts/Minecraftia.ttf" as="font" type="font/ttf" crossOrigin="" />
+        <link
+          rel="preload"
+          href="/fonts/Minecraftia.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin=""
+        />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
       </head>
-      <body
-        className={`${silkscreen.variable} ${inter.variable} antialiased`}
-      >
+      <body className={`${silkscreen.variable} ${inter.variable} antialiased`}>
         <Providers>
           {children}
           {/* Global SupportCard for modal trigger - only modal shows, not the card content */}

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import Image from "next/image";
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import Image from 'next/image';
 
 interface EventPopupProps {
   isOpen: boolean;
@@ -26,7 +26,10 @@ export default function EventPopup({ isOpen, onClose }: EventPopupProps) {
         <div className="p-6 text-center">
           {/* Warning */}
           <div className="mb-4">
-            <span className="text-red-600 text-xs font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
+            <span
+              className="text-red-600 text-xs font-bold"
+              style={{ fontFamily: 'Minecraftia, monospace' }}
+            >
               WARNING
             </span>
           </div>
@@ -34,7 +37,10 @@ export default function EventPopup({ isOpen, onClose }: EventPopupProps) {
           {/* Title */}
           <div className="relative mb-6">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-80 rounded-lg"></div>
-            <h1 className="relative text-2xl md:text-3xl font-bold text-white py-3 px-4" style={{ fontFamily: 'Minecraftia, monospace' }}>
+            <h1
+              className="relative text-2xl md:text-3xl font-bold text-white py-3 px-4"
+              style={{ fontFamily: 'Minecraftia, monospace' }}
+            >
               CALLING ALL GIT TRAINERS!
             </h1>
           </div>
@@ -59,11 +65,7 @@ export default function EventPopup({ isOpen, onClose }: EventPopupProps) {
 
           {/* Buttons */}
           <div className="flex gap-3 items-center">
-            <Button
-              onClick={onClose}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={onClose} variant="outline" size="sm">
               Cancel
             </Button>
 

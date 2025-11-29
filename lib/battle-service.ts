@@ -50,16 +50,18 @@ export class BattleService {
 
       // 2. Search commits for participants (process in batches to avoid rate limits)
       const batchSize = 10; // Process 10 users at a time
-      const maxUsers = 30;  // Limit to first 30 users for now
+      const maxUsers = 30; // Limit to first 30 users for now
       const usersToCheck = participants.slice(0, maxUsers);
 
-      console.log(`🔍 Checking commits for ${usersToCheck.length} participants (limited for performance)...`);
+      console.log(
+        `🔍 Checking commits for ${usersToCheck.length} participants (limited for performance)...`,
+      );
 
       for (let i = 0; i < usersToCheck.length; i += batchSize) {
         const batch = usersToCheck.slice(i, i + batchSize);
 
         // Process batch in parallel
-        const batchPromises = batch.map(async (username) => {
+        const batchPromises = batch.map(async username => {
           try {
             console.log(`🔍 Searching commits for ${username}...`);
             const commits = await this.githubService.getCommitsViaSearch(username, 7);
@@ -69,14 +71,16 @@ export class BattleService {
               sha: commit.sha,
               message: commit.message,
               repo: commit.repoName,
-              date: commit.timestamp.toISOString()
+              date: commit.timestamp.toISOString(),
             }));
 
             console.log(`  ✅ Found ${commits.length} commits for ${username}`);
             return formattedCommits;
-
           } catch (error) {
-            console.log(`  ❌ Error for ${username}:`, error instanceof Error ? error.message : 'Unknown error');
+            console.log(
+              `  ❌ Error for ${username}:`,
+              error instanceof Error ? error.message : 'Unknown error',
+            );
             return [];
           }
         });
@@ -101,16 +105,15 @@ export class BattleService {
         success: true,
         participants,
         commits: allCommits,
-        total: allCommits.length
+        total: allCommits.length,
       };
-
     } catch (error) {
       console.error('Error getting commits:', error);
       return {
         success: false,
         participants: [],
         commits: [],
-        total: 0
+        total: 0,
       };
     }
   }
@@ -119,15 +122,15 @@ export class BattleService {
   private async getEventParticipants(): Promise<string[]> {
     const participants = await prisma.eventParticipant.findMany({
       where: {
-        eventId: 'first-community-event' // ID do evento real
+        eventId: 'first-community-event', // ID do evento real
       },
       include: {
         user: {
           select: {
-            githubUsername: true
-          }
-        }
-      }
+            githubUsername: true,
+          },
+        },
+      },
     });
 
     return participants
@@ -148,9 +151,8 @@ export class BattleService {
         message: commit.message,
         repoName: commit.repoName,
         timestamp: commit.timestamp,
-        damage: this.calculateDamage()
+        damage: this.calculateDamage(),
       }));
-
     } catch (error) {
       console.error(`Error searching commits for ${username}:`, error);
       return [];
@@ -189,7 +191,7 @@ export class BattleService {
             message: this.generateCommitMessage(payload, repoName),
             repoName,
             timestamp: eventDate,
-            damage: this.calculateDamage()
+            damage: this.calculateDamage(),
           });
 
           console.log(`✅ ${username}: found commit in ${repoName}`);
@@ -197,14 +199,16 @@ export class BattleService {
       }
 
       return commits;
-
     } catch (error) {
       console.error(`Error getting commits for ${username}:`, error);
       return [];
     }
   }
 
-  private generateCommitMessage(payload: { commits?: unknown[]; size?: number }, repoName: string): string {
+  private generateCommitMessage(
+    payload: { commits?: unknown[]; size?: number },
+    repoName: string,
+  ): string {
     const commitCount = payload.commits?.length || payload.size || 1;
     return `${commitCount} commit${commitCount > 1 ? 's' : ''} to ${repoName}`;
   }
@@ -213,5 +217,4 @@ export class BattleService {
     // Dano simples: 15-45
     return Math.floor(Math.random() * 30) + 15;
   }
-
 }

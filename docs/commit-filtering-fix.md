@@ -1,6 +1,7 @@
 # Commit Filtering Fix - GitHub Search API Approach
 
 ## Problem Analysis
+
 The current event-based commit filtering system (`getRecentCommitsFromEvents`) was failing because:
 
 - **GitHub public events API limitations**: Only returns ~30 recent events
@@ -11,6 +12,7 @@ The current event-based commit filtering system (`getRecentCommitsFromEvents`) w
 ## Solution: GitHub Search API
 
 ### Why GitHub Search API is Better
+
 - ✅ Finds ALL public commits (not just recent events)
 - ✅ Reliable date filtering using `committer-date:>YYYY-MM-DD`
 - ✅ Returns actual commit data with SHA, message, and repository
@@ -21,6 +23,7 @@ The current event-based commit filtering system (`getRecentCommitsFromEvents`) w
 ### Technical Implementation
 
 #### 1. New Search-Based Method
+
 ```typescript
 private async getCommitsViaSearch(username: string): Promise<BattleCommit[]> {
   try {
@@ -52,7 +55,9 @@ private async getCommitsViaSearch(username: string): Promise<BattleCommit[]> {
 ```
 
 #### 2. Simple Drop-in Replacement
+
 Replace in `refreshBattleLogs()`:
+
 ```typescript
 // OLD:
 const recentCommits = await this.getRecentCommitsFromEvents(username);
@@ -64,6 +69,7 @@ const recentCommits = await this.getCommitsViaSearch(username);
 ### Alternative Approaches Considered
 
 #### Repository-Specific Monitoring
+
 ```typescript
 async getRepoCommits(owner: string, repo: string, author: string, since: string) {
   const { data } = await this.octokit.rest.repos.listCommits({
@@ -74,6 +80,7 @@ async getRepoCommits(owner: string, repo: string, author: string, since: string)
 ```
 
 #### User Repository Enumeration
+
 ```typescript
 async getUserRecentCommits(username: string, since: string) {
   const { data: repos } = await this.octokit.rest.repos.listForUser({
@@ -92,6 +99,7 @@ async getUserRecentCommits(username: string, since: string) {
 ```
 
 ### Implementation Benefits
+
 - **Reliability**: Actual GitHub commit data instead of event approximations
 - **Completeness**: Captures all public commits, not just recent events
 - **Accuracy**: Real commit SHAs, messages, and timestamps
@@ -99,6 +107,7 @@ async getUserRecentCommits(username: string, since: string) {
 - **Performance**: Better rate limits and more efficient queries
 
 ### Migration Steps
+
 1. Add `getCommitsViaSearch` method to `github-service.ts`
 2. Update `battle-service.ts` to use new method
 3. Test with event participants

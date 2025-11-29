@@ -31,7 +31,7 @@ export class EventCommitService {
       // Get ALL participants
       const participants = await prisma.eventParticipant.findMany({
         where: { eventId: this.eventId },
-        include: { user: { select: { githubUsername: true } } }
+        include: { user: { select: { githubUsername: true } } },
       });
 
       const usernames = participants
@@ -56,14 +56,20 @@ export class EventCommitService {
           const searchToDate = Math.min(Date.now(), this.eventEndDate.getTime()); // Don't search future dates
           const actualSearchToDate = new Date(searchToDate);
 
-          console.log(`🔴 [DEBUG] ${username}: EVENT RANGE - from=${searchFromDate.toISOString()} to=${actualSearchToDate.toISOString()}`);
+          console.log(
+            `🔴 [DEBUG] ${username}: EVENT RANGE - from=${searchFromDate.toISOString()} to=${actualSearchToDate.toISOString()}`,
+          );
 
           // Check if we already have commits for this user in this date range
           const existingCommits = await this.getExistingCommitsCount(username);
           console.log(`🔴 [DEBUG] ${username}: Already has ${existingCommits} commits tracked`);
 
           // Fetch commits in the event date range
-          const commits = await this.fetchCommitsInEventRange(username, searchFromDate, actualSearchToDate);
+          const commits = await this.fetchCommitsInEventRange(
+            username,
+            searchFromDate,
+            actualSearchToDate,
+          );
 
           // Save new commits (avoiding duplicates)
           const savedCommits = await this.saveNewCommits(username, commits);
@@ -73,15 +79,16 @@ export class EventCommitService {
           const nowTime = new Date();
           await prisma.eventParticipant.update({
             where: { id: participant.id },
-            data: { lastSyncAt: nowTime }
+            data: { lastSyncAt: nowTime },
           });
 
           console.log(`🔴 [DEBUG] ${username}: Updated lastSyncAt to ${nowTime.toISOString()}`);
-          console.log(`  ✅ ${username}: ${savedCommits} new commits saved (${commits.length} found total)`);
+          console.log(
+            `  ✅ ${username}: ${savedCommits} new commits saved (${commits.length} found total)`,
+          );
 
           // Small delay to respect rate limits
           await new Promise(resolve => setTimeout(resolve, 500));
-
         } catch (error) {
           errorCount++;
           console.error(`  ❌ Error syncing ${username}:`, error);
@@ -94,32 +101,39 @@ export class EventCommitService {
         stats: {
           participantsChecked: usernames.length,
           newCommits: newCommitCount,
-          errors: errorCount
-        }
+          errors: errorCount,
+        },
       };
-
     } catch (error) {
       console.error('Sync error:', error);
       return {
         success: false,
         message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        stats: { participantsChecked: 0, newCommits: 0, errors: 1 }
+        stats: { participantsChecked: 0, newCommits: 0, errors: 1 },
       };
     }
   }
 
   // Fetch commits for a user in the event date range
-  private async fetchCommitsInEventRange(username: string, fromDate: Date, toDate: Date): Promise<Array<{
-    sha: string;
-    message: string;
-    repoName: string;
-    committedAt: Date;
-  }>> {
+  private async fetchCommitsInEventRange(
+    username: string,
+    fromDate: Date,
+    toDate: Date,
+  ): Promise<
+    Array<{
+      sha: string;
+      message: string;
+      repoName: string;
+      committedAt: Date;
+    }>
+  > {
     const fromDateStr = fromDate.toISOString().split('T')[0];
     const toDateStr = toDate.toISOString().split('T')[0];
 
     // Use GitHub Search API with date range
-    console.log(`🔴 [DEBUG] ${username}: GitHub Search query will be "author:${username} committer-date:${fromDateStr}..${toDateStr}"`);
+    console.log(
+      `🔴 [DEBUG] ${username}: GitHub Search query will be "author:${username} committer-date:${fromDateStr}..${toDateStr}"`,
+    );
 
     // Calculate days back from today to the start date for the existing method
     const daysBack = Math.ceil((Date.now() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -131,13 +145,15 @@ export class EventCommitService {
       return commitDate >= fromDate.getTime() && commitDate <= toDate.getTime();
     });
 
-    console.log(`🔴 [DEBUG] ${username}: Found ${commits.length} total commits, ${filteredCommits.length} in event range`);
+    console.log(
+      `🔴 [DEBUG] ${username}: Found ${commits.length} total commits, ${filteredCommits.length} in event range`,
+    );
 
     return filteredCommits.map(commit => ({
       sha: commit.sha,
       message: commit.message,
       repoName: commit.repoName,
-      committedAt: commit.timestamp
+      committedAt: commit.timestamp,
     }));
   }
 
@@ -149,19 +165,22 @@ export class EventCommitService {
         username,
         committedAt: {
           gte: this.eventStartDate,
-          lte: this.eventEndDate
-        }
-      }
+          lte: this.eventEndDate,
+        },
+      },
     });
   }
 
   // Save new commits, avoiding duplicates
-  private async saveNewCommits(username: string, commits: Array<{
-    sha: string;
-    message: string;
-    repoName: string;
-    committedAt: Date;
-  }>): Promise<number> {
+  private async saveNewCommits(
+    username: string,
+    commits: Array<{
+      sha: string;
+      message: string;
+      repoName: string;
+      committedAt: Date;
+    }>,
+  ): Promise<number> {
     let savedCount = 0;
 
     for (const commit of commits) {
@@ -171,8 +190,8 @@ export class EventCommitService {
           where: {
             eventId_sha: {
               eventId: this.eventId,
-              sha: commit.sha
-            }
+              sha: commit.sha,
+            },
           },
           update: {}, // Don't update if already exists
           create: {
@@ -181,13 +200,14 @@ export class EventCommitService {
             sha: commit.sha,
             message: commit.message,
             repoName: commit.repoName,
-            committedAt: commit.committedAt
-          }
+            committedAt: commit.committedAt,
+          },
         });
         savedCount++;
       } catch (error) {
         // Skip duplicates silently
-        if ((error as { code?: string }).code !== 'P2002') { // Not a unique constraint violation
+        if ((error as { code?: string }).code !== 'P2002') {
+          // Not a unique constraint violation
           console.error(`Error saving commit ${commit.sha}:`, error);
         }
       }
@@ -213,7 +233,7 @@ export class EventCommitService {
       const commits = await prisma.eventCommit.findMany({
         where: { eventId: this.eventId },
         orderBy: { committedAt: 'desc' },
-        take: limit
+        take: limit,
       });
 
       return {
@@ -224,16 +244,16 @@ export class EventCommitService {
           message: commit.message,
           repoName: commit.repoName,
           committedAt: commit.committedAt.toISOString(),
-          createdAt: commit.createdAt.toISOString()
+          createdAt: commit.createdAt.toISOString(),
         })),
-        total: commits.length
+        total: commits.length,
       };
     } catch (error) {
       console.error('Error fetching commits:', error);
       return {
         success: false,
         commits: [],
-        total: 0
+        total: 0,
       };
     }
   }
@@ -255,24 +275,24 @@ export class EventCommitService {
           eventId: this.eventId,
           committedAt: {
             gte: this.eventStartDate,
-            lte: this.eventEndDate
-          }
-        }
+            lte: this.eventEndDate,
+          },
+        },
       }),
       prisma.eventCommit.count({
         where: {
           eventId: this.eventId,
           committedAt: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
-            lte: this.eventEndDate
-          }
-        }
+            lte: this.eventEndDate,
+          },
+        },
       }),
       prisma.eventParticipant.findFirst({
         where: { eventId: this.eventId, lastSyncAt: { not: null } },
         orderBy: { lastSyncAt: 'desc' },
-        select: { lastSyncAt: true }
-      })
+        select: { lastSyncAt: true },
+      }),
     ]);
 
     return {
@@ -282,7 +302,7 @@ export class EventCommitService {
       lastSyncAt: lastSync?.lastSyncAt || null,
       eventStartDate: this.eventStartDate.toISOString(),
       eventEndDate: this.eventEndDate.toISOString(),
-      currentDate: new Date().toISOString()
+      currentDate: new Date().toISOString(),
     };
   }
 }

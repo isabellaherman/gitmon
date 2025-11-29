@@ -34,9 +34,9 @@ const DEFAULT_STATS: EventStats = {
   totalCommits: 0,
   commitsLast24h: 0,
   lastSyncAt: null,
-  eventStartDate: "",
-  eventEndDate: "",
-  currentDate: "",
+  eventStartDate: '',
+  eventEndDate: '',
+  currentDate: '',
 };
 
 export function useEventStream(): UseEventStreamReturn {
@@ -116,11 +116,11 @@ export function useEventStream(): UseEventStreamReturn {
         stopPolling(); // Stop polling if SSE works
       };
 
-      eventSource.onmessage = (event) => {
+      eventSource.onmessage = event => {
         console.log('🔴 [SSE] Received message:', event.data);
       };
 
-      eventSource.addEventListener('initial-data', (event) => {
+      eventSource.addEventListener('initial-data', event => {
         try {
           const data = JSON.parse(event.data);
           console.log('🔴 [SSE] Initial data received:', data);
@@ -132,7 +132,7 @@ export function useEventStream(): UseEventStreamReturn {
         }
       });
 
-      eventSource.addEventListener('new-commits', (event) => {
+      eventSource.addEventListener('new-commits', event => {
         try {
           const data = JSON.parse(event.data);
           console.log('🔴 [SSE] New commits received:', data);
@@ -144,7 +144,7 @@ export function useEventStream(): UseEventStreamReturn {
         }
       });
 
-      eventSource.addEventListener('stats-update', (event) => {
+      eventSource.addEventListener('stats-update', event => {
         try {
           const data = JSON.parse(event.data);
           console.log('🔴 [SSE] Stats update received:', data);
@@ -156,16 +156,16 @@ export function useEventStream(): UseEventStreamReturn {
         }
       });
 
-      eventSource.addEventListener('heartbeat', (event) => {
+      eventSource.addEventListener('heartbeat', event => {
         // Just keep the connection alive, no UI update needed
         console.log('🔴 [SSE] Heartbeat received');
       });
 
-      eventSource.addEventListener('error', (event) => {
+      eventSource.addEventListener('error', event => {
         console.error('🔴 [SSE] Error event:', event);
       });
 
-      eventSource.onerror = (error) => {
+      eventSource.onerror = error => {
         console.error('🔴 [SSE] Connection error:', error);
         setIsConnected(false);
         setConnectionError('Connection lost');
@@ -184,7 +184,6 @@ export function useEventStream(): UseEventStreamReturn {
           startPolling();
         }
       };
-
     } catch (error) {
       console.error('🔴 [SSE] Failed to create EventSource:', error);
       setConnectionError('Failed to connect');
@@ -245,6 +244,6 @@ export function useEventStream(): UseEventStreamReturn {
     connectionError,
     lastUpdate,
     retryConnection,
-    fallbackToPolling
+    fallbackToPolling,
   };
 }

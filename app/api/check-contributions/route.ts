@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-const GITMON_REPO_OWNER = "isabellaherman";
-const GITMON_REPO_NAME = "gitmon";
+const GITMON_REPO_OWNER = 'isabellaherman';
+const GITMON_REPO_NAME = 'gitmon';
 
 export async function GET(request: Request) {
   try {
@@ -20,15 +20,14 @@ export async function GET(request: Request) {
     if (hasContributions) {
       await prisma.user.updateMany({
         where: { githubUsername: githubUsername },
-        data: { isGitMonContributor: true }
+        data: { isGitMonContributor: true },
       });
     }
 
     return NextResponse.json({
       hasContributions,
-      message: hasContributions ? 'Contributor status verified!' : 'No contributions found'
+      message: hasContributions ? 'Contributor status verified!' : 'No contributions found',
     });
-
   } catch (error) {
     console.error('Error checking contributions:', error);
     return NextResponse.json({ error: 'Failed to check contributions' }, { status: 500 });
@@ -43,8 +42,8 @@ async function checkGitMonContributions(githubUsername: string): Promise<boolean
     }
 
     const headers: Record<string, string> = {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'GitMon-Badge-System'
+      Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'GitMon-Badge-System',
     };
 
     if (token) {
@@ -54,7 +53,7 @@ async function checkGitMonContributions(githubUsername: string): Promise<boolean
     // Check repository contributors
     const contributorsResponse = await fetch(
       `https://api.github.com/repos/${GITMON_REPO_OWNER}/${GITMON_REPO_NAME}/contributors`,
-      { headers }
+      { headers },
     );
 
     if (!contributorsResponse.ok) {
@@ -65,12 +64,12 @@ async function checkGitMonContributions(githubUsername: string): Promise<boolean
     const contributors = await contributorsResponse.json();
 
     // Check if the user is in the contributors list
-    const isContributor = contributors.some((contributor: { login: string }) =>
-      contributor.login.toLowerCase() === githubUsername.toLowerCase()
+    const isContributor = contributors.some(
+      (contributor: { login: string }) =>
+        contributor.login.toLowerCase() === githubUsername.toLowerCase(),
     );
 
     return isContributor;
-
   } catch (error) {
     console.error('Error checking GitHub contributions:', error);
     return false;

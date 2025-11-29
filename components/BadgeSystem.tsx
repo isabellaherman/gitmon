@@ -1,5 +1,5 @@
-import Image from "next/image";
-import { getUserBadges } from "@/data/badges";
+import Image from 'next/image';
+import { getUserBadges } from '@/data/badges';
 
 interface UserData {
   eventParticipations?: { eventId: string }[];
@@ -29,15 +29,16 @@ export default function BadgeWall({ userData }: BadgeWallProps) {
               transition-all duration-300 cursor-pointer group
               hover:-translate-y-2 hover:scale-110 active:-translate-y-2 active:scale-110
               ${index > 0 ? 'md:-ml-3' : ''}
-              ${badge.earned && badge.image
-                ? 'hover:z-30 active:z-30'
-                : badge.earned
-                ? 'hover:z-30 active:z-30 border-4 border-yellow-400 bg-yellow-50 hover:border-yellow-500'
-                : 'hover:z-20 active:z-20 border-4 border-gray-300 bg-gray-100 hover:border-gray-400'
+              ${
+                badge.earned && badge.image
+                  ? 'hover:z-30 active:z-30'
+                  : badge.earned
+                    ? 'hover:z-30 active:z-30 border-4 border-yellow-400 bg-yellow-50 hover:border-yellow-500'
+                    : 'hover:z-20 active:z-20 border-4 border-gray-300 bg-gray-100 hover:border-gray-400'
               }
             `}
             style={{
-              zIndex: 20 - index
+              zIndex: 20 - index,
             }}
           >
             {badge.earned && badge.image ? (
@@ -68,7 +69,6 @@ export default function BadgeWall({ userData }: BadgeWallProps) {
           GitMon.xyz
         </a>
       </div>
-
     </div>
   );
 }

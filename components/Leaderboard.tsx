@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { monsters } from "@/lib/monsters";
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { monsters } from '@/lib/monsters';
 
 interface LeaderboardEntry {
   rank: number;
@@ -32,7 +32,7 @@ export default function Leaderboard({
   isLoadingLeaderboard,
   leaderboardPeriod,
   setLeaderboardPeriod,
-  totalTrainers
+  totalTrainers,
 }: LeaderboardProps) {
   const router = useRouter();
 
@@ -41,9 +41,13 @@ export default function Leaderboard({
       <div className="p-6 border-b">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>Top Trainers</h2>
+            <h2 className="text-2xl font-bold" style={{ fontFamily: 'Minecraftia, monospace' }}>
+              Top Trainers
+            </h2>
             <p className="text-muted-foreground">
-              {leaderboardPeriod === 'week' ? "This week's coding champions" : "All-time coding legends"}
+              {leaderboardPeriod === 'week'
+                ? "This week's coding champions"
+                : 'All-time coding legends'}
             </p>
           </div>
 
@@ -94,7 +98,7 @@ export default function Leaderboard({
             </Button>
           </div>
           <span className="text-xs text-muted-foreground">
-            created by{" "}
+            created by{' '}
             <a
               href="https://x.com/IsabellaHermn"
               target="_blank"
@@ -126,86 +130,86 @@ export default function Leaderboard({
           </div>
         ) : (
           <div className="space-y-4 mt-4">
-            {leaderboard.map((user) => (
-            <div
-              key={user.rank}
-              className={`flex items-center gap-4 px-4 py-2 rounded-full transition-colors ${
-                user.rank <= 3
-                  ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
-                  : 'isCurrentUser' in user && user.isCurrentUser
-                  ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20'
-                  : 'bg-muted/50 hover:bg-muted'
-              }`}
-            >
-              <div className="min-w-8 flex items-center justify-center font-bold text-sm text-muted-foreground">
-                #{user.rank}
-              </div>
-
-              <div className="flex-1">
-                {/* Desktop layout */}
-                <div className="hidden md:flex items-center gap-2">
-                  <a
-                    href={`https://github.com/${user.githubUsername || user.name}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline"
-                  >
-                    @{user.githubUsername || user.name}
-                  </a>
-                  <button
-                    onClick={() => router.push(`/gitdex?monster=${user.selectedMonsterId}`)}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
-                  >
-                    {monsters[user.selectedMonsterId]?.name || 'Unknown'}
-                  </button>
-                  <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                    <span className="hidden md:inline">Level {user.level}</span>
-                    <span className="md:hidden">Lv. {user.level}</span>
-                  </span>
+            {leaderboard.map(user => (
+              <div
+                key={user.rank}
+                className={`flex items-center gap-4 px-4 py-2 rounded-full transition-colors ${
+                  user.rank <= 3
+                    ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
+                    : 'isCurrentUser' in user && user.isCurrentUser
+                      ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20'
+                      : 'bg-muted/50 hover:bg-muted'
+                }`}
+              >
+                <div className="min-w-8 flex items-center justify-center font-bold text-sm text-muted-foreground">
+                  #{user.rank}
                 </div>
-                {/* Mobile layout - stacked */}
-                <div className="md:hidden space-y-1">
-                  <a
-                    href={`https://github.com/${user.githubUsername || user.name}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline block"
-                  >
-                    @{user.githubUsername || user.name}
-                  </a>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
+
+                <div className="flex-1">
+                  {/* Desktop layout */}
+                  <div className="hidden md:flex items-center gap-2">
+                    <a
+                      href={`https://github.com/${user.githubUsername || user.name}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline"
+                    >
+                      @{user.githubUsername || user.name}
+                    </a>
+                    <button
+                      onClick={() => router.push(`/gitdex?monster=${user.selectedMonsterId}`)}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
+                    >
                       {monsters[user.selectedMonsterId]?.name || 'Unknown'}
-                    </span>
+                    </button>
                     <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                       <span className="hidden md:inline">Level {user.level}</span>
                       <span className="md:hidden">Lv. {user.level}</span>
                     </span>
                   </div>
+                  {/* Mobile layout - stacked */}
+                  <div className="md:hidden space-y-1">
+                    <a
+                      href={`https://github.com/${user.githubUsername || user.name}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold hover:text-primary transition-colors cursor-pointer hover:underline block"
+                    >
+                      @{user.githubUsername || user.name}
+                    </a>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {monsters[user.selectedMonsterId]?.name || 'Unknown'}
+                      </span>
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                        <span className="hidden md:inline">Level {user.level}</span>
+                        <span className="md:hidden">Lv. {user.level}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
+                    {/* Hide commit/PR info on mobile */}
+                    <p className="text-xs text-muted-foreground hidden md:block">
+                      {user.stats.commits} commits • {user.stats.prs} PRs
+                    </p>
+                  </div>
+
+                  <div className="w-16 h-16 relative">
+                    <Image
+                      src={monsters[user.selectedMonsterId]?.src || monsters[0].src}
+                      alt={monsters[user.selectedMonsterId]?.name || 'GitMon'}
+                      fill
+                      className="object-contain"
+                      sizes="64px"
+                    />
+                  </div>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="font-bold text-primary">{user.xp.toLocaleString()} XP</p>
-                  {/* Hide commit/PR info on mobile */}
-                  <p className="text-xs text-muted-foreground hidden md:block">
-                    {user.stats.commits} commits • {user.stats.prs} PRs
-                  </p>
-                </div>
-
-                <div className="w-16 h-16 relative">
-                  <Image
-                    src={monsters[user.selectedMonsterId]?.src || monsters[0].src}
-                    alt={monsters[user.selectedMonsterId]?.name || 'GitMon'}
-                    fill
-                    className="object-contain"
-                    sizes="64px"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
           </div>
         )}
       </div>

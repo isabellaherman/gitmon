@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import GitHubService from "@/lib/github-service";
-import { calculateLevel } from "@/lib/xp-system";
+import { prisma } from '@/lib/prisma';
+import GitHubService from '@/lib/github-service';
+import { calculateLevel } from '@/lib/xp-system';
 
 // Helper function to get current week start (Monday 00:00)
 export function getCurrentWeekStart(): Date {
@@ -25,12 +25,12 @@ export function calculateLifetimeXp(githubStats: {
   totalPRs: number;
 }) {
   return (
-    (githubStats.followers * 1) +
-    (githubStats.totalStars * 10) +
-    (githubStats.totalForks * 5) +
-    (githubStats.totalRepos * 50) +
-    (githubStats.totalCommits * 5) +
-    (githubStats.totalPRs * 40)
+    githubStats.followers * 1 +
+    githubStats.totalStars * 10 +
+    githubStats.totalForks * 5 +
+    githubStats.totalRepos * 50 +
+    githubStats.totalCommits * 5 +
+    githubStats.totalPRs * 40
   );
 }
 
@@ -53,11 +53,16 @@ export async function syncUserData(user: {
       const githubAccount = user.accounts[0];
       if (githubAccount?.providerAccountId) {
         try {
-          const response = await fetch(`https://api.github.com/user/${githubAccount.providerAccountId}`);
+          const response = await fetch(
+            `https://api.github.com/user/${githubAccount.providerAccountId}`,
+          );
           const githubUserData = await response.json();
           githubUsername = githubUserData.login;
         } catch (error) {
-          console.error(`[XP Calculator] Failed to get GitHub username for user ${user.id}:`, error);
+          console.error(
+            `[XP Calculator] Failed to get GitHub username for user ${user.id}:`,
+            error,
+          );
           return null;
         }
       }
@@ -108,8 +113,8 @@ export async function syncUserData(user: {
         totalRepos: githubStats.totalRepos,
         languagesUsed: JSON.stringify(githubStats.languages),
         lastXpUpdate: new Date(),
-        weekStartDate: getCurrentWeekStart()
-      }
+        weekStartDate: getCurrentWeekStart(),
+      },
     });
 
     return {
@@ -120,9 +125,8 @@ export async function syncUserData(user: {
       oldWeeklyXp: user.weeklyXp,
       newWeeklyXp: weeklyXp,
       level: newLevel,
-      githubStats
+      githubStats,
     };
-
   } catch (error) {
     console.error(`[XP Calculator] Error syncing user ${user.id}:`, error);
     return null;
@@ -137,13 +141,13 @@ export async function updateAllRankings() {
     // Get all users sorted by all-time XP
     const allTimeUsers = await prisma.user.findMany({
       orderBy: { xp: 'desc' },
-      select: { id: true, xp: true }
+      select: { id: true, xp: true },
     });
 
     // Get all users sorted by weekly XP
     const weeklyUsers = await prisma.user.findMany({
       orderBy: { weeklyXp: 'desc' },
-      select: { id: true, weeklyXp: true }
+      select: { id: true, weeklyXp: true },
     });
 
     // Update rankings in batches to avoid overwhelming the database
@@ -155,16 +159,21 @@ export async function updateAllRankings() {
     for (let i = 0; i < allTimeUsers.length; i += batchSize) {
       const batch = allTimeUsers.slice(i, i + batchSize);
       const updates = batch.map((user, batchIndex) =>
-        prisma.user.update({
-          where: { id: user.id },
-          data: {
-            allTimeRank: i + batchIndex + 1,
-            rankUpdatedAt: new Date()
-          }
-        }).catch(error => {
-          console.warn(`[XP Calculator] Could not update allTimeRank for user ${user.id}:`, error.message);
-          return null;
-        })
+        prisma.user
+          .update({
+            where: { id: user.id },
+            data: {
+              allTimeRank: i + batchIndex + 1,
+              rankUpdatedAt: new Date(),
+            },
+          })
+          .catch(error => {
+            console.warn(
+              `[XP Calculator] Could not update allTimeRank for user ${user.id}:`,
+              error.message,
+            );
+            return null;
+          }),
       );
 
       const results = await Promise.allSettled(updates);
@@ -175,30 +184,36 @@ export async function updateAllRankings() {
     for (let i = 0; i < weeklyUsers.length; i += batchSize) {
       const batch = weeklyUsers.slice(i, i + batchSize);
       const updates = batch.map((user, batchIndex) =>
-        prisma.user.update({
-          where: { id: user.id },
-          data: {
-            weeklyRank: i + batchIndex + 1,
-            rankUpdatedAt: new Date()
-          }
-        }).catch(error => {
-          console.warn(`[XP Calculator] Could not update weeklyRank for user ${user.id}:`, error.message);
-          return null;
-        })
+        prisma.user
+          .update({
+            where: { id: user.id },
+            data: {
+              weeklyRank: i + batchIndex + 1,
+              rankUpdatedAt: new Date(),
+            },
+          })
+          .catch(error => {
+            console.warn(
+              `[XP Calculator] Could not update weeklyRank for user ${user.id}:`,
+              error.message,
+            );
+            return null;
+          }),
       );
 
       const results = await Promise.allSettled(updates);
       weeklyUpdated += results.filter(r => r.status === 'fulfilled' && r.value !== null).length;
     }
 
-    console.log(`[XP Calculator] Rankings updated - All-time: ${allTimeUpdated}/${allTimeUsers.length}, Weekly: ${weeklyUpdated}/${weeklyUsers.length}`);
+    console.log(
+      `[XP Calculator] Rankings updated - All-time: ${allTimeUpdated}/${allTimeUsers.length}, Weekly: ${weeklyUpdated}/${weeklyUsers.length}`,
+    );
 
     return {
       allTimeRanked: allTimeUpdated,
       weeklyRanked: weeklyUpdated,
-      totalUsers: allTimeUsers.length
+      totalUsers: allTimeUsers.length,
     };
-
   } catch (error) {
     console.error('[XP Calculator] Error updating rankings:', error);
     throw error;

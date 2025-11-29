@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 
 interface PetInteractionProps {
   monsterName: string;
@@ -36,7 +36,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
     }
     return {
       date: today,
-      interactions: { feed: false, pet: false, play: false }
+      interactions: { feed: false, pet: false, play: false },
     };
   });
 
@@ -60,7 +60,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
         },
         body: JSON.stringify({
           currentStreak: newStreak,
-          allInteractionsComplete: allComplete
+          allInteractionsComplete: allComplete,
         }),
       });
 
@@ -107,7 +107,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
       // Reset daily progress for new day and clear localStorage for old date
       const newProgress = {
         date: today,
-        interactions: { feed: false, pet: false, play: false }
+        interactions: { feed: false, pet: false, play: false },
       };
       setDailyProgress(newProgress);
       if (typeof window !== 'undefined') {
@@ -121,9 +121,21 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
     if (dailyProgress.interactions[type] || isProcessing) return;
 
     const messages = {
-      feed: [`${monsterName} happily chomps on the treat!`, `${monsterName} loves the snack!`, `Nom nom nom! ${monsterName} is satisfied!`],
-      pet: [`${monsterName} purrs with contentment!`, `${monsterName} nuzzles your hand!`, `${monsterName} feels loved!`],
-      play: [`${monsterName} bounces around excitedly!`, `${monsterName} does a little dance!`, `${monsterName} is having so much fun!`]
+      feed: [
+        `${monsterName} happily chomps on the treat!`,
+        `${monsterName} loves the snack!`,
+        `Nom nom nom! ${monsterName} is satisfied!`,
+      ],
+      pet: [
+        `${monsterName} purrs with contentment!`,
+        `${monsterName} nuzzles your hand!`,
+        `${monsterName} feels loved!`,
+      ],
+      play: [
+        `${monsterName} bounces around excitedly!`,
+        `${monsterName} does a little dance!`,
+        `${monsterName} is having so much fun!`,
+      ],
     };
 
     const randomMessage = messages[type][Math.floor(Math.random() * messages[type].length)];
@@ -135,7 +147,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
     // Update daily progress
     setDailyProgress(prev => ({
       ...prev,
-      interactions: { ...prev.interactions, [type]: true }
+      interactions: { ...prev.interactions, [type]: true },
     }));
 
     // If this is the first interaction today, update streak
@@ -166,7 +178,9 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
 
       {/* Daily Progress */}
       <div className="text-center text-xs text-muted-foreground">
-        {allInteractionsComplete && <span className="text-green-600">{monsterName} will be waiting for you tomorrow.</span>}
+        {allInteractionsComplete && (
+          <span className="text-green-600">{monsterName} will be waiting for you tomorrow.</span>
+        )}
       </div>
 
       {/* Interaction Buttons */}
@@ -187,7 +201,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
           />
           <span className="text-xs">Feed</span>
           <span className="text-xs text-muted-foreground">
-            {dailyProgress.interactions.feed ? "Done" : "Available"}
+            {dailyProgress.interactions.feed ? 'Done' : 'Available'}
           </span>
         </Button>
 
@@ -207,7 +221,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
           />
           <span className="text-xs">Pet</span>
           <span className="text-xs text-muted-foreground">
-            {dailyProgress.interactions.pet ? "Done" : "Available"}
+            {dailyProgress.interactions.pet ? 'Done' : 'Available'}
           </span>
         </Button>
 
@@ -227,7 +241,7 @@ export default function PetInteraction({ monsterName, onStreakUpdate }: PetInter
           />
           <span className="text-xs">Play</span>
           <span className="text-xs text-muted-foreground">
-            {dailyProgress.interactions.play ? "Done" : "Available"}
+            {dailyProgress.interactions.play ? 'Done' : 'Available'}
           </span>
         </Button>
       </div>
