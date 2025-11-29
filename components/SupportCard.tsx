@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -18,16 +18,48 @@ export default function SupportCard({
 }: SupportCardProps = {}) {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const router = useRouter();
+  const openedByThis = useRef(false);
 
-  // Listen for global event to open modal
   useEffect(() => {
+    if (!hideCard) return;
+
     const handleOpenSupport = () => {
+      const win = window as unknown as { __gitmon_support_modal_open?: boolean };
+      // If a Support modal is already open globally, ignore subsequent events
+      if (win.__gitmon_support_modal_open) return;
+      win.__gitmon_support_modal_open = true;
+      openedByThis.current = true;
       setShowSupportModal(true);
     };
 
     window.addEventListener('openSupportModal', handleOpenSupport);
-    return () => window.removeEventListener('openSupportModal', handleOpenSupport);
-  }, []);
+    return () => {
+      window.removeEventListener('openSupportModal', handleOpenSupport);
+      // If this component opened the modal and is unmounting, clear the global flag
+      const win = window as unknown as { __gitmon_support_modal_open?: boolean };
+      if (openedByThis.current && win.__gitmon_support_modal_open) {
+        win.__gitmon_support_modal_open = false;
+        openedByThis.current = false;
+      }
+    };
+  }, [hideCard]);
+
+  // Keep global flag in sync if parent controls the modal via `externalModalOpen`.
+  useEffect(() => {
+    const win = window as unknown as { __gitmon_support_modal_open?: boolean };
+    if (externalModalOpen) {
+      if (!win.__gitmon_support_modal_open) {
+        win.__gitmon_support_modal_open = true;
+      }
+      openedByThis.current = true;
+      setShowSupportModal(true);
+    } else if (typeof externalModalOpen !== 'undefined') {
+      // parent closed the modal
+      if (win.__gitmon_support_modal_open) win.__gitmon_support_modal_open = false;
+      openedByThis.current = false;
+      setShowSupportModal(false);
+    }
+  }, [externalModalOpen]);
 
   const isModalOpen = externalModalOpen || showSupportModal;
   const closeModal = () => {
@@ -36,6 +68,9 @@ export default function SupportCard({
     } else {
       setShowSupportModal(false);
     }
+    const win = window as unknown as { __gitmon_support_modal_open?: boolean };
+    if (win.__gitmon_support_modal_open) win.__gitmon_support_modal_open = false;
+    openedByThis.current = false;
   };
 
   return (
