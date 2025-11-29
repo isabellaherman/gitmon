@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getUserRank } from "@/lib/xp-system";
-import GitHubService from "@/lib/github-service";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getUserRank } from '@/lib/xp-system';
+import GitHubService from '@/lib/github-service';
 
 // Helper function to get current week start (Monday 00:00)
 function getCurrentWeekStart(): Date {
@@ -23,11 +23,8 @@ async function checkAndResetWeeklyXp() {
   // Check if any users have data from previous week
   const usersWithOldData = await prisma.user.count({
     where: {
-      OR: [
-        { weekStartDate: { lt: currentWeekStart } },
-        { weekStartDate: null }
-      ]
-    }
+      OR: [{ weekStartDate: { lt: currentWeekStart } }, { weekStartDate: null }],
+    },
   });
 
   if (usersWithOldData > 0) {
@@ -35,15 +32,12 @@ async function checkAndResetWeeklyXp() {
 
     await prisma.user.updateMany({
       where: {
-        OR: [
-          { weekStartDate: { lt: currentWeekStart } },
-          { weekStartDate: null }
-        ]
+        OR: [{ weekStartDate: { lt: currentWeekStart } }, { weekStartDate: null }],
       },
       data: {
         weeklyXp: 0,
-        weekStartDate: currentWeekStart
-      }
+        weekStartDate: currentWeekStart,
+      },
     });
 
     console.log('[Leaderboard] Weekly XP reset completed');
@@ -57,12 +51,12 @@ async function forceUpdateTopUsersWeeklyXp() {
     const topUsers = await prisma.user.findMany({
       where: {
         githubUsername: { not: null },
-        onboardingCompleted: true
+        onboardingCompleted: true,
       },
       orderBy: [
-        { xp: 'desc' },           // Por XP total primeiro
-        { weeklyXp: 'desc' },     // Depois por XP semanal
-        { lastXpUpdate: 'desc' }  // Por último, atividade recente
+        { xp: 'desc' }, // Por XP total primeiro
+        { weeklyXp: 'desc' }, // Depois por XP semanal
+        { lastXpUpdate: 'desc' }, // Por último, atividade recente
       ],
       take: 50,
       select: {
@@ -71,16 +65,16 @@ async function forceUpdateTopUsersWeeklyXp() {
         weeklyXp: true,
         accounts: {
           where: { provider: 'github' },
-          select: { access_token: true }
-        }
-      }
+          select: { access_token: true },
+        },
+      },
     });
 
     console.log(`[Force Sync] Atualizando ${topUsers.length} top users`);
 
     // Sync em paralelo (rápido)
     const results = await Promise.allSettled(
-      topUsers.map(async (user) => {
+      topUsers.map(async user => {
         try {
           // Get GitHub access token if available
           const accessToken = user.accounts[0]?.access_token || undefined;
@@ -93,8 +87,8 @@ async function forceUpdateTopUsersWeeklyXp() {
             data: {
               weeklyXp: newWeeklyXp,
               lastXpUpdate: new Date(),
-              weekStartDate: getCurrentWeekStart()
-            }
+              weekStartDate: getCurrentWeekStart(),
+            },
           });
 
           return { username: user.githubUsername, weeklyXp: newWeeklyXp };
@@ -102,7 +96,7 @@ async function forceUpdateTopUsersWeeklyXp() {
           console.error(`[Force Sync] Erro para ${user.githubUsername}:`, error);
           return null;
         }
-      })
+      }),
     );
 
     const successful = results.filter(r => r.status === 'fulfilled' && r.value).length;
@@ -130,14 +124,19 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const currentUserId = searchParams.get('userId');
 
-    const orderBy = period === 'week'
-      ? [{ weeklyXp: 'desc' as const }, { level: 'desc' as const }, { lastXpUpdate: 'desc' as const }]
-      : [{ xp: 'desc' as const }, { level: 'desc' as const }, { lastXpUpdate: 'desc' as const }];
+    const orderBy =
+      period === 'week'
+        ? [
+            { weeklyXp: 'desc' as const },
+            { level: 'desc' as const },
+            { lastXpUpdate: 'desc' as const },
+          ]
+        : [{ xp: 'desc' as const }, { level: 'desc' as const }, { lastXpUpdate: 'desc' as const }];
 
     const users = await prisma.user.findMany({
       where: {
         onboardingCompleted: true,
-        selectedMonsterId: { not: null }
+        selectedMonsterId: { not: null },
       },
       orderBy,
       take: limit,
@@ -154,11 +153,11 @@ export async function GET(request: Request) {
         totalPRs: true,
         totalStars: true,
         currentStreak: true,
-        lastXpUpdate: true
-      }
+        lastXpUpdate: true,
+      },
     });
 
-    const leaderboard = users.map((user: typeof users[0], index: number) => ({
+    const leaderboard = users.map((user: (typeof users)[0], index: number) => ({
       rank: index + 1,
       id: user.id,
       name: user.name || user.githubUsername || 'Anonymous',
@@ -174,12 +173,12 @@ export async function GET(request: Request) {
         commits: period === 'week' ? Math.floor(user.weeklyXp / 5) : user.totalCommits,
         prs: period === 'week' ? Math.floor(user.weeklyXp / 40) : user.totalPRs,
         stars: user.totalStars,
-        streak: user.currentStreak
+        streak: user.currentStreak,
       },
-      lastActive: user.lastXpUpdate
+      lastActive: user.lastXpUpdate,
     }));
 
-    type LeaderboardEntry = typeof leaderboard[0] & { isCurrentUser?: boolean };
+    type LeaderboardEntry = (typeof leaderboard)[0] & { isCurrentUser?: boolean };
 
     // Se o usuário atual não está no top 50, busca ele separadamente
     if (currentUserId && !users.find(u => u.id === currentUserId)) {
@@ -199,11 +198,15 @@ export async function GET(request: Request) {
           totalStars: true,
           currentStreak: true,
           lastXpUpdate: true,
-          onboardingCompleted: true
-        }
+          onboardingCompleted: true,
+        },
       });
 
-      if (currentUser && currentUser.onboardingCompleted && currentUser.selectedMonsterId !== null) {
+      if (
+        currentUser &&
+        currentUser.onboardingCompleted &&
+        currentUser.selectedMonsterId !== null
+      ) {
         // EMERGENCY FIX: Disabled expensive user ranking calculation
         // TODO: Implement efficient ranking with cached values
         // const userRank = await prisma.user.count({...}) + 1;
@@ -222,13 +225,14 @@ export async function GET(request: Request) {
           totalXp: currentUser.xp,
           rank_title: getUserRank(currentUser.level),
           stats: {
-            commits: period === 'week' ? Math.floor(currentUser.weeklyXp / 5) : currentUser.totalCommits,
+            commits:
+              period === 'week' ? Math.floor(currentUser.weeklyXp / 5) : currentUser.totalCommits,
             prs: period === 'week' ? Math.floor(currentUser.weeklyXp / 40) : currentUser.totalPRs,
             stars: currentUser.totalStars,
-            streak: currentUser.currentStreak
+            streak: currentUser.currentStreak,
           },
           lastActive: currentUser.lastXpUpdate,
-          isCurrentUser: true
+          isCurrentUser: true,
         };
 
         (leaderboard as LeaderboardEntry[]).push(currentUserEntry);
@@ -240,11 +244,10 @@ export async function GET(request: Request) {
       leaderboard,
       period,
       total: users.length,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
-
   } catch (error) {
-    console.error("Leaderboard error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Leaderboard error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

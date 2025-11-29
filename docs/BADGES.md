@@ -5,15 +5,18 @@ The GitMon Badge System rewards users for various achievements and milestones wi
 ## 🎯 Badge Types
 
 ### Event Participation
+
 - **Community Pioneer** 🎯 - Participated in GitMon's first community event
 - More event badges will be added as new events are created
 
 ### XP Milestones
+
 - **Rising Coder** ⚡ - Earned 1,000 XP (Common)
 - **Code Master** 💎 - Earned 10,000 XP (Rare)
 - Higher milestones coming soon!
 
 ### Streaks & Consistency
+
 - **Dedicated Developer** 🔥 - Maintained a 30-day coding streak (Rare)
 - More streak badges planned
 
@@ -29,6 +32,7 @@ Badges come in four rarity levels, each with distinct visual styling:
 ## 📊 Current Implementation
 
 ### Database Integration
+
 The badge system integrates with existing GitMon data:
 
 - **Event Participation**: Uses `event_participants` table
@@ -36,7 +40,9 @@ The badge system integrates with existing GitMon data:
 - **Streaks**: Uses user `currentStreak` and `longestStreak` fields
 
 ### Badge Storage
+
 Currently, badges are calculated dynamically based on user data. Future versions may include:
+
 - Dedicated badge table for persistent storage
 - Badge earning timestamps
 - Custom badge metadata
@@ -76,6 +82,7 @@ import BadgeSystem from "@/components/BadgeSystem";
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 - **Badge Sharing**: Share earned badges on social media
 - **Badge Collections**: Group related badges into collections
 - **Badge Points**: Assign point values based on rarity
@@ -84,6 +91,7 @@ import BadgeSystem from "@/components/BadgeSystem";
 - **Badge Notifications**: Notify users when they earn badges
 
 ### Advanced Badge Types
+
 - **Contribution Badges**: For open source contributions
 - **Social Badges**: For community engagement
 - **Seasonal Badges**: Limited-time event badges
@@ -91,6 +99,7 @@ import BadgeSystem from "@/components/BadgeSystem";
 - **Collaboration Badges**: For working with other users
 
 ### Technical Improvements
+
 - **Badge Caching**: Improve performance with Redis
 - **Badge Analytics**: Track badge earning patterns
 - **Badge API**: REST endpoints for badge management
@@ -99,9 +108,11 @@ import BadgeSystem from "@/components/BadgeSystem";
 ## 🎮 User Experience
 
 ### Profile Display
+
 Badges are prominently displayed on user profiles in a dedicated section alongside GitMon information. The two-column layout ensures badges get proper visibility.
 
 ### Visual Design
+
 - Clean, card-based layout
 - Rarity-based color coding
 - Lock icons for unearned badges
@@ -109,6 +120,7 @@ Badges are prominently displayed on user profiles in a dedicated section alongsi
 - Mobile-responsive grid system
 
 ### Accessibility
+
 - Semantic HTML structure
 - Proper color contrast ratios
 - Screen reader friendly descriptions
@@ -116,4 +128,4 @@ Badges are prominently displayed on user profiles in a dedicated section alongsi
 
 ---
 
-*The badge system is designed to grow with the GitMon community, encouraging engagement and celebrating achievements at every level.*
+_The badge system is designed to grow with the GitMon community, encouraging engagement and celebrating achievements at every level._

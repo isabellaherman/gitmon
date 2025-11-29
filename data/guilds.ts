@@ -21,10 +21,10 @@ export interface Guild {
 
 export const guilds: Guild[] = [
   {
-    id: "default",
-    name: "Guild ???",
-    color: "#9ca3af",
-    link: "#"
+    id: 'default',
+    name: 'Guild ???',
+    color: '#9ca3af',
+    link: '#',
   },
   // 🚀 ADD YOUR GUILD HERE!
   // Just copy the format above and submit a PR
@@ -44,7 +44,7 @@ export const getGuildById = (guildId: string | null): Guild | null => {
 };
 
 export const getDefaultGuild = (): Guild => {
-  return guilds.find(guild => guild.id === "default") || guilds[0];
+  return guilds.find(guild => guild.id === 'default') || guilds[0];
 };
 
 export const getGuildTextColor = (guildId: string | null): string => {
@@ -52,9 +52,9 @@ export const getGuildTextColor = (guildId: string | null): string => {
 
   // Convert hex to tailwind text color class
   const colorMap: { [key: string]: string } = {
-    "#9333ea": "text-purple-600",
-    "#9ca3af": "text-gray-400",
+    '#9333ea': 'text-purple-600',
+    '#9ca3af': 'text-gray-400',
   };
 
-  return colorMap[guild?.color || "#9ca3af"] || "text-gray-400";
+  return colorMap[guild?.color || '#9ca3af'] || 'text-gray-400';
 };

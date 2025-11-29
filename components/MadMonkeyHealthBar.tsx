@@ -9,7 +9,7 @@ interface MadMonkeyHealthBarProps {
 export default function MadMonkeyHealthBar({
   totalDamage,
   totalCommits,
-  maxHp = 10000
+  maxHp = 10000,
 }: MadMonkeyHealthBarProps) {
   const currentHp = Math.max(0, maxHp - totalDamage);
   const healthPercentage = (currentHp / maxHp) * 100;
@@ -30,7 +30,10 @@ export default function MadMonkeyHealthBar({
       {/* Boss Name */}
       <div className="text-center mb-2">
         {isDefeated && (
-          <div className="text-green-600 font-bold animate-pulse" style={{ fontFamily: 'Minecraftia, monospace' }}>
+          <div
+            className="text-green-600 font-bold animate-pulse"
+            style={{ fontFamily: 'Minecraftia, monospace' }}
+          >
             💀 DEFEATED! 💀
           </div>
         )}
@@ -50,7 +53,10 @@ export default function MadMonkeyHealthBar({
 
         {/* HP Text Overlay */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-white font-bold text-sm drop-shadow-lg" style={{ fontFamily: 'Minecraftia, monospace' }}>
+          <span
+            className="text-white font-bold text-sm drop-shadow-lg"
+            style={{ fontFamily: 'Minecraftia, monospace' }}
+          >
             {currentHp.toLocaleString()} / {maxHp.toLocaleString()} HP
           </span>
         </div>

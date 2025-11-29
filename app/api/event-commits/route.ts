@@ -11,14 +11,16 @@ export async function GET() {
 
     return NextResponse.json({
       ...result,
-      stats
+      stats,
     });
-
   } catch (error) {
     console.error('Get event commits error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

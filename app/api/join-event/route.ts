@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -10,19 +10,13 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { success: false, error: "Not authenticated" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }
 
     const { eventId } = await request.json();
 
     if (!eventId) {
-      return NextResponse.json(
-        { success: false, error: "Event ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Event ID is required' }, { status: 400 });
     }
 
     // Get user data
@@ -31,10 +25,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
     // Check if user already joined this event
@@ -49,8 +40,8 @@ export async function POST(request: NextRequest) {
 
     if (existingParticipation) {
       return NextResponse.json(
-        { success: false, error: "Already joined this event" },
-        { status: 400 }
+        { success: false, error: 'Already joined this event' },
+        { status: 400 },
       );
     }
 
@@ -71,12 +62,8 @@ export async function POST(request: NextRequest) {
         joinedAt: participation.joinedAt,
       },
     });
-
   } catch (error) {
-    console.error("Error joining event:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error joining event:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

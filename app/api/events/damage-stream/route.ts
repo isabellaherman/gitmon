@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
           const githubAccount = await prisma.account.findFirst({
             where: {
               provider: 'github',
-              access_token: { not: null }
-            }
+              access_token: { not: null },
+            },
           });
 
           if (githubAccount?.access_token) {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
             sendEvent('initial-data', {
               stats,
-              commits: recentCommits.commits
+              commits: recentCommits.commits,
             });
           }
         } catch (error) {
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     cancel() {
       // Connection closed by client
       removeConnection(connectionId);
-    }
+    },
   });
 
   // Return SSE response
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Cache-Control',
     },

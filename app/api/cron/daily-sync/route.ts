@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { syncUserData, updateAllRankings } from "@/lib/xp-calculator";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { syncUserData, updateAllRankings } from '@/lib/xp-calculator';
 
 export async function GET(request: Request) {
   const startTime = Date.now();
@@ -28,9 +28,9 @@ export async function GET(request: Request) {
       include: {
         accounts: {
           where: { provider: 'github' },
-          select: { access_token: true, providerAccountId: true }
-        }
-      }
+          select: { access_token: true, providerAccountId: true },
+        },
+      },
     });
 
     console.log(`[Daily Sync] Found ${allUsers.length} users to sync`);
@@ -42,11 +42,11 @@ export async function GET(request: Request) {
 
     for (let i = 0; i < allUsers.length; i += batchSize) {
       const batch = allUsers.slice(i, i + batchSize);
-      console.log(`[Daily Sync] Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(allUsers.length / batchSize)}`);
-
-      const batchResults = await Promise.allSettled(
-        batch.map(user => syncUserData(user))
+      console.log(
+        `[Daily Sync] Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(allUsers.length / batchSize)}`,
       );
+
+      const batchResults = await Promise.allSettled(batch.map(user => syncUserData(user)));
 
       batchResults.forEach((result, index) => {
         if (result.status === 'fulfilled' && result.value) {
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
           const user = batch[index];
           errors.push({
             userId: user.id,
-            error: result.status === 'rejected' ? result.reason : 'Sync returned null'
+            error: result.status === 'rejected' ? result.reason : 'Sync returned null',
           });
         }
       });
@@ -81,31 +81,33 @@ export async function GET(request: Request) {
         successfulSyncs: results.length,
         failedSyncs: errors.length,
         successRate: `${((results.length / allUsers.length) * 100).toFixed(1)}%`,
-        rankingStats
+        rankingStats,
       },
       errors: errors.slice(0, 10), // Include first 10 errors for debugging
-      sampleSuccesses: results.slice(0, 5) // Include first 5 successes as examples
+      sampleSuccesses: results.slice(0, 5), // Include first 5 successes as examples
     };
 
     console.log('[Daily Sync] Completed successfully:', {
       totalUsers: allUsers.length,
       successful: results.length,
       failed: errors.length,
-      duration: `${duration}ms`
+      duration: `${duration}ms`,
     });
 
     return NextResponse.json(response);
-
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error('[Daily Sync] Critical error:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error during daily sync',
-      timestamp: new Date().toISOString(),
-      duration: `${duration}ms`,
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Internal server error during daily sync',
+        timestamp: new Date().toISOString(),
+        duration: `${duration}ms`,
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

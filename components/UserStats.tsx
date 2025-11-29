@@ -16,9 +16,7 @@ export default function UserStats({
   return (
     <div className="space-y-3">
       <div className="bg-muted rounded-lg p-3 text-center">
-        <p className="text-2xl font-bold text-primary">
-          {xp.toLocaleString()} XP
-        </p>
+        <p className="text-2xl font-bold text-primary">{xp.toLocaleString()} XP</p>
         <p className="text-sm text-muted-foreground">Total XP</p>
       </div>
 

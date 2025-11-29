@@ -12,15 +12,18 @@ export async function POST() {
     const githubAccount = await prisma.account.findFirst({
       where: {
         provider: 'github',
-        access_token: { not: null }
-      }
+        access_token: { not: null },
+      },
     });
 
     if (!githubAccount?.access_token) {
-      return NextResponse.json({
-        success: false,
-        error: 'No GitHub token available'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'No GitHub token available',
+        },
+        { status: 400 },
+      );
     }
 
     const commitService = new EventCommitService(githubAccount.access_token);
@@ -32,7 +35,7 @@ export async function POST() {
         // Get updated stats and recent commits
         const [stats, recentCommits] = await Promise.all([
           commitService.getStats(),
-          commitService.getRecentCommits(10)
+          commitService.getRecentCommits(10),
         ]);
 
         // Broadcast to all connected SSE clients
@@ -41,11 +44,13 @@ export async function POST() {
           payload: {
             newCommitsCount: result.stats.newCommits,
             stats,
-            recentCommits: recentCommits.commits
-          }
+            recentCommits: recentCommits.commits,
+          },
         });
 
-        console.log(`🔴 [SSE] Broadcasted ${result.stats.newCommits} new commits to connected clients`);
+        console.log(
+          `🔴 [SSE] Broadcasted ${result.stats.newCommits} new commits to connected clients`,
+        );
       } catch (broadcastError) {
         console.error('Failed to broadcast SSE update:', broadcastError);
         // Don't fail the entire sync if broadcast fails
@@ -53,12 +58,14 @@ export async function POST() {
     }
 
     return NextResponse.json(result);
-
   } catch (error) {
     console.error('Sync event commits error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

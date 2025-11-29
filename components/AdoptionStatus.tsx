@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 interface AdoptionStatusProps {
   monsterName: string;
@@ -17,7 +17,7 @@ export default function AdoptionStatus({ monsterName, adoptionData }: AdoptionSt
     return (
       <div className="text-center mb-4">
         <p className="text-xs text-green-600" style={{ fontFamily: 'Minecraftia, monospace' }}>
-          ADOPTED BY{" "}
+          ADOPTED BY{' '}
           <a
             href={adoptionData.sponsorUrl}
             target="_blank"
@@ -56,17 +56,26 @@ export default function AdoptionStatus({ monsterName, adoptionData }: AdoptionSt
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-lg font-semibold">OWN A GITMON</h3>
-                    <span className="text-green-500 font-semibold text-xl uppercase">$399 LIFETIME</span>
+                    <span className="text-green-500 font-semibold text-xl uppercase">
+                      $399 LIFETIME
+                    </span>
                   </div>
                   <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
                     <p>
-                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown alongside the monster&apos;s stats in places like the Character Selection and GitDex pages.
+                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown
+                      alongside the monster&apos;s stats in places like the Character Selection and
+                      GitDex pages.
                     </p>
                     <p>
-                      <b>Own its IP:</b> get the rights to that specific character (its name, design, and identity) to use in your own projects, branding, or creative work, including commercial use.
+                      <b>Own its IP:</b> get the rights to that specific character (its name,
+                      design, and identity) to use in your own projects, branding, or creative work,
+                      including commercial use.
                     </p>
                   </div>
-                  <p className="text-blue-500 font-semibold text-sm mt-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <p
+                    className="text-blue-500 font-semibold text-sm mt-3"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
                     2/2 slots available
                   </p>
                 </div>
@@ -74,14 +83,21 @@ export default function AdoptionStatus({ monsterName, adoptionData }: AdoptionSt
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-lg font-semibold">RENT A GITMON</h3>
-                    <span className="text-green-500 font-semibold text-xl uppercase">$65/MONTHLY</span>
+                    <span className="text-green-500 font-semibold text-xl uppercase">
+                      $65/MONTHLY
+                    </span>
                   </div>
                   <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
                     <p>
-                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown alongside the monster&apos;s stats in places like the Character Selection and GitDex pages.
+                      <b>Sponsor your name, project, or link on dedicated GitMon screens</b>, shown
+                      alongside the monster&apos;s stats in places like the Character Selection and
+                      GitDex pages.
                     </p>
                   </div>
-                  <p className="text-red-500 font-semibold text-sm mt-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <p
+                    className="text-red-500 font-semibold text-sm mt-3"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
                     2/3 slots available
                   </p>
                 </div>

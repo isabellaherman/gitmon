@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function FloatingBackButton() {
   const router = useRouter();
@@ -25,8 +25,8 @@ export default function FloatingBackButton() {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="m12 19-7-7 7-7"/>
-          <path d="M19 12H5"/>
+          <path d="m12 19-7-7 7-7" />
+          <path d="M19 12H5" />
         </svg>
         Back
       </Button>

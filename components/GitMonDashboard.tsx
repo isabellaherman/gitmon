@@ -1,6 +1,6 @@
-import Image from "next/image";
-import PetInteraction from "@/components/PetInteraction";
-import LinkManager from "@/components/LinkManager";
+import Image from 'next/image';
+import PetInteraction from '@/components/PetInteraction';
+import LinkManager from '@/components/LinkManager';
 
 interface GitMonDashboardProps {
   selectedMonster: {
@@ -31,21 +31,21 @@ interface GitMonDashboardProps {
   onStreakUpdate?: () => void;
 }
 
-export default function GitMonDashboard({
-  selectedMonster,
-  onStreakUpdate
-}: GitMonDashboardProps) {
+export default function GitMonDashboard({ selectedMonster, onStreakUpdate }: GitMonDashboardProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Left Column - GitMon Display */}
       <div className="text-center">
         <div className="w-48 h-48 mx-auto mb-4 relative">
-          <div className="absolute inset-4 rounded-full" style={{
-            background: `radial-gradient(circle, #000 1px, transparent 1px)`,
-            backgroundSize: '8px 8px',
-            maskImage: 'radial-gradient(circle, black 40%, transparent 70%)',
-            WebkitMaskImage: 'radial-gradient(circle, black 40%, transparent 70%)'
-          }}></div>
+          <div
+            className="absolute inset-4 rounded-full"
+            style={{
+              background: `radial-gradient(circle, #000 1px, transparent 1px)`,
+              backgroundSize: '8px 8px',
+              maskImage: 'radial-gradient(circle, black 40%, transparent 70%)',
+              WebkitMaskImage: 'radial-gradient(circle, black 40%, transparent 70%)',
+            }}
+          ></div>
           <Image
             src={selectedMonster.src}
             alt={selectedMonster.name}
@@ -72,10 +72,7 @@ export default function GitMonDashboard({
         </div> */}
 
         {/* Pet Interaction System */}
-        <PetInteraction
-          monsterName={selectedMonster.name}
-          onStreakUpdate={onStreakUpdate}
-        />
+        <PetInteraction monsterName={selectedMonster.name} onStreakUpdate={onStreakUpdate} />
       </div>
 
       {/* Right Column - Stats and Info */}

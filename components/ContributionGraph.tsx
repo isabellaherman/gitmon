@@ -5,7 +5,10 @@ interface ContributionGraphProps {
   className?: string;
 }
 
-export default function ContributionGraph({ totalCommits, className = "" }: ContributionGraphProps) {
+export default function ContributionGraph({
+  totalCommits,
+  className = '',
+}: ContributionGraphProps) {
   const weeks = 52;
   const daysPerWeek = 7;
 
@@ -18,8 +21,12 @@ export default function ContributionGraph({ totalCommits, className = "" }: Cont
       for (let day = 0; day < daysPerWeek; day++) {
         const isWeekend = day === 0 || day === 6;
         const intensity = isWeekend
-          ? Math.random() < 0.3 ? Math.floor(Math.random() * (maxDaily + 1)) : 0
-          : Math.random() < 0.7 ? Math.floor(Math.random() * (maxDaily + 1)) : 0;
+          ? Math.random() < 0.3
+            ? Math.floor(Math.random() * (maxDaily + 1))
+            : 0
+          : Math.random() < 0.7
+            ? Math.floor(Math.random() * (maxDaily + 1))
+            : 0;
 
         weekData.push(intensity);
       }
@@ -32,12 +39,18 @@ export default function ContributionGraph({ totalCommits, className = "" }: Cont
 
   const getIntensityColor = (intensity: number) => {
     switch (intensity) {
-      case 0: return 'bg-gray-100 dark:bg-gray-800';
-      case 1: return 'bg-green-200 dark:bg-green-900';
-      case 2: return 'bg-green-300 dark:bg-green-700';
-      case 3: return 'bg-green-400 dark:bg-green-600';
-      case 4: return 'bg-green-500 dark:bg-green-500';
-      default: return 'bg-gray-100 dark:bg-gray-800';
+      case 0:
+        return 'bg-gray-100 dark:bg-gray-800';
+      case 1:
+        return 'bg-green-200 dark:bg-green-900';
+      case 2:
+        return 'bg-green-300 dark:bg-green-700';
+      case 3:
+        return 'bg-green-400 dark:bg-green-600';
+      case 4:
+        return 'bg-green-500 dark:bg-green-500';
+      default:
+        return 'bg-gray-100 dark:bg-gray-800';
     }
   };
 

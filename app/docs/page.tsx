@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import { useEffect, useState, Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Zap } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import FloatingBackButton from "@/components/FloatingBackButton";
+import { useEffect, useState, Suspense } from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, FileText, Zap } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import FloatingBackButton from '@/components/FloatingBackButton';
 
-type DocType = "how-xp-works" | "system-design";
+type DocType = 'how-xp-works' | 'system-design';
 
 function DocsContent() {
-  const [content, setContent] = useState("");
-  const [currentDoc, setCurrentDoc] = useState<DocType>("how-xp-works");
+  const [content, setContent] = useState('');
+  const [currentDoc, setCurrentDoc] = useState<DocType>('how-xp-works');
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const docs = {
-    "how-xp-works": {
-      title: "How XP Works",
-      file: "/HOW_XP_WORKS.md",
-      description: "Simple guide to All-Time vs Weekly XP",
-      icon: <Zap className="w-4 h-4" />
+    'how-xp-works': {
+      title: 'How XP Works',
+      file: '/HOW_XP_WORKS.md',
+      description: 'Simple guide to All-Time vs Weekly XP',
+      icon: <Zap className="w-4 h-4" />,
     },
-    "system-design": {
-      title: "System Design",
-      file: "/SYSTEM_DESIGN.md",
-      description: "Complete economics design document",
-      icon: <FileText className="w-4 h-4" />
-    }
+    'system-design': {
+      title: 'System Design',
+      file: '/SYSTEM_DESIGN.md',
+      description: 'Complete economics design document',
+      icon: <FileText className="w-4 h-4" />,
+    },
   };
 
   useEffect(() => {
@@ -38,9 +38,9 @@ function DocsContent() {
 
   useEffect(() => {
     fetch(docs[currentDoc].file)
-      .then((res) => res.text())
-      .then((text) => setContent(text))
-      .catch((err) => console.error("Failed to load docs:", err));
+      .then(res => res.text())
+      .then(text => setContent(text))
+      .catch(err => console.error('Failed to load docs:', err));
   }, [currentDoc]);
 
   const parseMarkdown = (markdown: string) => {
@@ -50,29 +50,49 @@ function DocsContent() {
       .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-6 mb-6 text-gray-900">$1</h1>')
 
       .replace(/> ⚠️ \*\*(.*?)\*\*:\n((?:> .*\n?)*)/gm, (match, title, content) => {
-        const items = content.split('\n').filter((line: string) => line.trim().startsWith('>')).map((line: string) => {
-          const cleanLine = line.replace(/^> /, '').trim();
-          return `<p class="text-yellow-700 ml-4">• ${cleanLine}</p>`;
-        }).join('');
+        const items = content
+          .split('\n')
+          .filter((line: string) => line.trim().startsWith('>'))
+          .map((line: string) => {
+            const cleanLine = line.replace(/^> /, '').trim();
+            return `<p class="text-yellow-700 ml-4">• ${cleanLine}</p>`;
+          })
+          .join('');
         return `<div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 my-4"><p class="font-bold text-yellow-800">⚠️ ${title}:</p>${items}</div>`;
       })
 
-      .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4">$1</blockquote>')
+      .replace(
+        /^> (.*$)/gim,
+        '<blockquote class="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4">$1</blockquote>',
+      )
 
       .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-gray-900">$1</strong>')
 
-      .replace(/```(\w+)?\n([\s\S]*?)```/gim, '<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4"><code class="text-sm">$2</code></pre>')
-      .replace(/`(.*?)`/gim, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">$1</code>')
+      .replace(
+        /```(\w+)?\n([\s\S]*?)```/gim,
+        '<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4"><code class="text-sm">$2</code></pre>',
+      )
+      .replace(
+        /`(.*?)`/gim,
+        '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">$1</code>',
+      )
 
       .replace(/\|(.+)\|/g, (match, content) => {
         const cells = content.split('|').map((cell: string) => cell.trim());
-        return '<tr>' + cells.map((cell: string) => `<td class="border px-4 py-2">${cell}</td>`).join('') + '</tr>';
+        return (
+          '<tr>' +
+          cells.map((cell: string) => `<td class="border px-4 py-2">${cell}</td>`).join('') +
+          '</tr>'
+        );
       })
 
       .replace(/^- (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
       .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
 
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(
+        /\[([^\]]+)\]\(([^)]+)\)/gim,
+        '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">$1</a>',
+      )
 
       .replace(/🔴/g, '<span class="text-red-500">🔴</span>')
       .replace(/🟡/g, '<span class="text-yellow-500">🟡</span>')
@@ -118,7 +138,7 @@ function DocsContent() {
           {Object.entries(docs).map(([key, doc]) => (
             <Button
               key={key}
-              variant={currentDoc === key ? "default" : "outline"}
+              variant={currentDoc === key ? 'default' : 'outline'}
               onClick={() => setCurrentDoc(key as DocType)}
               className="flex items-center gap-2"
             >
@@ -133,7 +153,7 @@ function DocsContent() {
             <div
               className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{
-                __html: parseMarkdown(content)
+                __html: parseMarkdown(content),
               }}
             />
           ) : (
@@ -148,7 +168,8 @@ function DocsContent() {
 
         <div className="text-center mt-8 text-gray-500 text-sm space-y-2">
           <p>GitMon • Open source coding gamification platform</p>
-          <p>designed by{" "}
+          <p>
+            designed by{' '}
             <a
               href="https://x.com/IsabellaHermn"
               target="_blank"
@@ -168,11 +189,13 @@ export default function DocsPage() {
   return (
     <>
       <FloatingBackButton />
-      <Suspense fallback={
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        }
+      >
         <DocsContent />
       </Suspense>
     </>

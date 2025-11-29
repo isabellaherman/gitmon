@@ -12,15 +12,18 @@ export async function POST() {
     const githubAccount = await prisma.account.findFirst({
       where: {
         provider: 'github',
-        access_token: { not: null }
-      }
+        access_token: { not: null },
+      },
     });
 
     if (!githubAccount?.access_token) {
-      return NextResponse.json({
-        success: false,
-        error: 'No GitHub token available'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'No GitHub token available',
+        },
+        { status: 400 },
+      );
     }
 
     const commitService = new EventCommitService(githubAccount.access_token);
@@ -32,7 +35,7 @@ export async function POST() {
     try {
       const [stats, recentCommits] = await Promise.all([
         commitService.getStats(),
-        commitService.getRecentCommits(15) // Get a few more for the stream
+        commitService.getRecentCommits(15), // Get a few more for the stream
       ]);
 
       broadcastDamageUpdate({
@@ -41,11 +44,13 @@ export async function POST() {
           newCommitsCount: result.stats.newCommits,
           stats,
           recentCommits: recentCommits.commits,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       });
 
-      console.log(`🔴 [Quick Sync] Broadcasted update - ${result.stats.newCommits} new commits, ${stats.totalCommits} total`);
+      console.log(
+        `🔴 [Quick Sync] Broadcasted update - ${result.stats.newCommits} new commits, ${stats.totalCommits} total`,
+      );
     } catch (broadcastError) {
       console.error('Failed to broadcast quick sync update:', broadcastError);
     }
@@ -54,16 +59,18 @@ export async function POST() {
       success: result.success,
       message: result.message,
       stats: result.stats,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Quick sync error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -71,6 +78,6 @@ export async function POST() {
 export async function GET() {
   return NextResponse.json({
     status: 'online',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getMonsterById } from "@/lib/monsters";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getMonsterById } from '@/lib/monsters';
 import fs from 'fs';
 import path from 'path';
 
@@ -37,7 +37,6 @@ function getImageAsBase64(imagePath: string): string {
     return 'data:image/png;base64,';
   }
 }
-
 
 function generateCardSVG(user: UserData, monster: MonsterData | null) {
   const username = user.githubUsername || 'Unknown';
@@ -205,7 +204,6 @@ function generateMonsterSVG(user: UserData, monster: MonsterData | null) {
   `;
 }
 
-
 export async function GET(request: NextRequest, { params }: EmbedParams) {
   try {
     const resolvedParams = await params;
@@ -237,11 +235,14 @@ export async function GET(request: NextRequest, { params }: EmbedParams) {
             'Content-Type': 'image/svg+xml',
             'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
           },
-        }
+        },
       );
     }
 
-    const monster = (user.selectedMonsterId !== null && user.selectedMonsterId !== undefined) ? getMonsterById(user.selectedMonsterId) : null;
+    const monster =
+      user.selectedMonsterId !== null && user.selectedMonsterId !== undefined
+        ? getMonsterById(user.selectedMonsterId)
+        : null;
 
     let svg: string;
     switch (style) {
@@ -277,7 +278,7 @@ export async function GET(request: NextRequest, { params }: EmbedParams) {
         headers: {
           'Content-Type': 'image/svg+xml',
         },
-      }
+      },
     );
   }
 }

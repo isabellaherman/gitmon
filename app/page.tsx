@@ -1,18 +1,17 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { useSession, signIn, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import SupportCard from "@/components/SupportCard";
-import SponsorBar from "@/components/SponsorBar";
-import Leaderboard from "@/components/Leaderboard";
-import Dashboard from "@/components/Dashboard";
-import GitMonCard from "@/components/GitMonCard";
+import { Button } from '@/components/ui/button';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import SupportCard from '@/components/SupportCard';
+import SponsorBar from '@/components/SponsorBar';
+import Leaderboard from '@/components/Leaderboard';
+import Dashboard from '@/components/Dashboard';
+import GitMonCard from '@/components/GitMonCard';
 
-import { monsters, getTypeColor, formatBirthdate, getMonsterById } from "@/lib/monsters";
-
+import { monsters, getTypeColor, formatBirthdate, getMonsterById } from '@/lib/monsters';
 
 interface LeaderboardEntry {
   rank: number;
@@ -86,7 +85,6 @@ export default function Home() {
     fetchLeaderboard();
   }, [leaderboardPeriod, session]);
 
-
   // Fetch total trainers count
   useEffect(() => {
     const fetchTotalTrainers = async () => {
@@ -105,24 +103,22 @@ export default function Home() {
     fetchTotalTrainers();
   }, []);
 
-
   const handleSignIn = () => {
-    signIn("github");
+    signIn('github');
   };
-
 
   const selectedMonsterId = (session?.user as Record<string, unknown>)?.selectedMonsterId as number;
   const selectedMonster = getMonsterById(selectedMonsterId);
 
   const gitmonSelectedAt = (session?.user as Record<string, unknown>)?.gitmonSelectedAt as Date;
 
-
-  const currentUserInLeaderboard = leaderboard.find(user =>
-    user.name === session?.user?.name ||
-    user.githubUsername === session?.user?.email?.split('@')[0]
+  const currentUserInLeaderboard = leaderboard.find(
+    user =>
+      user.name === session?.user?.name ||
+      user.githubUsername === session?.user?.email?.split('@')[0],
   );
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Loading...</p>
@@ -134,143 +130,187 @@ export default function Home() {
     <>
       <SponsorBar />
       <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8 relative">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent" style={{ fontFamily: 'Minecraftia, monospace' }}>
-            GitMon Leaderboard
-          </h1>
-          <p className="text-muted-foreground">
-            Compete with developers worldwide. Open-source GitHub leaderboard.
-          </p>
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8 relative">
+            <h1
+              className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent"
+              style={{ fontFamily: 'Minecraftia, monospace' }}
+            >
+              GitMon Leaderboard
+            </h1>
+            <p className="text-muted-foreground">
+              Compete with developers worldwide. Open-source GitHub leaderboard.
+            </p>
+          </div>
 
-        </div>
+          {/* Main Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Sidebar - 1/3 width */}
+            <div className="lg:col-span-1">
+              {!session ? (
+                <div className="bg-card rounded-xl p-6 text-center">
+                  <div className="w-32 h-32 mx-auto mb-6 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
+                    <Image
+                      src={monsters[Math.floor(Math.random() * monsters.length)].src}
+                      alt="GitMon"
+                      fill
+                      className="object-contain"
+                      sizes="128px"
+                    />
+                  </div>
 
-        {/* Main Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Sidebar - 1/3 width */}
-          <div className="lg:col-span-1">
-            {!session ? (
-              <div className="bg-card rounded-xl p-6 text-center">
-                <div className="w-32 h-32 mx-auto mb-6 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 overflow-hidden relative">
-                  <Image
-                    src={monsters[Math.floor(Math.random() * monsters.length)].src}
-                    alt="GitMon"
-                    fill
-                    className="object-contain"
-                    sizes="128px"
-                  />
-                </div>
+                  <h3 className="text-xl font-bold mb-2">Start Your Journey!</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Choose your GitMon and start earning XP for every commit, pull request, and
+                    contribution.
+                  </p>
 
-                <h3 className="text-xl font-bold mb-2">Start Your Journey!</h3>
-                <p className="text-muted-foreground mb-6">
-                  Choose your GitMon and start earning XP for every commit, pull request, and contribution.
-                </p>
-
-                <div className="flex gap-2">
-                  <Button onClick={handleSignIn} size="lg" className="flex-1" style={{ flex: '2' }}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="w-5 h-5 mr-2"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M12 0C5.373 0 0 5.373 0 12a12 12 0 008.207 11.385c.6.111.82-.261.82-.58 0-.287-.01-1.046-.016-2.054-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.73.083-.73 1.205.085 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.996.108-.775.42-1.304.763-1.604-2.665-.305-5.466-1.332-5.466-5.932 0-1.31.469-2.38 1.236-3.22-.124-.303-.535-1.527.117-3.182 0 0 1.008-.323 3.3 1.23A11.48 11.48 0 0112 5.8c1.022.005 2.05.138 3.012.403 2.29-1.553 3.296-1.23 3.296-1.23.654 1.655.243 2.879.12 3.182.77.84 1.235 1.91 1.235 3.22 0 4.61-2.804 5.624-5.476 5.921.431.37.816 1.102.816 2.222 0 1.604-.014 2.896-.014 3.293 0 .321.216.696.825.578A12.003 12.003 0 0024 12c0-6.627-5.373-12-12-12z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Login with GitHub
-                  </Button>
-
-                  <Button
-                    onClick={() => router.push('/gitdex')}
-                    size="lg"
-                    className="flex-1 bg-pink-500 hover:bg-pink-600 text-white border-pink-500"
-                    style={{ flex: '1', fontFamily: 'Minecraftia, monospace' }}
-                  >
-                    GITDEX
-                  </Button>
-                </div>
-
-                <SupportCard />
-              </div>
-            ) : (
-              <div className="bg-card rounded-xl p-6">
-                <div className="text-center mb-6">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <h3 className="text-lg font-bold">Trainer Profile</h3>
-                    <button
-                      onClick={() => router.push(`/${currentUserInLeaderboard?.githubUsername || session.user?.email?.split('@')[0]}`)}
-                      className="text-blue-500 hover:text-blue-700 hover:scale-110 transition-all duration-200 cursor-pointer"
-                      title="View full profile"
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSignIn}
+                      size="lg"
+                      className="flex-1"
+                      style={{ flex: '2' }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        className="w-5 h-5"
+                        fill="currentColor"
+                        className="w-5 h-5 mr-2"
                       >
-                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                        <polyline points="15,3 21,3 21,9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
+                        <path
+                          fillRule="evenodd"
+                          d="M12 0C5.373 0 0 5.373 0 12a12 12 0 008.207 11.385c.6.111.82-.261.82-.58 0-.287-.01-1.046-.016-2.054-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.73.083-.73 1.205.085 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.996.108-.775.42-1.304.763-1.604-2.665-.305-5.466-1.332-5.466-5.932 0-1.31.469-2.38 1.236-3.22-.124-.303-.535-1.527.117-3.182 0 0 1.008-.323 3.3 1.23A11.48 11.48 0 0112 5.8c1.022.005 2.05.138 3.012.403 2.29-1.553 3.296-1.23 3.296-1.23.654 1.655.243 2.879.12 3.182.77.84 1.235 1.91 1.235 3.22 0 4.61-2.804 5.624-5.476 5.921.431.37.816 1.102.816 2.222 0 1.604-.014 2.896-.014 3.293 0 .321.216.696.825.578A12.003 12.003 0 0024 12c0-6.627-5.373-12-12-12z"
+                          clipRule="evenodd"
+                        />
                       </svg>
-                    </button>
+                      Login with GitHub
+                    </Button>
+
+                    <Button
+                      onClick={() => router.push('/gitdex')}
+                      size="lg"
+                      className="flex-1 bg-pink-500 hover:bg-pink-600 text-white border-pink-500"
+                      style={{ flex: '1', fontFamily: 'Minecraftia, monospace' }}
+                    >
+                      GITDEX
+                    </Button>
                   </div>
 
-                  {/* Dashboard/Leaderboard buttons - always below Trainer Profile */}
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    <Button
-                      variant={activeSection === 'dashboard' ? 'default' : 'outline'}
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => setActiveSection('dashboard')}
-                    >
-                      Dashboard
-                    </Button>
-                    <Button
-                      variant={activeSection === 'leaderboard' ? 'default' : 'outline'}
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => setActiveSection('leaderboard')}
-                    >
-                      Leaderboard
-                    </Button>
-                  </div>
+                  <SupportCard />
                 </div>
+              ) : (
+                <div className="bg-card rounded-xl p-6">
+                  <div className="text-center mb-6">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <h3 className="text-lg font-bold">Trainer Profile</h3>
+                      <button
+                        onClick={() =>
+                          router.push(
+                            `/${currentUserInLeaderboard?.githubUsername || session.user?.email?.split('@')[0]}`,
+                          )
+                        }
+                        className="text-blue-500 hover:text-blue-700 hover:scale-110 transition-all duration-200 cursor-pointer"
+                        title="View full profile"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          className="w-5 h-5"
+                        >
+                          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                          <polyline points="15,3 21,3 21,9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </button>
+                    </div>
 
-                {selectedMonster ? (
-                  <>
-                    {activeSection === 'leaderboard' && (
-                      <GitMonCard
-                        selectedMonster={selectedMonster}
-                        currentUserInLeaderboard={currentUserInLeaderboard}
-                        session={session}
-                        gitmonSelectedAt={gitmonSelectedAt}
-                        leaderboardPeriod={leaderboardPeriod}
-                      />
-                    )}
+                    {/* Dashboard/Leaderboard buttons - always below Trainer Profile */}
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      <Button
+                        variant={activeSection === 'dashboard' ? 'default' : 'outline'}
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => setActiveSection('dashboard')}
+                      >
+                        Dashboard
+                      </Button>
+                      <Button
+                        variant={activeSection === 'leaderboard' ? 'default' : 'outline'}
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => setActiveSection('leaderboard')}
+                      >
+                        Leaderboard
+                      </Button>
+                    </div>
+                  </div>
 
+                  {selectedMonster ? (
+                    <>
+                      {activeSection === 'leaderboard' && (
+                        <GitMonCard
+                          selectedMonster={selectedMonster}
+                          currentUserInLeaderboard={currentUserInLeaderboard}
+                          session={session}
+                          gitmonSelectedAt={gitmonSelectedAt}
+                          leaderboardPeriod={leaderboardPeriod}
+                        />
+                      )}
 
-                    {activeSection === 'leaderboard' && (
-                      <div className="space-y-2">
+                      {activeSection === 'leaderboard' && (
+                        <div className="space-y-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full mb-3"
+                            onClick={() => router.push('/docs')}
+                          >
+                            📋 How it Works
+                          </Button>
+                        </div>
+                      )}
+
+                      <SupportCard />
+
+                      <div className="mt-4 pt-4 border-t">
                         <Button
+                          onClick={() => signOut()}
                           variant="outline"
                           size="sm"
-                          className="w-full mb-3"
-                          onClick={() => router.push('/docs')}
+                          className="w-full"
                         >
-                          📋 How it Works
+                          Sign Out
                         </Button>
                       </div>
-                    )}
+                    </>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Choose your GitMon companion to start your coding adventure!
+                      </p>
 
-                    <SupportCard />
+                      <Button
+                        onClick={() => router.push('/onboarding')}
+                        size="lg"
+                        className="w-full mb-4"
+                      >
+                        Choose Your GitMon →
+                      </Button>
 
-                    <div className="mt-4 pt-4 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mb-3"
+                        onClick={() => router.push('/docs')}
+                      >
+                        📋 How it Works
+                      </Button>
+
                       <Button
                         onClick={() => signOut()}
                         variant="outline"
@@ -280,66 +320,33 @@ export default function Home() {
                         Sign Out
                       </Button>
                     </div>
-                  </>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-6">
-                      Choose your GitMon companion to start your coding adventure!
-                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
-                    <Button
-                      onClick={() => router.push("/onboarding")}
-                      size="lg"
-                      className="w-full mb-4"
-                    >
-                      Choose Your GitMon →
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mb-3"
-                      onClick={() => router.push('/docs')}
-                    >
-                      📋 How it Works
-                    </Button>
-
-                    <Button
-                      onClick={() => signOut()}
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                    >
-                      Sign Out
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="lg:col-span-2">
-            {session && activeSection === 'dashboard' ? (
-              <Dashboard
-                selectedMonster={selectedMonster}
-                currentUserInLeaderboard={currentUserInLeaderboard}
-                session={session}
-                gitmonSelectedAt={gitmonSelectedAt}
-                leaderboardPeriod={leaderboardPeriod}
-              />
-            ) : (
-              <Leaderboard
-                leaderboard={leaderboard}
-                isLoadingLeaderboard={isLoadingLeaderboard}
-                leaderboardPeriod={leaderboardPeriod}
-                setLeaderboardPeriod={setLeaderboardPeriod}
-                totalTrainers={totalTrainers}
-              />
-            )}
+            <div className="lg:col-span-2">
+              {session && activeSection === 'dashboard' ? (
+                <Dashboard
+                  selectedMonster={selectedMonster}
+                  currentUserInLeaderboard={currentUserInLeaderboard}
+                  session={session}
+                  gitmonSelectedAt={gitmonSelectedAt}
+                  leaderboardPeriod={leaderboardPeriod}
+                />
+              ) : (
+                <Leaderboard
+                  leaderboard={leaderboard}
+                  isLoadingLeaderboard={isLoadingLeaderboard}
+                  leaderboardPeriod={leaderboardPeriod}
+                  setLeaderboardPeriod={setLeaderboardPeriod}
+                  totalTrainers={totalTrainers}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
     </>
   );
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface EmbedGeneratorProps {
   userData: {
@@ -21,7 +21,6 @@ interface EmbedGeneratorProps {
   };
 }
 
-
 export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
@@ -29,7 +28,7 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
     'character-markdown': false,
     'character-url': false,
     'monster-markdown': false,
-    'monster-url': false
+    'monster-url': false,
   });
 
   const toggleAccordion = (key: string) => {
@@ -40,7 +39,7 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
         'character-markdown': false,
         'character-url': false,
         'monster-markdown': false,
-        'monster-url': false
+        'monster-url': false,
       };
 
       // Se o accordion clicado estava fechado, abre ele
@@ -56,7 +55,7 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
     id,
     title,
     generateFn,
-    style
+    style,
   }: {
     id: string;
     title: string;
@@ -68,9 +67,14 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
         onClick={() => toggleAccordion(id)}
         className="flex items-center gap-2 w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900"
       >
-        <svg className={`w-4 h-4 transform transition-transform ${
-          openAccordions[id] ? 'rotate-90' : ''
-        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className={`w-4 h-4 transform transition-transform ${
+            openAccordions[id] ? 'rotate-90' : ''
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
         {title}
@@ -85,14 +89,26 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
                 : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
             }`}
           >
-            <svg className={`w-4 h-4 flex-shrink-0 transition-colors ${
-              copiedItem === id ? 'text-green-500' : 'text-gray-400'
-            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <svg
+              className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                copiedItem === id ? 'text-green-500' : 'text-gray-400'
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
             </svg>
-            <div className={`text-xs font-mono flex-1 truncate text-left transition-colors ${
-              copiedItem === id ? 'text-green-700' : 'text-gray-600'
-            }`}>
+            <div
+              className={`text-xs font-mono flex-1 truncate text-left transition-colors ${
+                copiedItem === id ? 'text-green-700' : 'text-gray-600'
+              }`}
+            >
               {generateFn(style)}
             </div>
           </button>
@@ -103,7 +119,9 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
 
   const generateEmbedUrlForStyle = (style: string) => {
     const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-    const baseUrl = isLocalhost ? `http://localhost:${window.location.port || 3000}` : "https://gitmon.xyz";
+    const baseUrl = isLocalhost
+      ? `http://localhost:${window.location.port || 3000}`
+      : 'https://gitmon.xyz';
     return `${baseUrl}/api/embed/${userData.githubUsername}.svg?style=${style}`;
   };
 
@@ -119,8 +137,6 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
     setTimeout(() => setCopiedItem(null), 2000);
   };
 
-
-
   const CharacterPreview = () => {
     const [realData, setRealData] = useState({ level: userData.level, commits: 0 });
 
@@ -134,7 +150,7 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
           if (levelMatch && commitsMatch) {
             setRealData({
               level: parseInt(levelMatch[1]),
-              commits: parseInt(commitsMatch[1].replace(/,/g, ''))
+              commits: parseInt(commitsMatch[1].replace(/,/g, '')),
             });
           }
         })
@@ -145,13 +161,19 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
       <div className="flex flex-col items-center w-36">
         <div className="w-24 h-24 mb-3">
           <img
-            src={userData.selectedMonsterId !== undefined ? `/monsters/monster-${String(userData.selectedMonsterId).padStart(3, '0')}.png` : '/monsters/monster-000.png'}
+            src={
+              userData.selectedMonsterId !== undefined
+                ? `/monsters/monster-${String(userData.selectedMonsterId).padStart(3, '0')}.png`
+                : '/monsters/monster-000.png'
+            }
             alt="Monster"
             className="w-full h-full object-contain"
           />
         </div>
         <div className="text-center space-y-0.5">
-          <div className="text-xs font-semibold text-gray-900 truncate w-full">{userData.githubUsername}</div>
+          <div className="text-xs font-semibold text-gray-900 truncate w-full">
+            {userData.githubUsername}
+          </div>
           <div className="text-xs text-gray-600">Lv.{realData.level}</div>
           <div className="text-xs text-gray-600">{realData.commits.toLocaleString()} commits</div>
         </div>
@@ -161,32 +183,32 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
 
   const MonsterPreview = () => {
     const monsters = [
-      { id: 0, name: "Shadrix", type: "shadow" },
-      { id: 1, name: "Fairy", type: "fire" },
-      { id: 2, name: "Crystalix", type: "ice" },
-      { id: 3, name: "Guarana", type: "grass" },
-      { id: 4, name: "Volterra", type: "electric" },
-      { id: 5, name: "Aquarus", type: "water" },
-      { id: 6, name: "Infernus", type: "fire" },
-      { id: 7, name: "Lumenis", type: "grass" },
-      { id: 8, name: "Spectra", type: "psychic" },
+      { id: 0, name: 'Shadrix', type: 'shadow' },
+      { id: 1, name: 'Fairy', type: 'fire' },
+      { id: 2, name: 'Crystalix', type: 'ice' },
+      { id: 3, name: 'Guarana', type: 'grass' },
+      { id: 4, name: 'Volterra', type: 'electric' },
+      { id: 5, name: 'Aquarus', type: 'water' },
+      { id: 6, name: 'Infernus', type: 'fire' },
+      { id: 7, name: 'Lumenis', type: 'grass' },
+      { id: 8, name: 'Spectra', type: 'psychic' },
     ];
 
     const monster = monsters.find(m => m.id === userData.selectedMonsterId) || monsters[0];
 
     const getTypeColor = (type: string) => {
       const colors = {
-        fire: "bg-red-500",
-        water: "bg-blue-500",
-        grass: "bg-green-500",
-        electric: "bg-yellow-500",
-        ice: "bg-cyan-500",
-        psychic: "bg-purple-500",
-        shadow: "bg-gray-800",
-        light: "bg-yellow-300",
-        normal: "bg-gray-500",
+        fire: 'bg-red-500',
+        water: 'bg-blue-500',
+        grass: 'bg-green-500',
+        electric: 'bg-yellow-500',
+        ice: 'bg-cyan-500',
+        psychic: 'bg-purple-500',
+        shadow: 'bg-gray-800',
+        light: 'bg-yellow-300',
+        normal: 'bg-gray-500',
       };
-      return colors[type as keyof typeof colors] || "bg-gray-500";
+      return colors[type as keyof typeof colors] || 'bg-gray-500';
     };
 
     return (
@@ -200,7 +222,9 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
         </div>
         <div className="text-center">
           <div className="text-sm font-medium text-gray-900 mb-2">{monster.name}</div>
-          <span className={`px-2 py-1 rounded-full text-white text-xs font-medium uppercase ${getTypeColor(monster.type)}`}>
+          <span
+            className={`px-2 py-1 rounded-full text-white text-xs font-medium uppercase ${getTypeColor(monster.type)}`}
+          >
             {monster.type}
           </span>
         </div>
@@ -224,9 +248,7 @@ export default function EmbedGenerator({ userData }: EmbedGeneratorProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b">
-          
-        </div>
+        <div className="p-6 border-b"></div>
 
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-6 text-center">GitMon Embeds</h3>
