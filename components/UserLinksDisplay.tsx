@@ -1,5 +1,7 @@
 'use client';
 
+import { usePathname } from "next/navigation";
+
 interface UserLink {
   id: string;
   title: string;
@@ -12,6 +14,8 @@ interface UserLinksDisplayProps {
 }
 
 export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
+  const pathname = usePathname()
+
   if (!userLinks || userLinks.length === 0) {
     return null;
   }
@@ -33,7 +37,6 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
 
       // Attempt to get username from current path (client-side only)
       try {
-        const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
         const parts = pathname.split('/').filter(Boolean);
         const ref = parts.length > 0 ? parts[0] : 'gitmon';
         params.set('ref', encodeURIComponent(ref));
