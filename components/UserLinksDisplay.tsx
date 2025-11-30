@@ -22,7 +22,7 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
 
   // Build an augmented URL with UTM params and a `ref` identifying the profile
   // This runs only when the user clicks (client-side) to avoid SSR/window access.
-  const buildAugmentedUrl = (originalUrl: string) => {
+  const buildAugmentedUrl = useCallback((originalUrl: string) => {
     try {
       // Only augment http(s) URLs
       if (!/^https?:\/\//i.test(originalUrl)) return originalUrl;
@@ -49,7 +49,7 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
     } catch {
       return originalUrl;
     }
-  };
+  }, [pathname]);
 
   const getIconForUrl = (url: string) => {
     const domain = new URL(url).hostname.toLowerCase();
