@@ -35,7 +35,7 @@ export default function Holders() {
             </button>
 
             <button
-              onClick={() => window.open('https://x.com/home', '_blank')}
+              onClick={() => window.open('https://x.com/gitmonsters', '_blank')}
               className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted rounded-lg transition-colors border border-border"
             >
               <Twitter size={20} />
@@ -44,7 +44,7 @@ export default function Holders() {
           </div>
 
           <button
-            onClick={() => window.history.back()}
+            onClick={() => window.location.href = '/'}
             className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted rounded-lg transition-colors border border-border"
           >
             <ArrowLeft size={20} />
