@@ -7,6 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useSession } from "next-auth/react";
+import { Github, Twitter, ArrowLeft } from "lucide-react";
 
 export default function Holders() {
   const { status } = useSession();
@@ -22,6 +23,34 @@ export default function Holders() {
   return (
     <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
+        {/* Header buttons */}
+        <div className="flex justify-between mb-8">
+          <div className="flex gap-4">
+            <button
+              onClick={() => window.open('https://github.com/isabellaherman/gitmon', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted rounded-lg transition-colors border border-border"
+            >
+              <Github size={20} />
+              <span className="text-sm font-medium">GitHub</span>
+            </button>
+
+            <button
+              onClick={() => window.open('https://x.com/home', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted rounded-lg transition-colors border border-border"
+            >
+              <Twitter size={20} />
+              <span className="text-sm font-medium">X</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted rounded-lg transition-colors border border-border"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+        </div>
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent" style={{ fontFamily: 'Minecraftia, monospace' }}>
             GitMon: Adopt Collection
