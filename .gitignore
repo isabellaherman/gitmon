@@ -48,6 +48,3 @@ next-env.d.ts
 # Event planning docs
 /docs/events/
 /stuff
-
-# Temporarily ignore holders page
-/app/holders/
