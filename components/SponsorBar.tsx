@@ -1,6 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 export default function SponsorBar() {
+  const router = useRouter();
   return (
     <>
       <div className="bg-gradient-to-r from-gray-500 to-white-600 text-white text-center py-2 px-4 text-sm">
@@ -34,10 +37,10 @@ export default function SponsorBar() {
             </a>
             {' • '}
             <button
-              onClick={() => window.dispatchEvent(new Event('openSupportModal'))}
+              onClick={() => router.push('/holders')}
               className="font-semibold underline hover:no-underline text-black hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer"
             >
-              1 SEAT LEFT
+              ADOPT
             </button>
           </span>
         </div>

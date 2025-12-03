@@ -110,7 +110,7 @@ export default function SupportCard({
               <Button
                 size="sm"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                onClick={() => setShowSupportModal(true)}
+                onClick={() => router.push('/holders')}
               >
                 Let&apos;s Go
               </Button>

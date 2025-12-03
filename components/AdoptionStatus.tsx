@@ -35,7 +35,7 @@ export default function AdoptionStatus({ monsterName, adoptionData }: AdoptionSt
     <>
       <div className="text-center mb-4">
         <button
-          onClick={() => setShowSupportModal(true)}
+          onClick={() => window.open('https://opensea.io/collection/gitmon', '_blank')}
           className="text-xs text-muted-foreground hover:text-primary transition-colors underline hover:no-underline"
           style={{ fontFamily: 'Minecraftia, monospace' }}
         >
