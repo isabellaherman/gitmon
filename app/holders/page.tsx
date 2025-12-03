@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useSession } from "next-auth/react";
-import { Github, Twitter, ArrowLeft } from "lucide-react";
+import { Github, Twitter, ArrowLeft, Globe } from "lucide-react";
 
 export default function Holders() {
   const { status } = useSession();
@@ -40,6 +40,14 @@ export default function Holders() {
             >
               <Twitter size={20} />
               <span className="text-sm font-medium">X</span>
+            </button>
+
+            <button
+              onClick={() => window.open('https://opensea.io/collection/gitmon', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted rounded-lg transition-colors border border-border"
+            >
+              <Globe size={20} />
+              <span className="text-sm font-medium">OpenSea</span>
             </button>
           </div>
 
