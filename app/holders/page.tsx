@@ -77,7 +77,7 @@ export default function Holders() {
               <AccordionItem value="getting-started-2">
                 <AccordionTrigger>Is there any roadmap?</AccordionTrigger>
                 <AccordionContent>
-                  Yes. Our focus is to grow the community through the GitMon Leaderboard, positioning it as our top-of-funnel experience for developers. At the same time, we are working on an open-source command-line tool that brings useful interactions straight to the terminal.
+                  Yes. Our focus is to grow the community through the GitMon Leaderboard, positioning it as our top-of-funnel experience for developers. At the same time, we are working on an open-source command-line tool that brings useful interactions straight to the terminal and hackathon events.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
