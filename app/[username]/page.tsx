@@ -1,13 +1,14 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Image from 'next/image';
-import { monsters, getMonsterById, getTypeTextColor } from '@/lib/monsters';
+import { getMonsterById } from '@/lib/monsters';
 import { getGuildById, getGuildTextColor } from '@/data/guilds';
 import { checkAndUpdateContributorStatus } from '@/lib/contributor-checker';
 import MonsterDisplay from '@/components/MonsterDisplay';
 import UserStats from '@/components/UserStats';
 import BadgeWall from '@/components/BadgeSystem';
 import UserLinksDisplay from '@/components/UserLinksDisplay';
+import Link from 'next/link';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -64,6 +65,25 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         <div className="text-center mb-8">
           <div className="relative mb-4">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-600 to-transparent opacity-80 rounded-lg"></div>
+            <div className="absolute left-0 top-0 hidden md:block z-10">
+              <Link className="flex items-center gap-2" href="/">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m12 19-7-7 7-7" />
+                  <path d="M19 12H5" />
+                </svg>
+                Back
+              </Link>
+            </div>
             <h1
               className="relative text-4xl font-bold text-white py-4 px-8"
               style={{ fontFamily: 'Minecraftia, monospace' }}
