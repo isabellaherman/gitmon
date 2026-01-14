@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import SupportCard from '@/components/SupportCard';
-import SponsorBar from '@/components/SponsorBar';
 import Leaderboard from '@/components/Leaderboard';
 import Dashboard from '@/components/Dashboard';
 import GitMonCard from '@/components/GitMonCard';
@@ -128,7 +127,6 @@ export default function Home() {
 
   return (
     <>
-      <SponsorBar />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}

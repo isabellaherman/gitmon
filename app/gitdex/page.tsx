@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import SponsorBar from '@/components/SponsorBar';
 import MonsterGrid from '@/components/MonsterGrid';
 import MonsterDetails from '@/components/MonsterDetails';
 import FloatingBackButton from '@/components/FloatingBackButton';
@@ -59,7 +58,6 @@ export default function GitDexPage() {
 
   return (
     <>
-      <SponsorBar />
       <FloatingBackButton />
       <main
         className="min-h-screen lg:min-h-screen bg-background"

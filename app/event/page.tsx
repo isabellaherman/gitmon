@@ -4,10 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import SponsorBar from '@/components/SponsorBar';
 import FloatingBackButton from '@/components/FloatingBackButton';
-import MadMonkeyHealthBar from '@/components/MadMonkeyHealthBar';
 import { useEventStream } from '@/hooks/useEventStream';
 
 export default function EventPage() {
@@ -171,7 +168,6 @@ export default function EventPage() {
 
   return (
     <>
-      <SponsorBar />
       <FloatingBackButton />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
@@ -218,16 +214,8 @@ export default function EventPage() {
                 className="relative text-4xl font-bold text-white py-4 px-8"
                 style={{ fontFamily: 'Minecraftia, monospace' }}
               >
-                DEFEAT MAD MONKEY!
+                COMMUNITY EVENT
               </h1>
-            </div>
-            {/* Mad Monkey Health Bar */}
-            <div className="mb-8">
-              <MadMonkeyHealthBar
-                totalDamage={(stats?.totalCommits || 0) * 20}
-                totalCommits={stats?.totalCommits || 0}
-                maxHp={25000}
-              />
             </div>
           </div>
 
@@ -239,20 +227,17 @@ export default function EventPage() {
                 {/* Left Column - Empty for now */}
                 <div className="hidden lg:block">{/* Reserved space */}</div>
 
-                {/* Center Column - Mad Monkey */}
+                {/* Center Column - Event Content */}
                 <div className="flex flex-col items-center">
-                  <div className="w-80 h-80 mb-6">
-                    <Image
-                      src="/events/MadMonkey.png"
-                      alt="Mad Monkey"
-                      width={320}
-                      height={320}
-                      className="object-contain w-full h-full"
-                    />
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-4">Community Event</h2>
+                    <p className="text-muted-foreground">
+                      Join our community of developers in this collaborative coding event!
+                    </p>
                   </div>
                 </div>
 
-                {/* Right Column - Battle Log */}
+                {/* Right Column - Activity Log */}
                 <div className="lg:text-left">
                   <div className="bg-muted/30 rounded-lg p-4 h-96">
                     <div className="flex items-center justify-between mb-4">
@@ -268,7 +253,7 @@ export default function EventPage() {
                         >
                           {'>'}
                         </span>
-                        BATTLE LOG
+                        ACTIVITY LOG
                       </button>
 
                       {/* Connection Status */}
@@ -308,7 +293,6 @@ export default function EventPage() {
                             const timeAgo = Math.floor(
                               (Date.now() - committedAt.getTime()) / (1000 * 60 * 60),
                             );
-                            const damage = 20; // Fixed damage for v1
 
                             return (
                               <div key={`${commit.sha}-${index}`} className="text-xs py-0.5">
@@ -318,15 +302,14 @@ export default function EventPage() {
                                 </span>
                                 <span className="ml-2">
                                   <span className="text-gray-600">@{commit.username}</span>
-                                  <span className="mx-1">hit Mad Monkey</span>
-                                  <span className="ml-1 text-orange-600 font-bold">({damage})</span>
+                                  <span className="mx-1">made a contribution</span>
                                 </span>
                               </div>
                             );
                           })
                         ) : (
                           <div className="text-center text-muted-foreground py-8 text-xs">
-                            <div>No battle activity yet</div>
+                            <div>No activity yet</div>
                             {connectionError && (
                               <div className="mt-2 text-red-500">
                                 Connection error: {connectionError}
@@ -342,15 +325,7 @@ export default function EventPage() {
 
                     <div className="text-center pt-2 border-t mt-2">
                       <span className="text-orange-400 text-xs font-bold">
-                        warning: battle system still in beta and may have inaccuracies.{' '}
-                        <a
-                          href="https://github.com/isabellaherman/gitmon/issues/11"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 underline hover:text-blue-700"
-                        >
-                          check issues
-                        </a>
+                        Event system in beta - activity tracking may have inaccuracies.
                       </span>
                     </div>
                   </div>
@@ -361,7 +336,7 @@ export default function EventPage() {
               <div className="mt-8">
                 {!session ? (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold">Help us defeat Mad Monkey</h2>
+                    <h2 className="text-2xl font-bold">Join Our Community Event</h2>
                     <div className="mb-4">
                       <span
                         className="text-green-600 text-sm font-bold"
@@ -403,7 +378,7 @@ export default function EventPage() {
                     </div>
                     <p className="text-muted-foreground">
                       You&apos;ve successfully joined the GitMon 1st Community Event! <br />
-                      Keep coding and stay tuned for more details about the boss battle.
+                      Keep coding and stay tuned for more details about the event.
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Your participation has been recorded and you&apos;ll be eligible for special
@@ -412,7 +387,7 @@ export default function EventPage() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold">Help us defeat Mad Monkey</h2>
+                    <h2 className="text-2xl font-bold">Join Our Community Event</h2>
                     <div className="mb-4">
                       <span
                         className="text-green-600 text-sm font-bold"
