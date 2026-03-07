@@ -23,6 +23,21 @@ export interface GitHubUserStats {
   avgCommitsPerWeek: number;
 }
 
+export interface ContributionDay {
+  date: string;
+  contributionCount: number;
+  color: string;
+}
+
+export interface ContributionWeek {
+  contributionDays: ContributionDay[];
+}
+
+export interface ContributionCalendar {
+  totalContributions: number;
+  weeks: ContributionWeek[];
+}
+
 export interface GitHubActivity {
   type:
     | 'commit'
@@ -533,6 +548,44 @@ export class GitHubService {
 
       console.log(`[GitHub Service] Fallback weekly XP: ${weeklyXp}`);
       return weeklyXp;
+    }
+  }
+
+  async getContributionCalendar(username: string): Promise<ContributionCalendar> {
+    try {
+      const query = `
+        query($username: String!) {
+          user(login: $username) {
+            contributionsCollection {
+              contributionCalendar {
+                totalContributions
+                weeks {
+                  contributionDays {
+                    date
+                    contributionCount
+                    color
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      const response: Record<string, unknown> = await this.graphqlWithAuth(query, { username });
+      const user = response.user as Record<string, unknown> | undefined;
+
+      if (!user) {
+        throw new Error(`User ${username} not found`);
+      }
+
+      const collection = user.contributionsCollection as Record<string, unknown>;
+      const calendar = collection.contributionCalendar as ContributionCalendar;
+
+      return calendar;
+    } catch (error) {
+      console.error('Error fetching contribution calendar:', error);
+      return { totalContributions: 0, weeks: [] };
     }
   }
 

@@ -9,6 +9,8 @@ import UserStats from '@/components/UserStats';
 import BadgeWall from '@/components/BadgeSystem';
 import UserLinksDisplay from '@/components/UserLinksDisplay';
 import Link from 'next/link';
+import { GitHubService } from '@/lib/github-service';
+import ContributionHeatmap from '@/components/ContributionHeatmap';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -58,6 +60,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   if (user.githubUsername) {
     checkAndUpdateContributorStatus(user.githubUsername).catch(console.error);
   }
+
+  const githubService = new GitHubService(process.env.GITHUB_TOKEN);
+  const contributionCalendar = await githubService.getContributionCalendar(user.githubUsername);
 
   return (
     <main className="min-h-screen bg-background">
@@ -202,6 +207,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               </h3>
               <BadgeWall userData={user} />
             </div>
+          </div>
+        </div>
+
+        {/* Contribution Heatmap */}
+        <div className="max-w-6xl mx-auto mt-8">
+          <div className="bg-card rounded-xl p-6">
+            <ContributionHeatmap calendar={contributionCalendar} totalXp={user.xp} />
           </div>
         </div>
       </div>

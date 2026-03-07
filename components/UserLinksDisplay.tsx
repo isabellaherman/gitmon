@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { useCallback } from "react";
 
 interface UserLink {
   id: string;
@@ -120,6 +121,10 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
 
   // Sort links by order
   const sortedLinks = [...userLinks].sort((a, b) => a.order - b.order);
+
+  if (!userLinks || userLinks.length === 0) {
+    return null;
+  }
 
   return (
     <div className="space-y-4">
