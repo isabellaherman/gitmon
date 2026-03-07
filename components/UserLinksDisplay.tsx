@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from "react";
 import { usePathname } from "next/navigation";
 
 interface UserLink {
@@ -15,10 +16,6 @@ interface UserLinksDisplayProps {
 
 export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
   const pathname = usePathname()
-
-  if (!userLinks || userLinks.length === 0) {
-    return null;
-  }
 
   // Build an augmented URL with UTM params and a `ref` identifying the profile
   // This runs only when the user clicks (client-side) to avoid SSR/window access.
@@ -50,6 +47,10 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
       return originalUrl;
     }
   }, [pathname]);
+
+  if (!userLinks || userLinks.length === 0) {
+    return null;
+  }
 
   const getIconForUrl = (url: string) => {
     const domain = new URL(url).hostname.toLowerCase();

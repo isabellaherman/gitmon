@@ -85,7 +85,7 @@ export async function syncUserData(user: {
     // Check rate limit before making GitHub API calls
     try {
       const rateLimit = await githubService.getRateLimit();
-      if (rateLimit.remaining < 50) {
+      if (rateLimit && rateLimit.remaining < 50) {
         console.warn(
           `[XP Calculator] Rate limit low (${rateLimit.remaining}/${rateLimit.limit}), skipping sync for ${githubUsername}`,
         );
