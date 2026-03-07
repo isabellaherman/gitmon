@@ -82,6 +82,19 @@ export async function syncUserData(user: {
 
     const githubService = new GitHubService(accessToken);
 
+    // Check rate limit before making GitHub API calls
+    try {
+      const rateLimit = await githubService.getRateLimit();
+      if (rateLimit && rateLimit.remaining < 50) {
+        console.warn(
+          `[XP Calculator] Rate limit low (${rateLimit.remaining}/${rateLimit.limit}), skipping sync for ${githubUsername}`,
+        );
+        return null;
+      }
+    } catch (error) {
+      console.warn('[XP Calculator] Could not check rate limit, proceeding with sync:', error);
+    }
+
     // Get GitHub stats using force-sync logic
     const githubStats = await githubService.getUserStats(githubUsername);
     const weeklyXp = await githubService.getWeeklyXp(githubUsername, true);
