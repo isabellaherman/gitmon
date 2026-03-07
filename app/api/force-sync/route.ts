@@ -27,6 +27,26 @@ export async function POST() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Server-side cooldown: skip sync if last update was less than 5 minutes ago
+    const COOLDOWN_MS = 5 * 60 * 1000;
+    if (user.lastXpUpdate && Date.now() - new Date(user.lastXpUpdate).getTime() < COOLDOWN_MS) {
+      console.log(`[Force Sync] Cooldown active for ${user.email}, returning cached data`);
+      return NextResponse.json({
+        success: true,
+        cached: true,
+        message: 'Sync skipped (cooldown active)',
+        data: {
+          username: user.githubUsername,
+          oldXp: user.xp,
+          newXp: user.xp,
+          oldWeeklyXp: user.weeklyXp,
+          newWeeklyXp: user.weeklyXp,
+          level: user.level,
+          rank: getUserRank(user.level),
+        },
+      });
+    }
+
     console.log(`[Force Sync] Starting sync for ${user.email}`);
 
     // Use shared sync function for consistency with daily cron and onboarding

@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import SupportCard from '@/components/SupportCard';
 import SponsorBar from '@/components/SponsorBar';
@@ -38,31 +38,98 @@ export default function Home() {
   const [totalTrainers, setTotalTrainers] = useState<number>(0);
   const [activeSection, setActiveSection] = useState<'dashboard' | 'leaderboard'>('dashboard');
 
-  // EMERGENCY FIX: Disabled auto-sync loop that was causing 400k requests/hour
-  // useEffect(() => {
-  //   if (session?.user?.email && status === 'authenticated') {
-  //     const now = Date.now();
-  //     const sessionKey = `sync_${session.user.email}`;
-  //     const lastSync = localStorage.getItem(sessionKey);
+  // Auto-sync: periodically sync XP with server-side cooldown as the hard guard
+  const isSyncingRef = useRef(false);
 
-  //     if (!lastSync || (now - parseInt(lastSync)) > 10 * 60 * 1000) {
-  //       console.log('[Auto Sync] Performing automatic XP sync...');
+  const refreshLeaderboard = useCallback(async () => {
+    try {
+      const userId = (session?.user as Record<string, unknown>)?.id as string;
+      const userIdParam = userId ? `&userId=${userId}` : '';
+      const response = await fetch(`/api/leaderboard?period=${leaderboardPeriod}${userIdParam}`);
+      const data = await response.json();
+      if (data.success) {
+        setLeaderboard(data.leaderboard);
+      }
+    } catch (error) {
+      console.error('[Auto Sync] Failed to refresh leaderboard:', error);
+    }
+  }, [session, leaderboardPeriod]);
 
-  //       fetch('/api/force-sync', { method: 'POST' })
-  //         .then(res => res.json())
-  //         .then(data => {
-  //           if (data.success) {
-  //             console.log('[Auto Sync] XP updated successfully');
-  //             localStorage.setItem(sessionKey, now.toString());
-  //             window.location.reload();
-  //           }
-  //         })
-  //         .catch(err => {
-  //           console.error('[Auto Sync] Failed:', err);
-  //         });
-  //     }
-  //   }
-  // }, [session, status]);
+  useEffect(() => {
+    if (status !== 'authenticated' || !session?.user?.email) return;
+
+    const SYNC_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+    const sessionKey = `sync_${session.user.email}`;
+
+    // Cross-tab dedup via BroadcastChannel
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel('gitmon-sync');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'sync-complete') {
+          localStorage.setItem(sessionKey, Date.now().toString());
+          refreshLeaderboard();
+        }
+      };
+    } catch {
+      // BroadcastChannel not supported, continue without cross-tab dedup
+    }
+
+    const performSync = async () => {
+      // Skip if tab is hidden
+      if (document.hidden) return;
+      // Skip if already syncing in this tab
+      if (isSyncingRef.current) return;
+
+      const now = Date.now();
+      const lastSync = localStorage.getItem(sessionKey);
+      if (lastSync && now - parseInt(lastSync) < SYNC_INTERVAL_MS) return;
+
+      isSyncingRef.current = true;
+      console.log('[Auto Sync] Performing automatic XP sync...');
+
+      try {
+        const res = await fetch('/api/force-sync', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.success) {
+          console.log(`[Auto Sync] XP updated${data.cached ? ' (cached)' : ''}`);
+          localStorage.setItem(sessionKey, now.toString());
+
+          // Notify other tabs
+          try {
+            channel?.postMessage({ type: 'sync-complete' });
+          } catch {
+            // Channel may be closed
+          }
+
+          // Refresh leaderboard in-place instead of reloading
+          if (!data.cached) {
+            await refreshLeaderboard();
+          }
+        }
+      } catch (err) {
+        console.error('[Auto Sync] Failed:', err);
+      } finally {
+        isSyncingRef.current = false;
+      }
+    };
+
+    // Initial sync on mount
+    performSync();
+
+    // Periodic sync
+    const intervalId = setInterval(performSync, SYNC_INTERVAL_MS);
+
+    return () => {
+      clearInterval(intervalId);
+      try {
+        channel?.close();
+      } catch {
+        // Ignore close errors
+      }
+    };
+  }, [session, status, refreshLeaderboard]);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
