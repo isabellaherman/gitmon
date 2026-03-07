@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from "next/navigation";
+import { useCallback } from "react";
 
 interface UserLink {
   id: string;
@@ -15,10 +16,6 @@ interface UserLinksDisplayProps {
 
 export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
   const pathname = usePathname()
-
-  if (!userLinks || userLinks.length === 0) {
-    return null;
-  }
 
   // Build an augmented URL with UTM params and a `ref` identifying the profile
   // This runs only when the user clicks (client-side) to avoid SSR/window access.
@@ -119,6 +116,10 @@ export default function UserLinksDisplay({ userLinks }: UserLinksDisplayProps) {
 
   // Sort links by order
   const sortedLinks = [...userLinks].sort((a, b) => a.order - b.order);
+
+  if (!userLinks || userLinks.length === 0) {
+    return null;
+  }
 
   return (
     <div className="space-y-4">
