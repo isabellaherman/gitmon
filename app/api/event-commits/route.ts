@@ -9,10 +9,10 @@ export async function GET() {
     // Also get stats
     const stats = await commitService.getStats();
 
-    return NextResponse.json({
-      ...result,
-      stats,
-    });
+    return NextResponse.json(
+      { ...result, stats },
+      { headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' } },
+    );
   } catch (error) {
     console.error('Get event commits error:', error);
     return NextResponse.json(

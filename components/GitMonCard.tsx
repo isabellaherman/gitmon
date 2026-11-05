@@ -10,7 +10,7 @@ interface GitMonCardProps {
   currentUserInLeaderboard?: {
     level?: number;
     xp?: number;
-    rank?: number;
+    rank?: number | null;
   };
   session?: {
     user?: {
@@ -91,7 +91,7 @@ export default function GitMonCard({
 
         <div className="bg-muted rounded-lg p-3 text-center">
           <p className="text-2xl font-bold text-primary">
-            #{currentUserInLeaderboard?.rank || '???'}
+            {currentUserInLeaderboard?.rank ? `#${currentUserInLeaderboard.rank}` : 'Unranked'}
           </p>
           <p className="text-sm text-muted-foreground">Your rank</p>
         </div>
