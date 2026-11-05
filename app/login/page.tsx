@@ -5,7 +5,10 @@ import { signIn } from 'next-auth/react';
 export default function LoginPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-      <h1 className="text-3xl font-bold mb-4 text-gray-800">Git Leaderboard</h1>
+      <h1 className="text-3xl font-bold mb-2 text-gray-800">GitMon</h1>
+      <p className="text-sm text-gray-600 mb-6 text-center">
+        Sign in to pick your GitMon and join the leaderboard.
+      </p>
 
       <button
         onClick={() => signIn('github', { callbackUrl: '/' })}
@@ -23,7 +26,7 @@ export default function LoginPage() {
             clipRule="evenodd"
           />
         </svg>
-        Entrar com GitHub
+        Sign in with GitHub
       </button>
     </main>
   );
