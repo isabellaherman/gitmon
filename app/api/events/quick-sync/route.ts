@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isCronAuthorized } from '@/lib/cron-auth';
 import { EventCommitService } from '@/lib/event-commit-service';
 import { prisma } from '@/lib/prisma';
 import { broadcastDamageUpdate } from '@/lib/sse-broadcast';
@@ -6,7 +7,11 @@ import { broadcastDamageUpdate } from '@/lib/sse-broadcast';
 // Shorter timeout for quick sync operations
 export const maxDuration = 60; // 1 minute
 
-export async function POST() {
+export async function POST(request: Request) {
+  if (!isCronAuthorized(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     // Get GitHub token
     const githubAccount = await prisma.account.findFirst({

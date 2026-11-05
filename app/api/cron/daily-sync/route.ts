@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isCronAuthorized } from '@/lib/cron-auth';
 import { prisma } from '@/lib/prisma';
 import { syncUserData, updateAllRankings } from '@/lib/xp-calculator';
 
@@ -7,10 +8,7 @@ export async function GET(request: Request) {
 
   try {
     // 1. Security: Check CRON_SECRET bearer token
-    const authHeader = request.headers.get('authorization');
-    const expectedSecret = process.env.CRON_SECRET;
-
-    if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
+    if (!isCronAuthorized(request)) {
       console.error('[Daily Sync] Unauthorized access attempt');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
