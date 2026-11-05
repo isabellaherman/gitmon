@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import AdoptionStatus from './AdoptionStatus';
 import { getAdoptionData } from '@/data/adoptions';
+import { getTypeColor } from '@/lib/monsters';
 
 interface Monster {
   id: number;
@@ -12,20 +13,6 @@ interface Monster {
 interface MonsterDetailsProps {
   monster: Monster;
 }
-
-const getTypeColor = (type: string) => {
-  const colors = {
-    fire: 'bg-red-500',
-    water: 'bg-blue-500',
-    grass: 'bg-green-500',
-    electric: 'bg-yellow-500',
-    ice: 'bg-cyan-500',
-    psychic: 'bg-purple-500',
-    shadow: 'bg-gray-800',
-    light: 'bg-yellow-300',
-  };
-  return colors[type as keyof typeof colors] || 'bg-gray-500';
-};
 
 const getMonsterDescription = (monster: Monster) => {
   const descriptions = {
