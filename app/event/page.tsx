@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 import FloatingBackButton from '@/components/FloatingBackButton';
 import { useEventStream } from '@/hooks/useEventStream';
 
+const EVENT_END = new Date('2025-11-30T23:59:59.999Z');
+
 export default function EventPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -17,6 +19,9 @@ export default function EventPage() {
   const [isLoadingCount, setIsLoadingCount] = useState(true);
   const [isCommitsOpen, setIsCommitsOpen] = useState(true);
   const [isBattleLogOpen, setIsBattleLogOpen] = useState(true);
+
+  // The first community event ran Nov 12–30, 2025. After that the page is an archive.
+  const eventEnded = Date.now() > EVENT_END.getTime();
 
   // Real-time event stream hook
   const {
@@ -202,10 +207,10 @@ export default function EventPage() {
             {/* Warning - Centered */}
             <div className="text-center mb-0">
               <span
-                className="text-red-600 text-xs font-bold"
+                className={`${eventEnded ? 'text-muted-foreground' : 'text-red-600'} text-xs font-bold`}
                 style={{ fontFamily: 'Minecraftia, monospace' }}
               >
-                EVENT IN BETA TEST
+                {eventEnded ? 'EVENT ENDED · ARCHIVED' : 'EVENT IN BETA TEST'}
               </span>
             </div>
             <div className="relative mb-4">
@@ -232,7 +237,9 @@ export default function EventPage() {
                   <div className="text-center">
                     <h2 className="text-2xl font-bold mb-4">Community Event</h2>
                     <p className="text-muted-foreground">
-                      Join our community of developers in this collaborative coding event!
+                      {eventEnded
+                        ? 'Our first community event ran from Nov 12 to Nov 30, 2025. Thanks to everyone who took part!'
+                        : 'Join our community of developers in this collaborative coding event!'}
                     </p>
                   </div>
                 </div>
@@ -323,18 +330,46 @@ export default function EventPage() {
                       </div>
                     )}
 
-                    <div className="text-center pt-2 border-t mt-2">
-                      <span className="text-orange-400 text-xs font-bold">
-                        Event system in beta - activity tracking may have inaccuracies.
-                      </span>
-                    </div>
+                    {!eventEnded && (
+                      <div className="text-center pt-2 border-t mt-2">
+                        <span className="text-orange-400 text-xs font-bold">
+                          Event system in beta - activity tracking may have inaccuracies.
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Content Below (Login/Join states) */}
               <div className="mt-8">
-                {!session ? (
+                {eventEnded ? (
+                  <div className="space-y-4">
+                    <h2 className="text-2xl font-bold">This event has ended</h2>
+                    <div>
+                      <span
+                        className="text-green-600 text-sm font-bold"
+                        style={{ fontFamily: 'Minecraftia, monospace' }}
+                      >
+                        {isLoadingCount
+                          ? 'LOADING...'
+                          : `${participantCount.toLocaleString()} TRAINERS TOOK PART`}
+                      </span>
+                    </div>
+                    {hasJoined && (
+                      <p className="text-sm text-muted-foreground">
+                        You were part of it, and your participation is recorded.
+                      </p>
+                    )}
+                    <p className="text-muted-foreground">
+                      There is no event running right now. Keep an eye on the leaderboard for the
+                      next one.
+                    </p>
+                    <Button onClick={() => router.push('/')} size="lg" variant="outline">
+                      Back to the leaderboard
+                    </Button>
+                  </div>
+                ) : !session ? (
                   <div className="space-y-6">
                     <h2 className="text-2xl font-bold">Join Our Community Event</h2>
                     <div className="mb-4">
@@ -419,7 +454,7 @@ export default function EventPage() {
               </div>
             </div>
 
-            {/* Debug Info Section - Optional collapsible section */}
+            {/* Event stats */}
             <div className="mt-8 bg-card rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <button
@@ -432,51 +467,12 @@ export default function EventPage() {
                   >
                     {'>'}
                   </span>
-                  DEBUG INFO
+                  EVENT STATS
                 </button>
               </div>
 
               {isCommitsOpen && (
                 <div className="space-y-4">
-                  {/* Debug Info */}
-                  <div className="p-3 bg-red-100 border border-red-300 rounded text-red-800 text-xs">
-                    <div className="font-bold">🔴 DEBUG - EVENT DATE RANGE & CONNECTION:</div>
-                    <div className="mt-1">
-                      <strong>Current Time:</strong>{' '}
-                      {stats?.currentDate || new Date().toISOString()}
-                    </div>
-                    <div>
-                      <strong>Event Start (Nov 12, 2025):</strong>{' '}
-                      {stats?.eventStartDate || '2025-11-12T00:00:00.000Z'}
-                    </div>
-                    <div>
-                      <strong>Event End (Nov 30, 2025):</strong>{' '}
-                      {stats?.eventEndDate || '2025-11-30T23:59:59.999Z'}
-                    </div>
-                    {stats?.lastSyncAt && (
-                      <div>
-                        <strong>Last Sync:</strong> {stats.lastSyncAt}
-                      </div>
-                    )}
-                    {lastUpdate && (
-                      <div>
-                        <strong>Last Update:</strong> {lastUpdate.toISOString()}
-                      </div>
-                    )}
-                    <div className="mt-2">
-                      <strong>Connection Status:</strong>{' '}
-                      {isConnected
-                        ? '🟢 Live SSE'
-                        : fallbackToPolling
-                          ? '🟡 Polling'
-                          : '🔴 Disconnected'}
-                    </div>
-                    <div className="mt-2 text-xs text-red-600">
-                      <strong>Search Query Format:</strong> author:username
-                      committer-date:2025-11-12..2025-11-30
-                    </div>
-                  </div>
-
                   {/* Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-2 bg-muted/50 rounded">
@@ -517,15 +513,15 @@ export default function EventPage() {
               <div className="bg-muted/50 rounded-lg p-4">
                 <h3 className="font-semibold mb-2">Event Details</h3>
                 <p className="text-sm text-muted-foreground">
-                  Our first community event brings together developers from around the world to
-                  tackle challenges together.
+                  {eventEnded
+                    ? 'Our first community event brought developers from around the world together to code side by side (Nov 12–30, 2025).'
+                    : 'Our first community event brings together developers from around the world to tackle challenges together.'}
                 </p>
               </div>
               <div className="bg-muted/50 rounded-lg p-4">
                 <h3 className="font-semibold mb-2">Rewards</h3>
                 <p className="text-sm text-muted-foreground">
-                  Participants will receive exclusive badges and recognition in the upcoming badge
-                  system.
+                  Participants are recorded and will be recognized in the badge system.
                 </p>
               </div>
             </div>

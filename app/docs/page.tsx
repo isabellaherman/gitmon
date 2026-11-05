@@ -5,6 +5,54 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Zap } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import FloatingBackButton from '@/components/FloatingBackButton';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// react-markdown never renders raw HTML from the source (no rehype-raw), so the docs
+// can't inject markup. Links are restricted to http(s)/mailto/relative URLs.
+const SAFE_URL = /^(https?:|mailto:|\/|#)/i;
+
+const mdComponents: Components = {
+  h1: ({ children }) => <h1 className="text-3xl font-bold mt-6 mb-6 text-gray-900">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-900">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-xl font-bold mt-6 mb-3 text-gray-800">{children}</h3>,
+  p: ({ children }) => <p className="mb-4 text-gray-700">{children}</p>,
+  strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+  ul: ({ children }) => <ul className="list-disc ml-6 mb-4 space-y-1">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal ml-6 mb-4 space-y-1">{children}</ol>,
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-yellow-500 bg-yellow-50 pl-4 py-2 my-4 text-gray-700">
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr className="my-8 border-gray-300" />,
+  pre: ({ children }) => (
+    <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4 text-sm">{children}</pre>
+  ),
+  code: ({ children }) => (
+    <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
+  ),
+  table: ({ children }) => (
+    <div className="overflow-x-auto my-4">
+      <table className="min-w-full border-collapse">{children}</table>
+    </div>
+  ),
+  th: ({ children }) => <th className="border px-4 py-2 text-left bg-gray-50">{children}</th>,
+  td: ({ children }) => <td className="border px-4 py-2">{children}</td>,
+  a: ({ href, children }) =>
+    href && SAFE_URL.test(href) ? (
+      <a
+        href={href}
+        className="text-blue-600 hover:text-blue-800 underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {children}
+      </a>
+    ) : (
+      <span>{children}</span>
+    ),
+};
 
 type DocType = 'how-xp-works' | 'system-design';
 
@@ -43,68 +91,6 @@ function DocsContent() {
       .catch(err => console.error('Failed to load docs:', err));
   }, [currentDoc]);
 
-  const parseMarkdown = (markdown: string) => {
-    return markdown
-      .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3 text-gray-800">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-6 mb-6 text-gray-900">$1</h1>')
-
-      .replace(/> ⚠️ \*\*(.*?)\*\*:\n((?:> .*\n?)*)/gm, (match, title, content) => {
-        const items = content
-          .split('\n')
-          .filter((line: string) => line.trim().startsWith('>'))
-          .map((line: string) => {
-            const cleanLine = line.replace(/^> /, '').trim();
-            return `<p class="text-yellow-700 ml-4">• ${cleanLine}</p>`;
-          })
-          .join('');
-        return `<div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 my-4"><p class="font-bold text-yellow-800">⚠️ ${title}:</p>${items}</div>`;
-      })
-
-      .replace(
-        /^> (.*$)/gim,
-        '<blockquote class="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4">$1</blockquote>',
-      )
-
-      .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-gray-900">$1</strong>')
-
-      .replace(
-        /```(\w+)?\n([\s\S]*?)```/gim,
-        '<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4"><code class="text-sm">$2</code></pre>',
-      )
-      .replace(
-        /`(.*?)`/gim,
-        '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">$1</code>',
-      )
-
-      .replace(/\|(.+)\|/g, (match, content) => {
-        const cells = content.split('|').map((cell: string) => cell.trim());
-        return (
-          '<tr>' +
-          cells.map((cell: string) => `<td class="border px-4 py-2">${cell}</td>`).join('') +
-          '</tr>'
-        );
-      })
-
-      .replace(/^- (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
-      .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
-
-      .replace(
-        /\[([^\]]+)\]\(([^)]+)\)/gim,
-        '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">$1</a>',
-      )
-
-      .replace(/🔴/g, '<span class="text-red-500">🔴</span>')
-      .replace(/🟡/g, '<span class="text-yellow-500">🟡</span>')
-      .replace(/✅/g, '<span class="text-green-500">✅</span>')
-      .replace(/⚠️/g, '<span class="text-yellow-600">⚠️</span>')
-
-      .replace(/^---$/gim, '<hr class="my-8 border-gray-300">')
-
-      .replace(/\n\n/g, '</p><p class="mb-4">')
-      .replace(/^(?!<[h|d|l|p|u])(.+)$/gim, '<p class="mb-4">$1</p>');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-4xl mx-auto px-6 py-8 docs-page">
@@ -124,13 +110,14 @@ function DocsContent() {
               <p className="text-gray-600">{docs[currentDoc].description}</p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.open('https://github.com/isabellaherman/gitmon', '_blank')}
-            className="text-xs"
-          >
-            ⭐ Star Project
+          <Button asChild variant="outline" size="sm" className="text-xs">
+            <a
+              href="https://github.com/isabellaherman/gitmon"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ⭐ Star Project
+            </a>
           </Button>
         </div>
 
@@ -150,12 +137,11 @@ function DocsContent() {
 
         <div className="bg-white rounded-xl shadow-sm border p-8">
           {content ? (
-            <div
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{
-                __html: parseMarkdown(content),
-              }}
-            />
+            <div className="max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+                {content}
+              </ReactMarkdown>
+            </div>
           ) : (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">

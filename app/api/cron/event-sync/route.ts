@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isCronAuthorized } from '@/lib/cron-auth';
 import { getConnectionStats } from '@/lib/sse-broadcast';
 
 export async function GET(request: Request) {
@@ -6,10 +7,7 @@ export async function GET(request: Request) {
 
   try {
     // 1. Security: Check CRON_SECRET bearer token
-    const authHeader = request.headers.get('authorization');
-    const expectedSecret = process.env.CRON_SECRET;
-
-    if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
+    if (!isCronAuthorized(request)) {
       console.error('[Event Sync] Unauthorized access attempt');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -24,7 +22,7 @@ export async function GET(request: Request) {
     const syncResponse = await fetch(`${request.url.split('/api/')[0]}/api/events/quick-sync`, {
       method: 'POST',
       headers: {
-        Authorization: authHeader, // Pass through auth
+        Authorization: `Bearer ${process.env.CRON_SECRET}`,
       },
     });
 

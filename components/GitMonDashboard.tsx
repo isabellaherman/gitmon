@@ -11,7 +11,7 @@ interface GitMonDashboardProps {
   currentUserInLeaderboard?: {
     level?: number;
     xp?: number;
-    rank?: number;
+    rank?: number | null;
     currentStreak?: number;
     longestStreak?: number;
   };

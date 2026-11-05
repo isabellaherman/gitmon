@@ -13,7 +13,9 @@ import GitMonCard from '@/components/GitMonCard';
 import { monsters, getTypeColor, formatBirthdate, getMonsterById } from '@/lib/monsters';
 
 interface LeaderboardEntry {
-  rank: number;
+  id?: string;
+  rank: number | null;
+  isCurrentUser?: boolean;
   name: string;
   githubUsername?: string;
   selectedMonsterId: number;
@@ -35,6 +37,9 @@ export default function Home() {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'all'>('week');
   const [totalTrainers, setTotalTrainers] = useState<number>(0);
+  const [leaderboardHasMore, setLeaderboardHasMore] = useState(false);
+  const [leaderboardTotalRanked, setLeaderboardTotalRanked] = useState<number>(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [activeSection, setActiveSection] = useState<'dashboard' | 'leaderboard'>('dashboard');
 
   // EMERGENCY FIX: Disabled auto-sync loop that was causing 400k requests/hour
@@ -73,6 +78,8 @@ export default function Home() {
 
         if (data.success) {
           setLeaderboard(data.leaderboard);
+          setLeaderboardHasMore(!!data.hasMore);
+          setLeaderboardTotalRanked(data.totalRanked ?? 0);
         }
       } catch (error) {
         console.error('Failed to fetch leaderboard:', error);
@@ -83,6 +90,31 @@ export default function Home() {
 
     fetchLeaderboard();
   }, [leaderboardPeriod, session]);
+
+  const loadMoreLeaderboard = async () => {
+    setIsLoadingMore(true);
+    try {
+      const ranked = leaderboard.filter(e => !e.isCurrentUser);
+      const response = await fetch(
+        `/api/leaderboard?period=${leaderboardPeriod}&offset=${ranked.length}&limit=50`,
+      );
+      const data = await response.json();
+      if (data.success) {
+        const next: LeaderboardEntry[] = data.leaderboard;
+        const pinned = leaderboard.filter(e => e.isCurrentUser);
+        const merged = [...ranked, ...next];
+        // Keep the "you" row pinned at the bottom only while the user isn't in the loaded list.
+        const stillMissing = pinned.filter(p => !merged.some(e => e.id === p.id));
+        setLeaderboard([...merged, ...stillMissing]);
+        setLeaderboardHasMore(!!data.hasMore);
+        setLeaderboardTotalRanked(data.totalRanked ?? leaderboardTotalRanked);
+      }
+    } catch (error) {
+      console.error('Failed to load more leaderboard entries:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   // Fetch total trainers count
   useEffect(() => {
@@ -339,6 +371,10 @@ export default function Home() {
                   leaderboardPeriod={leaderboardPeriod}
                   setLeaderboardPeriod={setLeaderboardPeriod}
                   totalTrainers={totalTrainers}
+                  hasMore={leaderboardHasMore}
+                  totalRanked={leaderboardTotalRanked}
+                  isLoadingMore={isLoadingMore}
+                  onLoadMore={loadMoreLeaderboard}
                 />
               )}
             </div>

@@ -14,7 +14,7 @@ interface DashboardProps {
   currentUserInLeaderboard?: {
     level?: number;
     xp?: number;
-    rank?: number;
+    rank?: number | null;
     githubUsername?: string;
   };
   session?: {
@@ -100,13 +100,14 @@ export default function Dashboard({
             >
               📚 GITDEX
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open('https://github.com/isabellaherman/gitmon', '_blank')}
-              className="rounded-full text-xs"
-            >
-              ⭐ Star Project
+            <Button asChild variant="outline" size="sm" className="rounded-full text-xs">
+              <a
+                href="https://github.com/isabellaherman/gitmon"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ⭐ Star Project
+              </a>
             </Button>
             {selectedMonster && (
               <EmbedGenerator

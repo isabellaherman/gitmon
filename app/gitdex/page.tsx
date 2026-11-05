@@ -6,18 +6,7 @@ import { Button } from '@/components/ui/button';
 import MonsterGrid from '@/components/MonsterGrid';
 import MonsterDetails from '@/components/MonsterDetails';
 import FloatingBackButton from '@/components/FloatingBackButton';
-
-const monsters = [
-  { id: 0, src: '/monsters/monster-000.png', name: 'Shadrix', type: 'shadow' },
-  { id: 1, src: '/monsters/monster-001-png.png', name: 'Fairy', type: 'fire' },
-  { id: 2, src: '/monsters/monster-002-png.png', name: 'Crystalix', type: 'ice' },
-  { id: 3, src: '/monsters/monster-003-png.png', name: 'Guarana', type: 'grass' },
-  { id: 4, src: '/monsters/monster-004-png.png', name: 'Volterra', type: 'electric' },
-  { id: 5, src: '/monsters/monster-005-png.png', name: 'Aquarus', type: 'water' },
-  { id: 6, src: '/monsters/monster-006-png.png', name: 'Infernus', type: 'fire' },
-  { id: 7, src: '/monsters/monster-007.png', name: 'Lumenis', type: 'grass' },
-  { id: 8, src: '/monsters/monster-008.png', name: 'Spectra', type: 'psychic' },
-];
+import { monsters } from '@/lib/monsters';
 
 export default function GitDexPage() {
   const [selectedMonster, setSelectedMonster] = useState<number>(8);

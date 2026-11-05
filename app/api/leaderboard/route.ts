@@ -121,7 +121,11 @@ export async function GET(request: Request) {
     // EMERGENCY FIX: Removed force sync from public endpoint to prevent system overload
     // TODO: Move this to a separate cron job that runs hourly
 
-    const limit = parseInt(searchParams.get('limit') || '50');
+    // Clamp paging params so a single request can't pull the whole user table.
+    const rawLimit = parseInt(searchParams.get('limit') || '50', 10);
+    const limit = Math.min(Math.max(Number.isFinite(rawLimit) ? rawLimit : 50, 1), 100);
+    const rawOffset = parseInt(searchParams.get('offset') || '0', 10);
+    const offset = Math.min(Math.max(Number.isFinite(rawOffset) ? rawOffset : 0, 0), 10000);
     const currentUserId = searchParams.get('userId');
 
     const orderBy =
@@ -133,32 +137,38 @@ export async function GET(request: Request) {
           ]
         : [{ xp: 'desc' as const }, { level: 'desc' as const }, { lastXpUpdate: 'desc' as const }];
 
-    const users = await prisma.user.findMany({
-      where: {
-        onboardingCompleted: true,
-        selectedMonsterId: { not: null },
-      },
-      orderBy,
-      take: limit,
-      select: {
-        id: true,
-        name: true,
-        githubUsername: true,
-        selectedMonsterId: true,
-        level: true,
-        xp: true,
-        dailyXp: true,
-        weeklyXp: true,
-        totalCommits: true,
-        totalPRs: true,
-        totalStars: true,
-        currentStreak: true,
-        lastXpUpdate: true,
-      },
-    });
+    const where = {
+      onboardingCompleted: true,
+      selectedMonsterId: { not: null },
+    };
+
+    const [users, totalRanked] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy,
+        skip: offset,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          githubUsername: true,
+          selectedMonsterId: true,
+          level: true,
+          xp: true,
+          dailyXp: true,
+          weeklyXp: true,
+          totalCommits: true,
+          totalPRs: true,
+          totalStars: true,
+          currentStreak: true,
+          lastXpUpdate: true,
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
 
     const leaderboard = users.map((user: (typeof users)[0], index: number) => ({
-      rank: index + 1,
+      rank: offset + index + 1,
       id: user.id,
       name: user.name || user.githubUsername || 'Anonymous',
       githubUsername: user.githubUsername,
@@ -178,10 +188,13 @@ export async function GET(request: Request) {
       lastActive: user.lastXpUpdate,
     }));
 
-    type LeaderboardEntry = (typeof leaderboard)[0] & { isCurrentUser?: boolean };
+    type LeaderboardEntry = Omit<(typeof leaderboard)[0], 'rank'> & {
+      rank: number | null;
+      isCurrentUser?: boolean;
+    };
 
     // Se o usuário atual não está no top 50, busca ele separadamente
-    if (currentUserId && !users.find(u => u.id === currentUserId)) {
+    if (offset === 0 && currentUserId && !users.find(u => u.id === currentUserId)) {
       const currentUser = await prisma.user.findUnique({
         where: { id: currentUserId },
         select: {
@@ -210,7 +223,8 @@ export async function GET(request: Request) {
         // EMERGENCY FIX: Disabled expensive user ranking calculation
         // TODO: Implement efficient ranking with cached values
         // const userRank = await prisma.user.count({...}) + 1;
-        const userRank = 999; // Temporary fallback rank
+        // Real rank isn't computed here (see above); send null instead of a fake number.
+        const userRank = null;
 
         const currentUserEntry: LeaderboardEntry = {
           rank: userRank,
@@ -239,13 +253,26 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      leaderboard,
-      period,
-      total: users.length,
-      updatedAt: new Date(),
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        leaderboard,
+        period,
+        total: users.length,
+        offset,
+        totalRanked,
+        hasMore: offset + users.length < totalRanked,
+        updatedAt: new Date(),
+      },
+      {
+        headers: {
+          // Responses with ?userId= include that user's row, so keep them out of shared caches.
+          'Cache-Control': currentUserId
+            ? 'private, max-age=60'
+            : 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      },
+    );
   } catch (error) {
     console.error('Leaderboard error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

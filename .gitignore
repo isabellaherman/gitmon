@@ -48,3 +48,7 @@ next-env.d.ts
 # Event planning docs
 /docs/events/
 /stuff
+
+# local sqlite
+prisma/*.db
+prisma/*.db-journal

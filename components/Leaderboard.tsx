@@ -4,7 +4,9 @@ import Image from 'next/image';
 import { monsters } from '@/lib/monsters';
 
 interface LeaderboardEntry {
-  rank: number;
+  id?: string;
+  rank: number | null;
+  isCurrentUser?: boolean;
   name: string;
   githubUsername?: string;
   selectedMonsterId: number;
@@ -25,6 +27,10 @@ interface LeaderboardProps {
   leaderboardPeriod: 'week' | 'all';
   setLeaderboardPeriod: (period: 'week' | 'all') => void;
   totalTrainers: number;
+  hasMore?: boolean;
+  totalRanked?: number;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 export default function Leaderboard({
@@ -33,6 +39,10 @@ export default function Leaderboard({
   leaderboardPeriod,
   setLeaderboardPeriod,
   totalTrainers,
+  hasMore = false,
+  totalRanked = 0,
+  isLoadingMore = false,
+  onLoadMore,
 }: LeaderboardProps) {
   const router = useRouter();
 
@@ -88,13 +98,14 @@ export default function Leaderboard({
             >
               📚 GITDEX
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open('https://github.com/isabellaherman/gitmon', '_blank')}
-              className="rounded-full text-xs"
-            >
-              ⭐ Star Project
+            <Button asChild variant="outline" size="sm" className="rounded-full text-xs">
+              <a
+                href="https://github.com/isabellaherman/gitmon"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ⭐ Star Project
+              </a>
             </Button>
           </div>
           <span className="text-xs text-muted-foreground">
@@ -132,9 +143,9 @@ export default function Leaderboard({
           <div className="space-y-4 mt-4">
             {leaderboard.map(user => (
               <div
-                key={user.rank}
+                key={user.id ?? `${user.rank}-${user.githubUsername}`}
                 className={`flex items-center gap-4 px-4 py-2 rounded-full transition-colors ${
-                  user.rank <= 3
+                  user.rank !== null && user.rank <= 3
                     ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20'
                     : 'isCurrentUser' in user && user.isCurrentUser
                       ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20'
@@ -142,7 +153,7 @@ export default function Leaderboard({
                 }`}
               >
                 <div className="min-w-8 flex items-center justify-center font-bold text-sm text-muted-foreground">
-                  #{user.rank}
+                  {user.rank !== null ? `#${user.rank}` : 'You'}
                 </div>
 
                 <div className="flex-1">
@@ -210,6 +221,17 @@ export default function Leaderboard({
                 </div>
               </div>
             ))}
+            <div className="flex flex-col items-center gap-2 py-4">
+              <p className="text-xs text-muted-foreground">
+                Showing top {leaderboard.filter(u => !u.isCurrentUser).length.toLocaleString()}
+                {totalRanked > 0 ? ` of ${totalRanked.toLocaleString()} ranked trainers` : ''}
+              </p>
+              {hasMore && onLoadMore && (
+                <Button variant="outline" size="sm" onClick={onLoadMore} disabled={isLoadingMore}>
+                  {isLoadingMore ? 'Loading...' : 'Show more'}
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </div>

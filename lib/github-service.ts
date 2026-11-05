@@ -128,39 +128,33 @@ export class GitHubService {
     try {
       console.log(`[GitHub GraphQL] Getting accurate contribution data for ${username}`);
 
+      // One aliased contributionsCollection per calendar year, from 2021 up to the current
+      // year (GitHub caps each collection at 1 year). Built dynamically so new years are never
+      // silently dropped, and without the rolling "last 12 months" collection, which overlapped
+      // with the yearly ones and double-counted recent activity.
+      const FIRST_YEAR = 2021;
+      const now = new Date();
+      const currentYear = now.getUTCFullYear();
+      const years: number[] = [];
+      for (let y = FIRST_YEAR; y <= currentYear; y++) years.push(y);
+
+      const fields = `
+              totalCommitContributions
+              totalIssueContributions
+              totalPullRequestContributions
+              totalPullRequestReviewContributions`;
+      const collections = years
+        .map(y => {
+          const to = y === currentYear ? now.toISOString() : `${y}-12-31T23:59:59Z`;
+          return `y${y}: contributionsCollection(from: "${y}-01-01T00:00:00Z", to: "${to}") {${fields}
+            }`;
+        })
+        .join('\n            ');
+
       const query = `
         query($username: String!) {
           user(login: $username) {
-            contributionsCollection {
-              totalCommitContributions
-              totalIssueContributions
-              totalPullRequestContributions
-              totalPullRequestReviewContributions
-            }
-            contributionsCollection2021: contributionsCollection(from: "2021-01-01T00:00:00Z", to: "2021-12-31T23:59:59Z") {
-              totalCommitContributions
-              totalIssueContributions
-              totalPullRequestContributions
-              totalPullRequestReviewContributions
-            }
-            contributionsCollection2022: contributionsCollection(from: "2022-01-01T00:00:00Z", to: "2022-12-31T23:59:59Z") {
-              totalCommitContributions
-              totalIssueContributions
-              totalPullRequestContributions
-              totalPullRequestReviewContributions
-            }
-            contributionsCollection2023: contributionsCollection(from: "2023-01-01T00:00:00Z", to: "2023-12-31T23:59:59Z") {
-              totalCommitContributions
-              totalIssueContributions
-              totalPullRequestContributions
-              totalPullRequestReviewContributions
-            }
-            contributionsCollection2024: contributionsCollection(from: "2024-01-01T00:00:00Z", to: "2024-12-31T23:59:59Z") {
-              totalCommitContributions
-              totalIssueContributions
-              totalPullRequestContributions
-              totalPullRequestReviewContributions
-            }
+            ${collections}
           }
         }
       `;
@@ -172,15 +166,13 @@ export class GitHubService {
         throw new Error(`User ${username} not found`);
       }
 
-      const years = ['', '2021', '2022', '2023', '2024'];
       let totalCommits = 0;
       let totalPRs = 0;
       let totalIssues = 0;
       let totalReviews = 0;
 
       years.forEach(year => {
-        const key = year ? `contributionsCollection${year}` : 'contributionsCollection';
-        const collection = (user as Record<string, unknown>)[key];
+        const collection = (user as Record<string, unknown>)[`y${year}`];
         if (collection && typeof collection === 'object') {
           const col = collection as Record<string, number>;
           totalCommits += col.totalCommitContributions || 0;
